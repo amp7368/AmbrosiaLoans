@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "io.ebean" version "13.10.1"
+}
+
+repositories {
+    maven { url "https://reposilite.appleptr16.com/appleptr16" }
+    mavenCentral()
+}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+project.group groupValue
+project.version versionValue
+
+configurations {
+    configureEach {
+        resolutionStrategy.cacheDynamicVersionsFor 1, 'seconds'
+        resolutionStrategy.cacheChangingModulesFor 1, 'seconds'
+    }
+}
+
+project.ext.ebean_version = '13.11.0'
+// https://search.maven.org/search?q=g:io.ebean
+dependencies {
+    annotationProcessor "io.ebean:ebean-querybean:${ebean_version}"
+    annotationProcessor "io.ebean:querybean-generator:${ebean_version}"
+
+    implementation 'com.mysql:mysql-connector-j:8.0.31'
+
+    implementation "io.ebean:ebean-ddl-generator:${ebean_version}"
+    implementation "io.ebean:ebean-querybean:${ebean_version}"
+    implementation "io.ebean:ebean-mysql:${ebean_version}"
+
+    // logging
+    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0'
+
+    implementation 'net.dv8tion:JDA:5.0.0-beta.1'
+    implementation 'discord.util:discorddcf:1.0-SNAPSHOT'
+    implementation 'apple.lib:applemodules:2.0-SNAPSHOT'
+    implementation "apple.utilities:AppleUtilities:1.3-SNAPSHOT"
+}
+mainClassName = 'com.ambrosia.loans.Ambrosia'
+shadowJar {
+    manifest {
+        attributes 'Multi-Release': true
+    }
+    doLast {
+        if (botsBuildDir != null) {
+            copy {
+                from getArchiveFile()
+                into file(botsBuildDir)
+            }
+        }
+    }
+}
