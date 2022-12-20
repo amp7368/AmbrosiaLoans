@@ -31,11 +31,11 @@ dependencies {
     annotationProcessor "io.ebean:ebean-querybean:${ebean_version}"
     annotationProcessor "io.ebean:querybean-generator:${ebean_version}"
 
-    implementation 'com.mysql:mysql-connector-j:8.0.31'
+    implementation 'org.postgresql:postgresql:42.5.1'
 
     implementation "io.ebean:ebean-ddl-generator:${ebean_version}"
     implementation "io.ebean:ebean-querybean:${ebean_version}"
-    implementation "io.ebean:ebean-mysql:${ebean_version}"
+    implementation "io.ebean:ebean-postgres:${ebean_version}"
 
     // logging
     implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
@@ -55,7 +55,7 @@ shadowJar {
         if (botsBuildDir != null) {
             copy {
                 from getArchiveFile()
-                into file(botsBuildDir)
+                into file(botsBuildDir + "/AmbrosiaLoans")
             }
         }
     }
