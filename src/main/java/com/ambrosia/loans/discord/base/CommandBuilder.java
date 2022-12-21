@@ -15,7 +15,6 @@ public interface CommandBuilder extends SendMessage {
         return instance;
     }
 
-    String PROFILE_NAME_OPTION = "profile_name";
     String EMERALD_OPTION = "emeralds";
     String EMERALD_BLOCK_OPTION = "blocks";
     String LIQUID_EMERALD_OPTION = "liquids";
@@ -33,9 +32,9 @@ public interface CommandBuilder extends SendMessage {
             event.replyEmbeds(error("Total must be positive!")).setEphemeral(true).queue();
             return null;
         }
-
         return total;
     }
+
 
     default void addOptionAmount(SlashCommandData command) {
         command.addOption(OptionType.INTEGER, LIQUID_EMERALD_OPTION, "The amount in liquid emeralds", false);
@@ -49,8 +48,5 @@ public interface CommandBuilder extends SendMessage {
         command.addOption(OptionType.INTEGER, EMERALD_OPTION, "The amount in emeralds", false);
     }
 
-    default void errorRegisterWithStaff(SlashCommandInteractionEvent event) {
-        event.replyEmbeds(error("To register your account use **/request account** and fill in your Minecraft username."))
-            .setEphemeral(true).queue();
-    }
+
 }

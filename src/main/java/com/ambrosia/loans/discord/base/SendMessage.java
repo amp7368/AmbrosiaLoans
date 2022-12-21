@@ -34,4 +34,8 @@ public interface SendMessage {
         event.replyEmbeds(missingOption(option)).queue();
     }
 
+    default void errorRegisterWithStaff(SlashCommandInteractionEvent event) {
+        event.replyEmbeds(error("To register your account use **/request account** and fill in your Minecraft username."))
+            .setEphemeral(true).queue();
+    }
 }

@@ -4,6 +4,11 @@ import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.data.config.AppleConfig.Builder;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.client.ClientDiscordDetails;
+import com.ambrosia.loans.database.client.ClientMinecraftDetails;
+import com.ambrosia.loans.database.client.ClientMoment;
+import com.ambrosia.loans.database.transaction.DTransaction;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
@@ -36,6 +41,10 @@ public class AmbrosiaDatabase extends AppleModule {
 
         // tables
         // embedded
+        dbConfig.addAll(List.of(ClientMoment.class, ClientDiscordDetails.class, ClientMinecraftDetails.class));
+        dbConfig.addAll(List.of(DClient.class));
+        dbConfig.addAll(List.of(DTransaction.class));
+
         return dbConfig;
     }
 
