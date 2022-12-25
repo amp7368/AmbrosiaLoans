@@ -91,7 +91,7 @@ public class ClientApi {
 
     public boolean trySave() {
         try (Transaction transaction = DB.getDefault().beginTransaction()) {
-            if (!DB.getDefault().checkUniqueness(this, transaction).isEmpty()) return false;
+            if (!DB.getDefault().checkUniqueness(this.client, transaction).isEmpty()) return false;
             client.save(transaction);
             transaction.commit();
             updateClient();

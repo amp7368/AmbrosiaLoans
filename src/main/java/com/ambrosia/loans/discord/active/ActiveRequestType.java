@@ -3,10 +3,10 @@ package com.ambrosia.loans.discord.active;
 import apple.utilities.gson.adapter.GsonEnumTypeHolder;
 import com.ambrosia.loans.discord.active.account.ActiveRequestAccount;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
-import com.ambrosia.loans.discord.active.cash.ActiveRequestCash;
+import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
 
 public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest> {
-    CASH(ActiveRequestCash.class, "cash"),
+    LOAN(ActiveRequestLoan.class, "loan"),
     ACCOUNT(ActiveRequestAccount.class, "account");
 
     private final Class<? extends ActiveRequest> type;

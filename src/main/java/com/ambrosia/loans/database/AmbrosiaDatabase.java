@@ -4,6 +4,7 @@ import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.data.config.AppleConfig.Builder;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.client.ClientDiscordDetails;
 import com.ambrosia.loans.database.client.ClientMinecraftDetails;
@@ -30,6 +31,7 @@ public class AmbrosiaDatabase extends AppleModule {
         DatabaseConfig dbConfig = configureDatabase(dataSourceConfig);
         DatabaseFactory.createWithContextClassLoader(dbConfig, Ambrosia.class.getClassLoader());
         logger().info("Successfully created database");
+        ClientApi.load();
     }
 
     @NotNull

@@ -4,8 +4,8 @@ import apple.utilities.util.Pretty;
 import io.ebean.annotation.DbEnumValue;
 
 public enum TransactionType {
-    WITHDRAW(0),
-    DEPOSIT(1),
+    LOAN(0),
+    INVEST(1),
     PROFIT(2),
     INTEREST(3),
     TRADE_GIVE(4),

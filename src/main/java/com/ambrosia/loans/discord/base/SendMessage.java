@@ -38,4 +38,8 @@ public interface SendMessage {
         event.replyEmbeds(error("To register your account use **/request account** and fill in your Minecraft username."))
             .setEphemeral(true).queue();
     }
+
+    default MessageEmbed errorRegisterWithStaff() {
+        return error("To register your account use **/request account** and fill in your Minecraft username.");
+    }
 }

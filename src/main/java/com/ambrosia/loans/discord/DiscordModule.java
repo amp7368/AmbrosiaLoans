@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
-import com.ambrosia.loans.discord.commands.dealer.cash.CommandCash;
+import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.commands.dealer.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.dealer.profile.CreateProfileCommand;
 import com.ambrosia.loans.discord.commands.dealer.view.ViewProfileCommand;
@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
+import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import java.util.List;
@@ -64,14 +65,18 @@ public class DiscordModule extends AppleModule {
         DiscordBot.SELF_USER_AVATAR = jda.getSelfUser().getAvatarUrl();
         DiscordBot.dcf = dcf;
 
+        ActiveRequestDatabase.load();
+
         DCFCommandManager commands = dcf.commands();
         // employee commands
-        commands.addCommand(new CommandCash(), new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
+        commands.addCommand(new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
         commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest());
         commands.updateCommands();
+
+        dcf.modals().add(new RequestLoanModalType());
     }
 
     @Override

@@ -98,7 +98,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected MessageCreateData makeMessage(String... extraDescription) {
         MessageCreateBuilder message = new MessageCreateBuilder();
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s - (%s)", title(), stageName()));
+        embed.setTitle(String.format("%s - (%s)", title(), stageName()), titleUrl());
         embed.setColor(this.data.stage.getColor());
         data.sender.author(embed);
         String description = this.generateDescription(ArrayUtils.combine(extraDescription, error, String[]::new));
@@ -157,6 +157,10 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected abstract String description();
 
     protected abstract String title();
+
+    protected String titleUrl() {
+        return null;
+    }
 
     protected void updateSender() {
         String updateMessage = switch (this.data.stage) {

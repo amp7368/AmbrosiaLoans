@@ -1,8 +1,6 @@
 package com.ambrosia.loans.discord.commands.dealer.cash;
 
 import com.ambrosia.loans.discord.base.BaseCommand;
-import com.ambrosia.loans.discord.commands.dealer.cash.add.CommandDeposit;
-import com.ambrosia.loans.discord.commands.dealer.cash.minus.CommandWithdraw;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -28,6 +26,6 @@ public class CommandCash extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CommandDeposit(), new CommandWithdraw());
+        return List.of();
     }
 }
