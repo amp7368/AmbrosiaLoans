@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.commands.dealer.profile;
 
 import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.CreateClientException;
+import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.discord.base.BaseCommand;
 import com.ambrosia.loans.discord.base.CommandOption;
@@ -23,8 +23,8 @@ public class CreateProfileCommand extends BaseCommand {
 
         DClient client;
         try {
-            client = ClientApi.createClient(clientName, discord).client;
-        } catch (CreateClientException e) {
+            client = ClientApi.createClient(clientName, discord).entity;
+        } catch (CreateEntityException e) {
             event.replyEmbeds(this.error(String.format("'%s' is already a user", clientName))).queue();
             return;
         }

@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.active.account;
 
 import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.CreateClientException;
+import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
@@ -28,17 +28,17 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
         super(ActiveRequestType.ACCOUNT.getTypeId(), new ActiveRequestSender(discord, null));
         ClientMinecraftDetails minecraftDetails = ClientMinecraftDetails.fromUsername(minecraft);
         if (minecraftDetails == null) throw new UpdateAccountException(String.format("Minecraft account: '%s' not found", minecraft));
-        this.original = ClientApi.findByDiscord(discord.getIdLong()).client;
+        this.original = ClientApi.findByDiscord(discord.getIdLong()).entity;
         if (displayName == null) displayName = minecraft;
         if (this.original == null) {
             try {
-                this.original = ClientApi.createClient(discord.getEffectiveName(), discord).client;
-            } catch (CreateClientException e) {
+                this.original = ClientApi.createClient(discord.getEffectiveName(), discord).entity;
+            } catch (CreateEntityException e) {
                 throw new UpdateAccountException(e.getMessage());
             }
         }
         sender.setClient(original);
-        this.updated = ClientApi.findById(original.id).client;
+        this.updated = ClientApi.findById(original.id).entity;
         if (updated == null) throw new IllegalStateException("Client " + original.id + " does not exist!");
         this.updated.minecraft = minecraftDetails;
         if (displayName != null) this.updated.displayName = displayName;
@@ -53,15 +53,15 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
 
     public void onComplete() throws UpdateAccountException {
         ClientApi newVersion = ClientApi.findById(updated.id);
-        if (newVersion.client == null) throw new UpdateAccountException("Client no longer exists");
-        newVersion.client.minecraft = updateField(newVersion, client -> client.minecraft);
-        newVersion.client.displayName = updateField(newVersion, client -> client.displayName);
+        if (newVersion.entity == null) throw new UpdateAccountException("Client no longer exists");
+        newVersion.entity.minecraft = updateField(newVersion, client -> client.minecraft);
+        newVersion.entity.displayName = updateField(newVersion, client -> client.displayName);
         if (!newVersion.trySave()) throw new UpdateAccountException("Client is not unique");
     }
 
     public <T> T updateField(ClientApi newVersion, Function<DClient, T> extract) {
         boolean isAnUpdate = Objects.equals(extract.apply(original), extract.apply(updated));
-        return extract.apply(isAnUpdate ? newVersion.client : updated);
+        return extract.apply(isAnUpdate ? newVersion.entity : updated);
     }
 
     public List<Field> displayFields() {

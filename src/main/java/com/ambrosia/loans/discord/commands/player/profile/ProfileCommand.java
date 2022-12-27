@@ -11,7 +11,7 @@ public class ProfileCommand extends BaseCommand {
 
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
-        DClient client = ClientApi.findByDiscord(event.getUser().getIdLong()).client;
+        DClient client = ClientApi.findByDiscord(event.getUser().getIdLong()).entity;
         if (client == null) {
             this.errorRegisterWithStaff(event);
             return;

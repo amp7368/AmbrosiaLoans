@@ -2,12 +2,10 @@ package com.ambrosia.loans.discord.active.cash;
 
 import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.DClient;
-import com.ambrosia.loans.database.transaction.TransactionApi;
 import com.ambrosia.loans.database.transaction.TransactionType;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.base.ActiveRequestSender;
-import io.ebean.DB;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -67,7 +65,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
     public DClient getClient() {
         if (client != null) return client;
-        return this.client = ClientApi.findById(clientId).client;
+        return this.client = ClientApi.findById(clientId).entity;
     }
 
     public List<String> getCollateral() {

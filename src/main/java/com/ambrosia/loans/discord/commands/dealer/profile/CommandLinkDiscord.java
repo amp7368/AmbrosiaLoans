@@ -25,14 +25,14 @@ public class CommandLinkDiscord extends BaseSubCommand {
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
         ClientApi client = CommandOptionClient.findClientApi(event);
-        if (client.client == null) return;
+        if (client.entity == null) return;
         Member member = CommandOption.DISCORD_OPTION.getRequired(event);
         if (member == null) return;
-        client.client.discord = ClientDiscordDetails.fromMember(member);
+        client.entity.discord = ClientDiscordDetails.fromMember(member);
         sendRegistrationMessage(member);
         if (client.trySave()) {
-            new ProfileMessage(client.client).reply(event);
-            DiscordLog.log().modifyDiscord(client.client, event.getUser());
+            new ProfileMessage(client.entity).reply(event);
+            DiscordLog.log().modifyDiscord(client.entity, event.getUser());
         } else event.replyEmbeds(this.error("Discord was already assigned")).queue();
     }
 

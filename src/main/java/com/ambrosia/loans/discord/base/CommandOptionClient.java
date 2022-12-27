@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public class CommandOptionClient {
 
     public static DClient findClient(SlashCommandInteractionEvent event) {
-        return findClientApi(event).client;
+        return findClientApi(event).entity;
     }
 
     public static ClientApi findClientApi(SlashCommandInteractionEvent event) {

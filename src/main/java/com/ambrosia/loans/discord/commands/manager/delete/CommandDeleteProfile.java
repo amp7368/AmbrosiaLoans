@@ -22,12 +22,12 @@ public class CommandDeleteProfile extends BaseSubCommand {
         if (client.isEmpty()) return;
         if (client.hasAnyTransactions()) {
             String msg = String.format("Cannot delete %s's profile. There are entries associated with their account",
-                client.client.displayName);
+                client.entity.displayName);
             event.replyEmbeds(error(msg)).queue();
             return;
         }
-        client.client.delete();
-        event.replyEmbeds(success(String.format("Removed profile '%s'", client.client.displayName))).queue();
+        client.entity.delete();
+        event.replyEmbeds(success(String.format("Removed profile '%s'", client.entity.displayName))).queue();
     }
 
     @Override

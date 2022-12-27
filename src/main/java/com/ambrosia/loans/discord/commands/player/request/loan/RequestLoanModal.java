@@ -82,7 +82,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             event.replyEmbeds(errorRegisterWithStaff()).setEphemeral(true).queue();
             return;
         }
-        ActiveRequestLoan request = new ActiveRequestLoan(event.getMember(), client.client, this.emeralds, this.collateral,
+        ActiveRequestLoan request = new ActiveRequestLoan(event.getMember(), client.entity, this.emeralds, this.collateral,
             this.voucher, this.repayment);
 
         ActiveRequestLoanGui gui = request.create();

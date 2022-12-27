@@ -1,38 +1,28 @@
 package com.ambrosia.loans.database.client;
 
+import com.ambrosia.loans.database.base.ModelApi;
 import com.ambrosia.loans.database.client.query.QDClient;
 import com.ambrosia.loans.database.transaction.TransactionApi;
+import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.util.UniqueMessages;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileMessage;
-import io.ebean.DB;
-import io.ebean.Transaction;
-import io.ebean.plugin.Property;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
 
-public class ClientApi {
+public class ClientApi extends ModelApi<DClient> {
 
     private static final Map<Long, DClient> allClients = new HashMap<>();
-    public DClient client;
 
     public ClientApi(DClient client) {
-        this.client = client;
+        super(client);
         if (client != null) {
             synchronized (allClients) {
                 allClients.put(client.id, client);
             }
-        }
-    }
-
-
-    public void updateClient() {
-        synchronized (allClients) {
-            allClients.put(client.id, client);
         }
     }
 
@@ -57,25 +47,13 @@ public class ClientApi {
         return api(new QDClient().where().discord.discordId.eq(discordId).findOne());
     }
 
-    public static ClientApi createClient(String clientName, Member discord) throws CreateClientException {
+    public static ClientApi createClient(String clientName, Member discord) throws CreateEntityException {
         DClient client = new DClient(clientName);
         client.minecraft = ClientMinecraftDetails.fromUsername(clientName);
         client.discord = ClientDiscordDetails.fromMember(discord);
-        try (Transaction transaction = DB.getDefault().beginTransaction()) {
-            Set<Property> uniqueness = DB.getDefault().checkUniqueness(client, transaction);
-            if (!uniqueness.isEmpty()) {
-                List<String> badProperties = new ArrayList<>();
-                for (Property property : uniqueness) {
-                    String format = String.format("'%s' is not unique! Provided: '%s'", property.name(), property.value(client));
-                    badProperties.add(format);
-                }
-                throw new CreateClientException(String.join(", ", badProperties));
-            }
-            client.save(transaction);
-            transaction.commit();
-        }
+        UniqueMessages.saveIfUnique(client);
         ClientApi api = api(client);
-        api.updateClient();
+        api.update();
         return api;
     }
 
@@ -89,25 +67,18 @@ public class ClientApi {
         }
     }
 
-    public boolean trySave() {
-        try (Transaction transaction = DB.getDefault().beginTransaction()) {
-            if (!DB.getDefault().checkUniqueness(this.client, transaction).isEmpty()) return false;
-            client.save(transaction);
-            transaction.commit();
-            updateClient();
-            return true;
+    @Override
+    public void update() {
+        synchronized (allClients) {
+            allClients.put(entity.id, entity);
         }
     }
 
     public ProfileMessage profile() {
-        return new ProfileMessage(this.client);
-    }
-
-    public boolean isEmpty() {
-        return this.client == null;
+        return new ProfileMessage(this.entity);
     }
 
     public boolean hasAnyTransactions() {
-        return !TransactionApi.findTransactionsByClient(client).isEmpty();
+        return !TransactionApi.findTransactionsByClient(entity).isEmpty();
     }
 }

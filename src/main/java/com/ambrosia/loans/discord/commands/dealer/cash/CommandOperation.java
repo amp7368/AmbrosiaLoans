@@ -27,7 +27,7 @@ public abstract class CommandOperation extends BaseSubCommand {
         long conductorId = event.getUser().getIdLong();
         int change = sign() * amount;
         DTransaction operation = TransactionApi.createTransaction(conductorId, client, change, operationReason());
-        DClient updated = ClientApi.findById(client.id).client;
+        DClient updated = ClientApi.findById(client.id).entity;
         if (updated == null) throw new IllegalStateException(client.id + " is not a valid client!");
         new ProfileMessage(updated, operation.display()).reply(event);
         DiscordLog.log().operation(updated, operation, event.getUser(), true);

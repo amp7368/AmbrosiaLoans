@@ -7,7 +7,6 @@ import com.ambrosia.loans.discord.base.CommandOption;
 import com.ambrosia.loans.discord.base.CommandOptionClient;
 import com.ambrosia.loans.discord.log.DiscordLog;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class CommandLinkMinecraft extends BaseSubCommand {
@@ -15,7 +14,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
         ClientApi client = CommandOptionClient.findClientApi(event);
-        if (client.client == null) return;
+        if (client.entity == null) return;
         String username = CommandOption.MINECRAFT.getRequired(event);
         if (username == null) return;
         ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(username);
@@ -23,10 +22,10 @@ public class CommandLinkMinecraft extends BaseSubCommand {
             event.replyEmbeds(error(String.format("Could not find %s's minecraft account", username))).queue();
             return;
         }
-        client.client.minecraft = minecraft;
+        client.entity.minecraft = minecraft;
         if (client.trySave()) {
             client.profile().reply(event);
-            DiscordLog.log().modifyMinecraft(client.client, event.getUser());
+            DiscordLog.log().modifyMinecraft(client.entity, event.getUser());
         } else event.replyEmbeds(this.error("Minecraft was already assigned")).queue();
 
     }

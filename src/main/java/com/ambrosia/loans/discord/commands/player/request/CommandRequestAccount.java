@@ -31,8 +31,9 @@ public class CommandRequestAccount extends BaseSubCommand {
         }
 
         ActiveRequestAccountGui gui = request.create();
-        event.reply(gui.makeClientMessage()).queue();
-        gui.send(ActiveRequestDatabase::sendRequest);
+        event.reply(gui.makeClientMessage()).queue((success) -> {
+            gui.send(ActiveRequestDatabase::sendRequest);
+        });
     }
 
     @Override
