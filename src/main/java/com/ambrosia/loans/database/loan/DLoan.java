@@ -31,7 +31,7 @@ public class DLoan extends Model {
 
     @Column(nullable = false)
     public int amount;
-    @Column(nullable = false, precision = 10, scale = 10)
+    @Column(nullable = false)
     public double rate;
     @Column(nullable = false)
     public Timestamp startDate;

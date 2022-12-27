@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  ambrosia-loans:
+    restart: unless-stopped
+    container_name: ${COMPOSE_NAME}.${IMAGE_NAME}
+    image: ${COMPOSE_NAME}/${IMAGE_NAME}
+    build:
+      context: .
+      args:
+        - JAVA_VERSION=${JAVA_VERSION}
+        - JAR_FILE=${JAR_FILE}
+        - WORKINGDIR=${WORKINGDIR}
+    environment:
+      - JAR_FILE=${JAR_FILE}
+      - WORKINGDIR=${WORKINGDIR}
+    depends_on:
+      - postgres
+    networks:
+      - 'ambrosia-loans'
+    volumes:
+      - '${MOUNT_DIR}/java/Database:${WORKINGDIR}/Database/Data'
+      - '${MOUNT_DIR}/java/Discord:${WORKINGDIR}/Discord/Data'
+      - '${SECRETS_DIR}/Database:${WORKINGDIR}/Database/Config'
+      - '${SECRETS_DIR}/Discord:${WORKINGDIR}/Discord/Config'
+  postgres:
+    image: ${POSTGRES_VERSION}
+    container_name: ${COMPOSE_NAME}.${DATABASE_IMAGE}
+    env_file: '.env'
+    networks:
+      - 'ambrosia-loans'
+    ports:
+      - '5432:5432'
+    volumes:
+      - '${SECRETS_DIR}/Database:/secrets'
+      - '${MOUNT_DIR}/postgres:/var/lib/postgresql/data'
+networks:
+  ambrosia-loans:
+    name: ambrosia-loans
