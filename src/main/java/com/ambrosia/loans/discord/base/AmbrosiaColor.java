@@ -16,4 +16,10 @@ public class AmbrosiaColor {
         public static final int CLAIMED = Color.YELLOW.getRGB();
         public static final int UNCLAIMED = Color.ORANGE.getRGB();
     }
+
+    public static class AmbrosiaColorTransaction {
+
+        public static final int DEPOSIT = 0x9dfc03;
+        public static int WITHDRAW = BAD;
+    }
 }

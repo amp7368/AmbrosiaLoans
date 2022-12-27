@@ -43,7 +43,7 @@ public class Emeralds {
     }
 
 
-    public static int leToEmeralds(int le) {
-        return LIQUID * le;
+    public static int leToEmeralds(double le) {
+        return (int)(LIQUID * le);
     }
 }
