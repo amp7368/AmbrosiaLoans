@@ -8,6 +8,7 @@ import com.ambrosia.loans.discord.base.CommandOptionClient;
 import com.ambrosia.loans.discord.log.DiscordLog;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 public class CommandLinkMinecraft extends BaseSubCommand {
 
@@ -17,17 +18,21 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         if (client.entity == null) return;
         String username = CommandOption.MINECRAFT.getRequired(event);
         if (username == null) return;
-        ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(username);
-        if (minecraft == null) {
-            event.replyEmbeds(error(String.format("Could not find %s's minecraft account", username))).queue();
-            return;
-        }
-        client.entity.minecraft = minecraft;
-        if (client.trySave()) {
-            client.profile().reply(event);
-            DiscordLog.log().modifyMinecraft(client.entity, event.getUser());
-        } else event.replyEmbeds(this.error("Minecraft was already assigned")).queue();
+        event.deferReply().queue((reply) -> {
 
+            ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(username);
+            if (minecraft == null) {
+                reply.editOriginalEmbeds(error(String.format("Could not find %s's minecraft account", username))).queue();
+                return;
+            }
+            client.entity.minecraft = minecraft;
+            if (client.trySave()) {
+                final MessageEditData message = MessageEditData.fromCreateData(client.profile().makeMessage());
+                reply.editOriginal(message).queue();
+                DiscordLog.log().modifyMinecraft(client.entity, event.getUser());
+            } else reply.editOriginalEmbeds(this.error("Minecraft was already assigned")).queue();
+
+        });
     }
 
     @Override

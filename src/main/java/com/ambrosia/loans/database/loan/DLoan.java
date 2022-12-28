@@ -39,14 +39,17 @@ public class DLoan extends Model {
     public Timestamp endDate;
     @Column(nullable = false)
     public DLoanStatus status;
+    @Column(nullable = false)
+    public long brokerId;
     @DbJsonB
     public LoanMoment moment;
 
-    public DLoan(DClient client, List<DCollateral> collateral, int amount, double rate) {
+    public DLoan(DClient client, List<DCollateral> collateral, int amount, double rate,long brokerId) {
         this.client = client;
         this.collateral = collateral;
         this.amount = amount;
         this.rate = rate;
+        this.brokerId = brokerId;
         this.startDate = Timestamp.from(Instant.now());
         this.endDate = null;
         this.status = DLoanStatus.ACTIVE;

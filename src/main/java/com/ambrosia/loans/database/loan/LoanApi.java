@@ -13,9 +13,9 @@ public class LoanApi extends ModelApi<DLoan> {
         super(loan);
     }
 
-    public static LoanApi createLoan(DClient client, List<DCollateral> collateral, int amount, double rate)
+    public static LoanApi createLoan(DClient client, List<DCollateral> collateral, int amount, double rate, long brokerId)
         throws CreateEntityException {
-        DLoan loan = new DLoan(client, collateral, amount, rate);
+        DLoan loan = new DLoan(client, collateral, amount, rate, brokerId);
         UniqueMessages.saveIfUnique(loan);
         return api(loan);
     }

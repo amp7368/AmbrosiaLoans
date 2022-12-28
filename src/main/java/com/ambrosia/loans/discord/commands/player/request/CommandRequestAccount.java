@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 public class CommandRequestAccount extends BaseSubCommand {
 
@@ -22,16 +23,18 @@ public class CommandRequestAccount extends BaseSubCommand {
         if (member == null) return;
         String minecraft = CommandOption.MINECRAFT.getRequired(event);
         String displayName = CommandOption.DISPLAY_NAME.getOptional(event);
-        ActiveRequestAccount request;
-        try {
-            request = new ActiveRequestAccount(member, minecraft, displayName);
-        } catch (UpdateAccountException e) {
-            event.replyEmbeds(error(e.getMessage())).queue();
-            return;
-        }
+        event.deferReply().queue((reply) -> {
+            ActiveRequestAccount request;
+            try {
+                request = new ActiveRequestAccount(member, minecraft, displayName);
+            } catch (UpdateAccountException e) {
+                event.replyEmbeds(error(e.getMessage())).queue();
+                return;
+            }
 
-        ActiveRequestAccountGui gui = request.create();
-        event.reply(gui.makeClientMessage()).queue((success) -> {
+            ActiveRequestAccountGui gui = request.create();
+            final MessageEditData message = MessageEditData.fromCreateData(gui.makeClientMessage());
+            reply.editOriginal(message).queue();
             gui.send(ActiveRequestDatabase::sendRequest);
         });
     }
