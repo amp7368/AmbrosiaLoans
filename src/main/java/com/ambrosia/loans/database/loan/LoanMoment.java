@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.loan;
 
-import javax.persistence.Entity;
+import javax.persistence.Embeddable;
 
-@Entity
+@Embeddable
 public class LoanMoment {
 
     public int totalOwed;
@@ -11,5 +11,8 @@ public class LoanMoment {
     public LoanMoment(int totalOwed) {
         this.totalOwed = totalOwed;
         this.partialPay = 0;
+    }
+
+    public LoanMoment() {
     }
 }

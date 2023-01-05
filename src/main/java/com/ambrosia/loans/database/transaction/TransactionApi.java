@@ -5,12 +5,13 @@ import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.transaction.query.QDTransaction;
 import io.ebean.DB;
 import io.ebean.Transaction;
+
 import java.util.List;
 
 public class TransactionApi {
 
 
-    public static DTransaction createTransaction(long conductorId, DClient client, int amount, TransactionType transactionType) {
+    public static DTransaction createTransaction(long conductorId, DClient client, long amount, TransactionType transactionType) {
         try (Transaction transaction = DB.getDefault().beginTransaction()) {
             client = ClientApi.findById(client.id).entity; // refetch the client
             if (client == null) throw new IllegalStateException("Client " + client + " does not exist!");
@@ -24,9 +25,9 @@ public class TransactionApi {
     }
 
     public static DTransaction delete(Long id) {
-        DTransaction operation = DB.getDefault().find(DTransaction.class, id);
+        DTransaction operation = DB.find(DTransaction.class, id);
         if (operation == null) return null;
-        operation.delete();
+        DB.delete(DTransaction.class, id);
         return operation;
     }
 

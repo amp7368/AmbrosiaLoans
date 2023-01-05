@@ -5,21 +5,20 @@ import apple.lib.modules.configs.data.config.AppleConfig.Builder;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.checkin.DCheckInMessage;
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.ClientDiscordDetails;
-import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.ClientMoment;
-import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.client.*;
 import com.ambrosia.loans.database.collateral.DCollateral;
+import com.ambrosia.loans.database.interest.DInterest;
 import com.ambrosia.loans.database.loan.DLoan;
+import com.ambrosia.loans.database.loan.DLoanSnapshot;
 import com.ambrosia.loans.database.loan.LoanMoment;
 import com.ambrosia.loans.database.transaction.DTransaction;
 import io.ebean.DatabaseFactory;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 public class AmbrosiaDatabase extends AppleModule {
 
@@ -34,8 +33,14 @@ public class AmbrosiaDatabase extends AppleModule {
         DataSourceConfig dataSourceConfig = configureDataSource(AmbrosiaDatabaseConfig.get());
         DatabaseConfig dbConfig = configureDatabase(dataSourceConfig);
         DatabaseFactory.createWithContextClassLoader(dbConfig, Ambrosia.class.getClassLoader());
+
         logger().info("Successfully created database");
+
         ClientApi.load();
+
+        if (AmbrosiaDatabaseConfig.get().isExample()) {
+            ExampleData.loadExample();
+        }
     }
 
     @NotNull
@@ -52,7 +57,8 @@ public class AmbrosiaDatabase extends AppleModule {
         dbConfig.addAll(List.of(DTransaction.class));
         // loan
         dbConfig.addAll(List.of(DLoan.class, LoanMoment.class, DCollateral.class, DCheckInMessage.class));
-
+        // interest
+        dbConfig.addAll(List.of(DInterest.class, DLoanSnapshot.class));
         return dbConfig;
     }
 

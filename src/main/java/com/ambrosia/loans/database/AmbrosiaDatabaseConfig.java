@@ -11,6 +11,7 @@ public class AmbrosiaDatabaseConfig {
     public String port = "${port}";
     public String database = "add";
     public boolean DROP_THE_DATABASE_AND_RECREATE = false;
+    public boolean createExampleData = false;
 
     public AmbrosiaDatabaseConfig() {
         instance = this;
@@ -42,5 +43,9 @@ public class AmbrosiaDatabaseConfig {
 
     public boolean getDDLRun() {
         return this.DROP_THE_DATABASE_AND_RECREATE;
+    }
+
+    public boolean isExample() {
+        return this.createExampleData;
     }
 }

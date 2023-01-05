@@ -13,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "client")
-public class DClient extends Model {
+public class DClient {
 
     @Id
     @Column
@@ -21,10 +21,10 @@ public class DClient extends Model {
     public long id;
 
     @Column
-    @Embedded(prefix = "minecraft")
+    @Embedded(prefix = "minecraft_")
     public ClientMinecraftDetails minecraft;
     @Column
-    @Embedded(prefix = "discord")
+    @Embedded(prefix = "discord_")
     public ClientDiscordDetails discord;
     @Column(unique = true, nullable = false)
     public String displayName;

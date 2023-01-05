@@ -26,7 +26,7 @@ public class CommandDeleteProfile extends BaseSubCommand {
             event.replyEmbeds(error(msg)).queue();
             return;
         }
-        client.entity.delete();
+        client.delete();
         event.replyEmbeds(success(String.format("Removed profile '%s'", client.entity.displayName))).queue();
     }
 

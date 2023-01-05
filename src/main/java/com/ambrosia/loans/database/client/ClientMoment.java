@@ -9,14 +9,14 @@ import javax.persistence.Entity;
 public class ClientMoment {
 
     public long emeraldsInvested = 0;
-    public Map<TransactionType, Integer> emeraldsPerTransaction = new HashMap<>();
+    public Map<TransactionType, Long> emeraldsPerTransaction = new HashMap<>();
 
-    public void addCredits(TransactionType transactionType, int amount) {
+    public void addCredits(TransactionType transactionType, long amount) {
         emeraldsInvested += amount;
         emeraldsPerTransaction.compute(transactionType, (t, v) -> v == null ? amount : v + amount);
     }
 
     public long total(TransactionType profit) {
-        return emeraldsPerTransaction.getOrDefault(profit, 0);
+        return emeraldsPerTransaction.getOrDefault(profit, 0L);
     }
 }

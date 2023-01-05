@@ -5,46 +5,45 @@ import com.ambrosia.loans.database.collateral.DCollateral;
 import io.ebean.Model;
 import io.ebean.annotation.DbJsonB;
 import io.ebean.annotation.Identity;
+
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model {
+public class DLoan extends Model implements LoanAccess<DLoan> {
 
     @Id
     @Identity
-    public int id;
+    int id;
 
     @ManyToOne
-    public DClient client;
+    DClient client;
 
     @OneToMany
-    public List<DCollateral> collateral;
+    List<DCollateral> collateral;
 
     @Column(nullable = false)
-    public int amount;
+    int amount;
     @Column(nullable = false)
-    public double rate;
+    double rate;
     @Column(nullable = false)
-    public Timestamp startDate;
+    Timestamp startDate;
     @Column
-    public Timestamp endDate;
+    Timestamp endDate;
     @Column(nullable = false)
-    public DLoanStatus status;
+    DLoanStatus status;
     @Column(nullable = false)
-    public long brokerId;
+    long brokerId;
     @DbJsonB
-    public LoanMoment moment;
+    LoanMoment moment;
 
-    public DLoan(DClient client, List<DCollateral> collateral, int amount, double rate,long brokerId) {
+    public DLoan() {
+    }
+
+    public DLoan(DClient client, List<DCollateral> collateral, int amount, double rate, long brokerId) {
         this.client = client;
         this.collateral = collateral;
         this.amount = amount;
@@ -54,5 +53,61 @@ public class DLoan extends Model {
         this.endDate = null;
         this.status = DLoanStatus.ACTIVE;
         this.moment = new LoanMoment(amount);
+    }
+
+    @Override
+    public DLoan getEntity() {
+        return this;
+    }
+
+    @Override
+    public DLoan getSelf() {
+        return this;
+    }
+
+
+    public DLoan setClient(DClient client) {
+        this.client = client;
+        return this;
+    }
+
+    public DLoan setCollateral(List<DCollateral> collateral) {
+        this.collateral = collateral;
+        return this;
+    }
+
+    public DLoan setAmount(int amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    public DLoan setRate(double rate) {
+        this.rate = rate;
+        return this;
+    }
+
+    public DLoan setStartDate(Timestamp startDate) {
+        this.startDate = startDate;
+        return this;
+    }
+
+    public DLoan setEndDate(Timestamp endDate) {
+        this.endDate = endDate;
+        return this;
+    }
+
+    public DLoan setStatus(DLoanStatus status) {
+        this.status = status;
+        return this;
+    }
+
+    public DLoan setBrokerId(long brokerId) {
+        this.brokerId = brokerId;
+        return this;
+    }
+
+    public DLoan setMoment(LoanMoment moment) {
+        this.moment = moment;
+        return this;
     }
 }

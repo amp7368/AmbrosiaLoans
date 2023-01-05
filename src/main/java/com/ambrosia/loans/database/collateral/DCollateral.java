@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "collateral")
-public class DCollateral extends Model {
+public class DCollateral {
 
     @Id
     @Identity

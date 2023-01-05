@@ -12,7 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "transaction")
-public class DTransaction extends Model {
+public class DTransaction {
 
     @Id
     public long id;

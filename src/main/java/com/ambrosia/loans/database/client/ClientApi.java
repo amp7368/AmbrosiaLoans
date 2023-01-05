@@ -53,7 +53,7 @@ public class ClientApi extends ModelApi<DClient> {
         client.discord = ClientDiscordDetails.fromMember(discord);
         UniqueMessages.saveIfUnique(client);
         ClientApi api = api(client);
-        api.update();
+        api.onUpdate();
         return api;
     }
 
@@ -68,7 +68,7 @@ public class ClientApi extends ModelApi<DClient> {
     }
 
     @Override
-    public void update() {
+    public void onUpdate() {
         synchronized (allClients) {
             allClients.put(entity.id, entity);
         }
