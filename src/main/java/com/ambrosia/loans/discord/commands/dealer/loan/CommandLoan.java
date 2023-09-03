@@ -1,14 +1,15 @@
-package com.ambrosia.loans.discord.commands.dealer.cash;
+package com.ambrosia.loans.discord.commands.dealer.loan;
 
 import com.ambrosia.loans.discord.base.BaseCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
-import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class CommandCash extends BaseCommand {
+import java.util.List;
+
+public class CommandLoan extends BaseCommand {
 
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -16,7 +17,7 @@ public class CommandCash extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("cash", "Change a client's amount of cash").setDefaultPermissions(DefaultMemberPermissions.DISABLED);
+        return Commands.slash("loan", "Manage loan details").setDefaultPermissions(DefaultMemberPermissions.DISABLED);
     }
 
     @Override

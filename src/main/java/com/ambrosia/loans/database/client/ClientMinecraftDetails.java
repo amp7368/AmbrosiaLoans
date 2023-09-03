@@ -2,13 +2,14 @@ package com.ambrosia.loans.database.client;
 
 import apple.utilities.fileio.serializing.FileIOJoined;
 import apple.utilities.threading.service.queue.TaskHandlerQueue;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import org.jetbrains.annotations.Nullable;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
-import org.jetbrains.annotations.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 @Embeddable
 public class ClientMinecraftDetails {
@@ -39,5 +40,9 @@ public class ClientMinecraftDetails {
 
     public String skinUrl() {
         return "https://mc-heads.net/head/" + this.uuid;
+    }
+
+    public String getName() {
+        return this.name;
     }
 }

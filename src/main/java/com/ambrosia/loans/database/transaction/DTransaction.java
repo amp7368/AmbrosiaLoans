@@ -3,24 +3,19 @@ package com.ambrosia.loans.database.transaction;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.discord.base.Emeralds;
 import io.ebean.Model;
+
+import javax.persistence.*;
 import java.sql.Timestamp;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name = "transaction")
-public class DTransaction {
+public class DTransaction extends Model {
 
     @Id
     public long id;
 
-    @ManyToOne()
-    @Column
+    @ManyToOne
     public DClient client;
-
     @Column(nullable = false)
     public Timestamp actionDate;
     @Column(nullable = false)

@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.active.base;
 
+import com.ambrosia.loans.database.client.ClientMinecraftDetails;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.discord.DiscordBot;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -24,8 +25,9 @@ public class ActiveRequestSender {
     }
 
     public void author(EmbedBuilder embed) {
-        embed.setAuthor(String.format("%s - (%s)", client.minecraft == null ? "NA" : client.minecraft.name, username), null,
-            avatarUrl);
+        String name = client.getMinecraft(ClientMinecraftDetails::getName);
+        embed.setAuthor(String.format("%s - (%s)", name == null ? "NA" : name, username), null,
+                avatarUrl);
     }
 
     public void sendDm(MessageCreateData message) {

@@ -1,8 +1,8 @@
-package com.ambrosia.loans.database.collateral;
+package com.ambrosia.loans.database.loan.collateral;
 
 import com.ambrosia.loans.database.base.ModelApi;
-import com.ambrosia.loans.database.util.CreateEntityException;
-import com.ambrosia.loans.database.util.UniqueMessages;
+import com.ambrosia.loans.database.base.util.CreateEntityException;
+import com.ambrosia.loans.database.base.util.UniqueMessages;
 
 public class CollateralApi extends ModelApi<DCollateral> {
 

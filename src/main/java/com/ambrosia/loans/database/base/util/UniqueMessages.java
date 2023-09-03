@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.util;
+package com.ambrosia.loans.database.base.util;
 
 import io.ebean.DB;
 import io.ebean.Transaction;

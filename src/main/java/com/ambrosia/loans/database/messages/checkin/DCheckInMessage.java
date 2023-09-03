@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.checkin;
+package com.ambrosia.loans.database.messages.checkin;
 
 import com.ambrosia.loans.database.client.DClient;
 import io.ebean.annotation.Identity;

@@ -25,7 +25,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
                 reply.editOriginalEmbeds(error(String.format("Could not find %s's minecraft account", username))).queue();
                 return;
             }
-            client.entity.minecraft = minecraft;
+            client.setMinecraft(minecraft);
             if (client.trySave()) {
                 final MessageEditData message = MessageEditData.fromCreateData(client.profile().makeMessage());
                 reply.editOriginal(message).queue();

@@ -1,6 +1,8 @@
 package com.ambrosia.loans.discord.log;
 
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.database.client.ClientDiscordDetails;
+import com.ambrosia.loans.database.client.ClientMinecraftDetails;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.transaction.DTransaction;
 import com.ambrosia.loans.discord.DiscordConfig;
@@ -9,11 +11,12 @@ import com.ambrosia.loans.discord.base.AmbrosiaColor;
 import com.ambrosia.loans.discord.base.AmbrosiaColor.AmbrosiaColorTransaction;
 import com.ambrosia.loans.discord.base.SendMessage;
 import discord.util.dcf.DCF;
-import java.time.Instant;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+
+import java.time.Instant;
 
 public class DiscordLog implements SendMessage {
 
@@ -33,13 +36,13 @@ public class DiscordLog implements SendMessage {
 
     public void modifyDiscord(DClient client, User actor) {
         EmbedBuilder msg = normal("Modify Discord", actor);
-        client(msg, client).setDescription(client.discord.fullName()).setThumbnail(client.discord.avatarUrl);
+        client(msg, client).setDescription(client.getDiscord(ClientDiscordDetails::fullName)).setThumbnail(client.getDiscord().avatarUrl);
         log(msg.build(), true);
     }
 
     public void modifyMinecraft(DClient client, User actor) {
         EmbedBuilder msg = normal("Modify Minecraft", actor);
-        client(msg, client).setDescription(client.minecraft.name).setThumbnail(client.minecraft.skinUrl());
+        client(msg, client).setDescription(client.getMinecraft(ClientMinecraftDetails::getName)).setThumbnail(client.getMinecraft(ClientMinecraftDetails::skinUrl));
         log(msg.build(), true);
     }
 
@@ -66,8 +69,8 @@ public class DiscordLog implements SendMessage {
     }
 
     private EmbedBuilder client(EmbedBuilder msg, DClient client) {
-        msg.setAuthor(String.format("%s (#%d)", client.displayName, client.id));
-        msg.addField("Credits", Pretty.commas(client.moment.emeraldsInvested), true);
+        msg.setAuthor(String.format("%s (#%d)", client.getDisplayName(), client.getId()));
+        msg.addField("Credits", Pretty.commas(client.getMoment().emeraldsInvested), true);
         return msg;
     }
 

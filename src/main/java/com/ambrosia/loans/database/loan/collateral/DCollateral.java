@@ -1,17 +1,14 @@
-package com.ambrosia.loans.database.collateral;
+package com.ambrosia.loans.database.loan.collateral;
 
 import com.ambrosia.loans.database.loan.DLoan;
 import io.ebean.Model;
 import io.ebean.annotation.Identity;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "collateral")
-public class DCollateral {
+public class DCollateral extends Model {
 
     @Id
     @Identity
@@ -19,7 +16,6 @@ public class DCollateral {
 
     @ManyToOne
     public DLoan loan;
-
     @Column
     public String link;
 

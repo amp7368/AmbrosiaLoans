@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class ProfileMessage {
 
-    private DClient client;
+    private final DClient client;
     private String titleExtra;
 
     public ProfileMessage(DClient client, String titleExtra) {
@@ -27,9 +27,9 @@ public class ProfileMessage {
         EmbedBuilder embed = new EmbedBuilder();
         String authorIcon;
         String authorName;
-        if (client.discord != null) {
-            authorName = client.discord.fullName();
-            authorIcon = client.discord.avatarUrl;
+        if (client.getDiscord() != null) {
+            authorName = client.getDiscord().fullName();
+            authorIcon = client.getDiscord().avatarUrl;
         } else {
             authorName = null;
             authorIcon = DiscordModule.AMBROSIA_ICON;
@@ -40,19 +40,19 @@ public class ProfileMessage {
         } else {
             embed.setAuthor(authorName, null, authorIcon);
         }
-        if (client.minecraft != null) {
-            embed.setTitle(client.minecraft.name);
-            embed.setFooter(client.displayName + " | Created", DiscordModule.AMBROSIA_ICON);
-            embed.setThumbnail(client.minecraft.skinUrl());
+        if (client.getMinecraft() != null) {
+            embed.setTitle(client.getMinecraft().name);
+            embed.setFooter(client.getDisplayName() + " | Created", DiscordModule.AMBROSIA_ICON);
+            embed.setThumbnail(client.getMinecraft().skinUrl());
         } else {
-            embed.setTitle(client.displayName);
+            embed.setTitle(client.getDisplayName());
             embed.setFooter(" - | Created", DiscordModule.AMBROSIA_ICON);
         }
-        embed.setTimestamp(client.dateCreated.toInstant());
+        embed.setTimestamp(client.getDateCreated().toInstant());
         embed.addBlankField(false);
-        embed.addField("Credits", Emeralds.longMessage(client.moment.emeraldsInvested), true);
-        long winnings = client.moment.total(TransactionType.PROFIT);
-        long losses = client.moment.total(TransactionType.INTEREST);
+        embed.addField("Credits", Emeralds.longMessage(client.getMoment().emeraldsInvested), true);
+        long winnings = client.getMoment().total(TransactionType.PROFIT);
+        long losses = client.getMoment().total(TransactionType.INTEREST);
         embed.addBlankField(true);
         embed.addField("Winnings", Emeralds.longMessage(winnings), true);
         long net = winnings - losses;
