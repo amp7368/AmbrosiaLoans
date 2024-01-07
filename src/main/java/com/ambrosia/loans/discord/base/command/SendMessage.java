@@ -1,5 +1,6 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
+import com.ambrosia.loans.discord.base.AmbrosiaColor;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

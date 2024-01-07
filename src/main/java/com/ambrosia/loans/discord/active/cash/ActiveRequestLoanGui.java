@@ -4,10 +4,9 @@ import com.ambrosia.loans.database.client.ClientAccess;
 import com.ambrosia.loans.database.client.ClientMinecraftDetails;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.discord.active.base.ActiveRequestGui;
-import com.ambrosia.loans.discord.base.Emeralds;
-import net.dv8tion.jda.api.entities.MessageEmbed.Field;
-
+import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
 import java.util.List;
+import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 
 public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
@@ -20,7 +19,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected List<Field> fields() {
         ClientAccess<DClient> dClientClientAccess = data.getClient();
         final Field ign = new Field("IGN", dClientClientAccess.getMinecraft(ClientMinecraftDetails::getName), true);
-        final Field amount = new Field("Amount", Emeralds.longMessage(data.getAmount()), true);
+        final Field amount = new Field("Amount", EmeraldsFormatter.of().format(data.getAmount()), true);
         final Field vouchers = new Field("Referrals & Vouchers", data.getVoucher(), true);
         final Field repayment = new Field("Repayment Plan", data.getRepayment(), true);
         final Field collateral = new Field("Collateral", String.join("\n", data.getCollateral()), true);
@@ -39,7 +38,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @Override
     protected String title() {
-        return data.transactionType().displayName() + " " + Emeralds.message(Math.abs(data.getAmount()), Integer.MAX_VALUE, true);
+        return data.transactionType().displayName() + " " + EmeraldsFormatter.of().format(data.getAmountAbs());
     }
 
     @Override

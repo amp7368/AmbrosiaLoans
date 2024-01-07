@@ -4,14 +4,14 @@ import com.ambrosia.loans.database.base.ModelApi;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.loan.DLoan;
 import com.ambrosia.loans.database.loan.DLoanStatus;
-import com.ambrosia.loans.database.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.loan.section.DLoanSection;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
@@ -20,15 +20,10 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
         super(entity);
     }
 
-    public static LoanApi createLoan(DClient client, List<DCollateral> collateral, int amount, double rate, long brokerId) {
-        DLoan loan = new DLoan(client, amount, collateral, brokerId);
-        try (Transaction transaction = DB.beginTransaction()) {
-            loan.save(transaction);
-            DLoanSection section = new DLoanSection(loan, rate, loan.getStartDate());
-            section.save(transaction);
-            transaction.commit();
-            loan.addSection(section);
-        }
+    public static LoanApi createLoan(DClient client, Emeralds amount, double rate, long brokerId) {
+        // todo allow different starting dates
+        DLoan loan = new DLoan(client, amount.amount(), rate, brokerId);
+        loan.save();
         return api(loan);
     }
 
@@ -65,7 +60,7 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
         return this;
     }
 
-    public void changeToNewRate(double rate, Instant startDate) {
+    public void changeToNewRate(double newRate, Instant startDate) {
         List<DLoanSection> oldSections = getEntity().getSections();
         List<DLoanSection> newSections = new ArrayList<>();
         boolean isPassedDate = false;
@@ -78,7 +73,7 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
             } else {
                 section.setEndDate(startDate);
                 newSections.add(section);
-                DLoanSection addSection = new DLoanSection(getEntity(), rate, startDate);
+                DLoanSection addSection = new DLoanSection(getEntity(), newRate, startDate);
                 newSections.add(addSection);
                 if (i + 1 == size) break;
                 addSection.setEndDate(oldSections.get(i + 1).getStartDate());
@@ -86,10 +81,16 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
             }
         }
         try (Transaction transaction = DB.beginTransaction()) {
-            getEntity().getSections().forEach(section -> section.delete(transaction));
-            getEntity().setSections(newSections);
-            getEntity().save(transaction);
+            System.out.println(oldSections.size());
+            System.out.println(newSections.size());
+
+            oldSections.stream()
+                .filter(Predicate.not(newSections::contains))
+                .forEach(section -> section.delete(transaction));
+
+            newSections.forEach(section -> section.save(transaction));
             transaction.commit();
         }
+        refresh();
     }
 }

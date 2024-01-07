@@ -1,82 +1,51 @@
 package com.ambrosia.loans.database;
 
-import apple.lib.modules.AppleModule;
-import apple.lib.modules.configs.data.config.AppleConfig.Builder;
-import apple.lib.modules.configs.factory.AppleConfigLike;
-import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.client.*;
+import apple.lib.ebean.database.AppleEbeanDatabase;
+import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
+import com.ambrosia.loans.database.client.ClientDiscordDetails;
+import com.ambrosia.loans.database.client.ClientMinecraftDetails;
+import com.ambrosia.loans.database.client.ClientMoment;
+import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.loan.DLoan;
 import com.ambrosia.loans.database.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.loan.section.DLoanSection;
 import com.ambrosia.loans.database.messages.checkin.DCheckInMessage;
 import com.ambrosia.loans.database.transaction.DTransaction;
-import io.ebean.DatabaseFactory;
-import io.ebean.config.DatabaseConfig;
-import io.ebean.datasource.DataSourceConfig;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
-public class AmbrosiaDatabase extends AppleModule {
+public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
-    private File databaseConfigFile;
-
-    @NotNull
-    private static DatabaseConfig configureDatabase(DataSourceConfig dataSourceConfig) {
-        DatabaseConfig dbConfig = new DatabaseConfig();
-        dbConfig.setDataSourceConfig(dataSourceConfig);
-        dbConfig.setDdlGenerate(true);
-        dbConfig.setDdlRun(AmbrosiaDatabaseConfig.get().getDDLRun());
-
+    @Override
+    protected void addEntities(List<Class<?>> entities) {
         // client
-        dbConfig.addAll(List.of(ClientMoment.class, ClientDiscordDetails.class, ClientMinecraftDetails.class));
-        dbConfig.addAll(List.of(DClient.class));
+        entities.addAll(List.of(ClientMoment.class, ClientDiscordDetails.class, ClientMinecraftDetails.class));
+        entities.add(DClient.class);
+        
         // transaction
-        dbConfig.addAll(List.of(DTransaction.class));
+        entities.add(DTransaction.class);
         // loan
-        dbConfig.addAll(List.of(DLoan.class, DLoanSection.class, DCollateral.class, DCheckInMessage.class));
-        return dbConfig;
-    }
-
-    @NotNull
-    private static DataSourceConfig configureDataSource(AmbrosiaDatabaseConfig loadedConfig) {
-        DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setUsername(loadedConfig.getUsername());
-        dataSourceConfig.setPassword(loadedConfig.getPassword());
-        dataSourceConfig.setUrl(loadedConfig.getUrl());
-        dataSourceConfig.setAutoCommit(true);
-        return dataSourceConfig;
+        entities.addAll(List.of(DLoan.class, DLoanSection.class, DLoanPayment.class, DCollateral.class, DCheckInMessage.class));
     }
 
     @Override
-    public void onLoad() {
-        if (!AmbrosiaDatabaseConfig.get().isConfigured()) {
-            this.logger().fatal("Please configure " + this.databaseConfigFile.getAbsolutePath());
-            System.exit(1);
-        }
-        DataSourceConfig dataSourceConfig = configureDataSource(AmbrosiaDatabaseConfig.get());
-        DatabaseConfig dbConfig = configureDatabase(dataSourceConfig);
-        DatabaseFactory.createWithContextClassLoader(dbConfig, Ambrosia.class.getClassLoader());
-
-        logger().info("Successfully created database");
-
-        ClientApi.load();
-
-        if (AmbrosiaDatabaseConfig.get().isExample()) {
-            ExampleData.loadExample();
-        }
+    protected boolean isDefault() {
+        return true;
     }
 
     @Override
-    public List<AppleConfigLike> getConfigs() {
-        Builder<AmbrosiaDatabaseConfig> databaseConfig = configJson(AmbrosiaDatabaseConfig.class, "Database.config", "Config");
-        this.databaseConfigFile = this.getFile("Config", "Database.config.json");
-        return List.of(databaseConfig);
+    protected Collection<Class<?>> getQueryBeans() {
+        return List.of();
     }
 
     @Override
-    public String getName() {
-        return "Database";
+    protected AppleEbeanDatabaseConfig getConfig() {
+        return AmbrosiaDatabaseConfig.get();
+    }
+
+    @Override
+    protected String getName() {
+        return "Ambrosia";
     }
 }

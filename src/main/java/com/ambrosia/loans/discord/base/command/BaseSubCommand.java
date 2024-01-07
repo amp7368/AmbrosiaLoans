@@ -1,9 +1,9 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
-import discord.util.dcf.slash.DCFSlashCommand;
+import discord.util.dcf.slash.DCFSlashSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-public abstract class BaseCommand extends DCFSlashCommand implements CommandCheckPermission, CommandBuilder {
+public abstract class BaseSubCommand extends DCFSlashSubCommand implements CommandCheckPermission, CommandBuilder {
 
     @Override
     public void onCommand(SlashCommandInteractionEvent event) {
@@ -13,4 +13,5 @@ public abstract class BaseCommand extends DCFSlashCommand implements CommandChec
 
 
     protected abstract void onCheckedCommand(SlashCommandInteractionEvent event);
+
 }

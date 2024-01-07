@@ -1,18 +1,18 @@
 package com.ambrosia.loans.database.client;
 
 import com.ambrosia.loans.database.base.ModelApi;
-import com.ambrosia.loans.database.client.query.QDClient;
-import com.ambrosia.loans.database.transaction.TransactionApi;
 import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.base.util.UniqueMessages;
+import com.ambrosia.loans.database.client.query.ClientLoanSummary;
+import com.ambrosia.loans.database.client.query.QDClient;
+import com.ambrosia.loans.database.transaction.TransactionApi;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileMessage;
-import net.dv8tion.jda.api.entities.Member;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import net.dv8tion.jda.api.entities.Member;
+import org.jetbrains.annotations.NotNull;
 
 public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientApi> {
 
@@ -68,6 +68,10 @@ public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientA
         }
     }
 
+    public ClientLoanSummary getLoanSummary() {
+        return new ClientLoanSummary(getEntity().getLoans());
+    }
+
     @Override
     public void onUpdate() {
         synchronized (allClients) {
@@ -76,7 +80,7 @@ public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientA
     }
 
     public ProfileMessage profile() {
-        return new ProfileMessage(this.entity);
+        return new ProfileMessage(this);
     }
 
     public boolean hasAnyTransactions() {

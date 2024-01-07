@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.discord.DiscordPermissions;

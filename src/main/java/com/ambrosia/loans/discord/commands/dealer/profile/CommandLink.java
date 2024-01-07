@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.commands.dealer.profile;
 
-import com.ambrosia.loans.discord.base.BaseCommand;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -15,6 +15,7 @@ public class CommandLink extends BaseCommand {
         SlashCommandData command = Commands.slash("link", "Link minecraft and/or discord");
         return command.setDefaultPermissions(DefaultMemberPermissions.DISABLED).setGuildOnly(true);
     }
+
     @Override
     public boolean isOnlyEmployee() {
         return true;

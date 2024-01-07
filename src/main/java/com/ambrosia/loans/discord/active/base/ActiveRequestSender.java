@@ -15,7 +15,7 @@ public class ActiveRequestSender {
     private DClient client;
 
     public ActiveRequestSender(Member sender, DClient client) {
-        this.username = sender.getUser().getAsTag();
+        this.username = sender.getUser().getEffectiveName();
         this.avatarUrl = sender.getEffectiveAvatarUrl();
         this.discordId = sender.getIdLong();
         this.client = client;
@@ -27,13 +27,13 @@ public class ActiveRequestSender {
     public void author(EmbedBuilder embed) {
         String name = client.getMinecraft(ClientMinecraftDetails::getName);
         embed.setAuthor(String.format("%s - (%s)", name == null ? "NA" : name, username), null,
-                avatarUrl);
+            avatarUrl);
     }
 
     public void sendDm(MessageCreateData message) {
-        DiscordBot.dcf.jda().openPrivateChannelById(this.discordId).queue((dm) -> {
-            dm.sendMessage(message).queue();
-        });
+        DiscordBot.dcf.jda()
+            .openPrivateChannelById(this.discordId)
+            .queue(dm -> dm.sendMessage(message).queue());
     }
 
     public void setClient(DClient client) {

@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
 import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.discord.base.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 

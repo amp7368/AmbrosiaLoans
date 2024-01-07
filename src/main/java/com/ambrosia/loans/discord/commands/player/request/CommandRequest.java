@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.commands.player.request;
 
-import com.ambrosia.loans.discord.base.BaseCommand;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.commands.player.request.loan.CommandRequestLoan;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;

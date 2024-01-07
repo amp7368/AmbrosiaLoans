@@ -1,14 +1,20 @@
 package com.ambrosia.loans.database.client;
 
 import com.ambrosia.loans.database.loan.DLoan;
+import com.ambrosia.loans.database.loan.collateral.DCollateral;
 import io.ebean.Model;
-import io.ebean.annotation.DbJsonB;
 import io.ebean.annotation.Identity;
-
-import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Embedded;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "client")
@@ -29,14 +35,13 @@ public class DClient extends Model implements ClientAccess<DClient> {
     String displayName;
     @Column(nullable = false)
     Timestamp dateCreated;
-    @DbJsonB
-    ClientMoment moment;
     @OneToMany
-    private List<DLoan> loan;
+    private List<DLoan> loans;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<DCollateral> collateral;
 
     public DClient(String displayName) {
         this.dateCreated = Timestamp.from(Instant.now());
-        this.moment = new ClientMoment();
         this.displayName = displayName;
     }
 
@@ -71,8 +76,11 @@ public class DClient extends Model implements ClientAccess<DClient> {
         this.dateCreated = dateCreated;
     }
 
-    @Override
-    public void setMoment(ClientMoment moment) {
-        this.moment = moment;
+    public ClientApi api() {
+        return new ClientApi(this);
+    }
+
+    public List<DLoan> getLoans() {
+        return this.loans.stream().sorted(Comparator.comparing(DLoan::getStartDate)).toList();
     }
 }

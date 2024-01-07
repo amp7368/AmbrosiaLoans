@@ -1,11 +1,11 @@
 package com.ambrosia.loans.database.client;
 
 import com.ambrosia.loans.database.base.BaseAccess;
-
 import java.sql.Timestamp;
 import java.util.function.Function;
 
 public interface ClientAccess<Self> extends BaseAccess<Self, DClient> {
+
     default long getId() {
         return getEntity().id;
     }
@@ -14,20 +14,32 @@ public interface ClientAccess<Self> extends BaseAccess<Self, DClient> {
         return getEntity().minecraft;
     }
 
+    default void setMinecraft(ClientMinecraftDetails minecraft) {
+        getEntity().setMinecraft(minecraft);
+    }
+
     default ClientDiscordDetails getDiscord() {
         return getEntity().discord;
+    }
+
+    default void setDiscord(ClientDiscordDetails discord) {
+        getEntity().setDiscord(discord);
     }
 
     default String getDisplayName() {
         return getEntity().displayName;
     }
 
+    default void setDisplayName(String displayName) {
+        getEntity().setDisplayName(displayName);
+    }
+
     default Timestamp getDateCreated() {
         return getEntity().dateCreated;
     }
 
-    default ClientMoment getMoment() {
-        return getEntity().moment;
+    default void setDateCreated(Timestamp dateCreated) {
+        getEntity().setDateCreated(dateCreated);
     }
 
     default <T> T getMinecraft(Function<ClientMinecraftDetails, T> apply) {
@@ -40,23 +52,6 @@ public interface ClientAccess<Self> extends BaseAccess<Self, DClient> {
         ClientDiscordDetails discord = getDiscord();
         if (discord == null) return null;
         return apply.apply(discord);
-    }
-
-
-    default void setMinecraft(ClientMinecraftDetails minecraft) {
-        getEntity().setMinecraft(minecraft);
-    }
-
-    default void setDiscord(ClientDiscordDetails discord) {
-        getEntity().setDiscord(discord);
-    }
-
-    default void setDisplayName(String displayName) {
-        getEntity().setDisplayName(displayName);
-    }
-
-    default void setDateCreated(Timestamp dateCreated) {
-        getEntity().setDateCreated(dateCreated);
     }
 
     default void setMoment(ClientMoment moment) {

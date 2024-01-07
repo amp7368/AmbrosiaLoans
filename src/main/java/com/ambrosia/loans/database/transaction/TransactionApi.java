@@ -1,11 +1,9 @@
 package com.ambrosia.loans.database.transaction;
 
-import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.transaction.query.QDTransaction;
 import io.ebean.DB;
 import io.ebean.Transaction;
-
 import java.util.List;
 
 public class TransactionApi {
@@ -13,10 +11,10 @@ public class TransactionApi {
 
     public static DTransaction createTransaction(long conductorId, DClient client, long amount, TransactionType transactionType) {
         try (Transaction transaction = DB.getDefault().beginTransaction()) {
-            client = ClientApi.findById(client.getId()).entity; // refetch the client
-            if (client == null) throw new IllegalStateException("Client " + client + " does not exist!");
+            client.refresh();
             DTransaction operation = new DTransaction(conductorId, client, amount, transactionType);
-            client.getMoment().addCredits(transactionType, amount);
+            // todo
+//            client.getMoment().addCredits(transactionType, amount);
             operation.save(transaction);
             transaction.commit();
             return operation;

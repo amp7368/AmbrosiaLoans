@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.commands.dealer.view;
 
 import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.discord.base.BaseCommand;
-import com.ambrosia.loans.discord.base.CommandOption;
-import com.ambrosia.loans.discord.base.CommandOptionClient;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.base.command.CommandOption;
+import com.ambrosia.loans.discord.base.command.CommandOptionClient;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;

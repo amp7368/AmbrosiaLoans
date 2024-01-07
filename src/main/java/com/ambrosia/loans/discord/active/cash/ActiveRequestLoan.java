@@ -10,28 +10,28 @@ import com.ambrosia.loans.database.transaction.TransactionType;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.base.ActiveRequestSender;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
-import net.dv8tion.jda.api.entities.Member;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.dv8tion.jda.api.entities.Member;
 
 public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
 
+    private final double rate = .05;
     private long clientId;
-    private int amount;
+    private long amount;
     private List<String> collateral;
     private String voucher;
     private String repayment;
     private transient DClient client;
-    private final double rate = .05;
 
     public ActiveRequestLoan() {
         super(ActiveRequestType.LOAN.getTypeId(), null);
     }
 
-    public ActiveRequestLoan(Member sender, DClient client, int amount, List<String> collateral, String voucher, String repayment) {
+    public ActiveRequestLoan(Member sender, DClient client, long amount, List<String> collateral, String voucher, String repayment) {
         super(ActiveRequestType.LOAN.getTypeId(), new ActiveRequestSender(sender, client));
         this.amount = amount;
         this.clientId = client.getId();
@@ -51,8 +51,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         for (String link : this.collateral) {
             collateral.add(CollateralApi.createCollateral(link).entity);
         }
-        final DClient client = DB.reference(DClient.class, clientId);
-        LoanApi.createLoan(client, collateral, sign() * amount, this.rate, this.getEndorserId());
+        DClient client = DB.reference(DClient.class, clientId);
+        LoanApi.createLoan(client, Emeralds.of((long) sign() * amount), this.rate, this.getEndorserId());
     }
 
     private int sign() {
@@ -67,8 +67,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return TransactionType.LOAN;
     }
 
-    public int getAmount() {
-        return amount;
+    public Emeralds getAmount() {
+        return Emeralds.of(amount);
     }
 
     public DClient getClient() {
@@ -86,5 +86,9 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
     public String getRepayment() {
         return repayment;
+    }
+
+    public Emeralds getAmountAbs() {
+        return Emeralds.of(Math.abs(amount));
     }
 }
