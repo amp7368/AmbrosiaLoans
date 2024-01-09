@@ -1,16 +1,16 @@
-package com.ambrosia.loans.database.util;
+package com.ambrosia.loans.database.base.util;
 
 import io.ebean.DB;
-import io.ebean.Model;
 import io.ebean.Transaction;
 import io.ebean.plugin.Property;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class UniqueMessages {
 
-    public static <T extends Model> void saveIfUnique(T entity) throws CreateEntityException {
+    public static <T> void saveIfUnique(T entity) throws CreateEntityException {
         try (Transaction transaction = DB.getDefault().beginTransaction()) {
             Set<Property> uniqueness = DB.getDefault().checkUniqueness(entity, transaction);
             if (!uniqueness.isEmpty()) {
@@ -21,7 +21,7 @@ public class UniqueMessages {
                 }
                 throw new CreateEntityException(String.join(", ", badProperties));
             }
-            entity.save(transaction);
+            DB.getDefault().save(entity, transaction);
             transaction.commit();
         }
     }

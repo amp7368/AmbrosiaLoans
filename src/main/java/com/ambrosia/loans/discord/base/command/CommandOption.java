@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
 import java.util.function.Function;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -12,7 +12,8 @@ public enum CommandOption implements SendMessage {
     DISCORD_OPTION("discord", "The discord of the client", OptionType.STRING, OptionMapping::getAsMember),
     PROFILE_NAME("profile_name", "The display name of the client's profile", OptionType.STRING, OptionMapping::getAsString),
     MINECRAFT("minecraft", "Your minecraft username", OptionType.STRING, OptionMapping::getAsString),
-    DISPLAY_NAME("display_name", "The name to display on the profile", OptionType.STRING, OptionMapping::getAsString);
+    DISPLAY_NAME("display_name", "The name to display on the profile", OptionType.STRING, OptionMapping::getAsString),
+    LOAN("loan_id", "The id of the loan", OptionType.INTEGER, OptionMapping::getAsLong);
 
     private final String description;
     private final String name;

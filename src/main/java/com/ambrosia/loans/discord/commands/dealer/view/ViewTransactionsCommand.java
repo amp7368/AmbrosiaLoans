@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.commands.dealer.view;
 
-import com.ambrosia.loans.discord.base.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;

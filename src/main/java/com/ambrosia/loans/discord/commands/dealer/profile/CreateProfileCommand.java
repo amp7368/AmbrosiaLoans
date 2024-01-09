@@ -1,10 +1,10 @@
 package com.ambrosia.loans.discord.commands.dealer.profile;
 
+import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.database.client.DClient;
-import com.ambrosia.loans.discord.base.BaseCommand;
-import com.ambrosia.loans.discord.base.CommandOption;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.base.command.CommandOption;
 import com.ambrosia.loans.discord.log.DiscordLog;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -28,8 +28,8 @@ public class CreateProfileCommand extends BaseCommand {
             event.replyEmbeds(this.error(String.format("'%s' is already a user", clientName))).queue();
             return;
         }
-        event.replyEmbeds(this.success(String.format("Successfully created %s", client.displayName))).queue();
-        if (client.discord != null)
+        event.replyEmbeds(this.success(String.format("Successfully created %s", client.getDisplayName()))).queue();
+        if (client.getDiscord() != null)
             CommandLinkDiscord.sendRegistrationMessage(discord);
         DiscordLog.log().createAccount(client, event.getUser());
     }

@@ -74,6 +74,7 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new CommandDelete());
         // client commands
         commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest());
+
         commands.updateCommands();
 
         dcf.modals().add(new RequestLoanModalType());

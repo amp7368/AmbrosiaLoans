@@ -1,10 +1,11 @@
 package com.ambrosia.loans.database.client;
 
 import com.ambrosia.loans.database.base.ModelApi;
+import com.ambrosia.loans.database.base.util.CreateEntityException;
+import com.ambrosia.loans.database.base.util.UniqueMessages;
+import com.ambrosia.loans.database.client.query.ClientLoanSummary;
 import com.ambrosia.loans.database.client.query.QDClient;
 import com.ambrosia.loans.database.transaction.TransactionApi;
-import com.ambrosia.loans.database.util.CreateEntityException;
-import com.ambrosia.loans.database.util.UniqueMessages;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileMessage;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
 
-public class ClientApi extends ModelApi<DClient> {
+public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientApi> {
 
     private static final Map<Long, DClient> allClients = new HashMap<>();
 
@@ -53,7 +54,7 @@ public class ClientApi extends ModelApi<DClient> {
         client.discord = ClientDiscordDetails.fromMember(discord);
         UniqueMessages.saveIfUnique(client);
         ClientApi api = api(client);
-        api.update();
+        api.onUpdate();
         return api;
     }
 
@@ -67,18 +68,27 @@ public class ClientApi extends ModelApi<DClient> {
         }
     }
 
+    public ClientLoanSummary getLoanSummary() {
+        return new ClientLoanSummary(getEntity().getLoans());
+    }
+
     @Override
-    public void update() {
+    public void onUpdate() {
         synchronized (allClients) {
             allClients.put(entity.id, entity);
         }
     }
 
     public ProfileMessage profile() {
-        return new ProfileMessage(this.entity);
+        return new ProfileMessage(this);
     }
 
     public boolean hasAnyTransactions() {
         return !TransactionApi.findTransactionsByClient(entity).isEmpty();
+    }
+
+    @Override
+    public ClientApi getSelf() {
+        return this;
     }
 }

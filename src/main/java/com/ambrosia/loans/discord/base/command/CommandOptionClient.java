@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
 import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.DClient;

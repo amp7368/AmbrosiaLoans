@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base;
+package com.ambrosia.loans.discord.base.command;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -10,15 +10,13 @@ public interface CommandBuilder extends SendMessage {
 
     CommandBuilder instance = new CommandBuilder() {
     };
-
-    static CommandBuilder get() {
-        return instance;
-    }
-
     String EMERALD_OPTION = "emeralds";
     String EMERALD_BLOCK_OPTION = "blocks";
     String LIQUID_EMERALD_OPTION = "liquids";
 
+    static CommandBuilder get() {
+        return instance;
+    }
 
     default Integer findOptionAmount(SlashCommandInteractionEvent event) {
         Integer e = event.getOption(EMERALD_OPTION, OptionMapping::getAsInt);

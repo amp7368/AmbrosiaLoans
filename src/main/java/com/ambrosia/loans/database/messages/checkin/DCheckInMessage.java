@@ -1,18 +1,14 @@
-package com.ambrosia.loans.database.checkin;
+package com.ambrosia.loans.database.messages.checkin;
 
 import com.ambrosia.loans.database.client.DClient;
-import io.ebean.Model;
 import io.ebean.annotation.Identity;
+
+import javax.persistence.*;
 import java.sql.Timestamp;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name = "check_in")
-public class DCheckInMessage extends Model {
+public class DCheckInMessage {
 
     @Id
     @Identity

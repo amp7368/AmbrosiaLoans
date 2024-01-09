@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.commands.player.help;
 
-import com.ambrosia.loans.discord.base.BaseCommand;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;

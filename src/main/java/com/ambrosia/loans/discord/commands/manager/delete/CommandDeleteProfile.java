@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.commands.manager.delete;
 
 import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.discord.base.BaseSubCommand;
-import com.ambrosia.loans.discord.base.CommandOption;
-import com.ambrosia.loans.discord.base.CommandOptionClient;
+import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.CommandOption;
+import com.ambrosia.loans.discord.base.command.CommandOptionClient;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
@@ -22,12 +22,12 @@ public class CommandDeleteProfile extends BaseSubCommand {
         if (client.isEmpty()) return;
         if (client.hasAnyTransactions()) {
             String msg = String.format("Cannot delete %s's profile. There are entries associated with their account",
-                client.entity.displayName);
+                client.getDisplayName());
             event.replyEmbeds(error(msg)).queue();
             return;
         }
-        client.entity.delete();
-        event.replyEmbeds(success(String.format("Removed profile '%s'", client.entity.displayName))).queue();
+        client.delete();
+        event.replyEmbeds(success(String.format("Removed profile '%s'", client.getDisplayName()))).queue();
     }
 
     @Override

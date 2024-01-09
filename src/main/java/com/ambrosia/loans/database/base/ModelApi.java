@@ -1,7 +1,8 @@
 package com.ambrosia.loans.database.base;
 
-import com.ambrosia.loans.database.util.CreateEntityException;
-import com.ambrosia.loans.database.util.UniqueMessages;
+import com.ambrosia.loans.database.base.util.CreateEntityException;
+import com.ambrosia.loans.database.base.util.UniqueMessages;
+import io.ebean.DB;
 import io.ebean.Model;
 
 public abstract class ModelApi<T extends Model> {
@@ -12,18 +13,21 @@ public abstract class ModelApi<T extends Model> {
         this.entity = entity;
     }
 
-    public void update() {
+    public void onUpdate() {
     }
 
     public boolean trySave() {
-        final T entity = this.getEntity();
         try {
             UniqueMessages.saveIfUnique(entity);
-            update();
+            onUpdate();
             return true;
         } catch (CreateEntityException e) {
             return false;
         }
+    }
+
+    public void save() {
+        DB.save(getEntity());
     }
 
     public boolean isEmpty() {
@@ -32,5 +36,13 @@ public abstract class ModelApi<T extends Model> {
 
     public T getEntity() {
         return this.entity;
+    }
+
+    public void delete() {
+        DB.delete(entity);
+    }
+
+    public void refresh() {
+        DB.refresh(entity);
     }
 }

@@ -4,10 +4,9 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.ClientDiscordDetails;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.base.BaseSubCommand;
-import com.ambrosia.loans.discord.base.CommandOption;
-import com.ambrosia.loans.discord.base.CommandOptionClient;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileMessage;
+import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.CommandOption;
+import com.ambrosia.loans.discord.base.command.CommandOptionClient;
 import com.ambrosia.loans.discord.log.DiscordLog;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -21,25 +20,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 public class CommandLinkDiscord extends BaseSubCommand {
 
-
-    @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ClientApi client = CommandOptionClient.findClientApi(event);
-        if (client.entity == null) return;
-        Member member = CommandOption.DISCORD_OPTION.getRequired(event);
-        if (member == null) return;
-        client.entity.discord = ClientDiscordDetails.fromMember(member);
-        sendRegistrationMessage(member);
-        if (client.trySave()) {
-            new ProfileMessage(client.entity).reply(event);
-            DiscordLog.log().modifyDiscord(client.entity, event.getUser());
-        } else event.replyEmbeds(this.error("Discord was already assigned")).queue();
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
-    }
 
     public static void sendRegistrationMessage(Member member) {
         member.getUser().openPrivateChannel().queue(CommandLinkDiscord::sendRegisteredMessage);
@@ -66,11 +46,29 @@ public class CommandLinkDiscord extends BaseSubCommand {
                     Thank you for registering with Ambrosia Casino, best of luck!
                                         
                     **Please keep in mind that some forms of gambling can be addictive. Please exercise moderation while playing.**
-                    """).setTitle("Ambrosia Loans").setAuthor(user.getAsTag(), null, channel.getUser().getAvatarUrl())
+                    """).setTitle("Ambrosia Loans").setAuthor(user.getEffectiveName(), null, channel.getUser().getAvatarUrl())
                 .setThumbnail(self.getAvatarUrl()).build());
         channel.sendMessage(message.build()).queue();
     }
 
+    @Override
+    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+        ClientApi client = CommandOptionClient.findClientApi(event);
+        if (client.isEmpty()) return;
+        Member member = CommandOption.DISCORD_OPTION.getRequired(event);
+        if (member == null) return;
+        client.setDiscord(ClientDiscordDetails.fromMember(member));
+        sendRegistrationMessage(member);
+        if (client.trySave()) {
+            client.profile().reply(event);
+            DiscordLog.log().modifyDiscord(client.entity, event.getUser());
+        } else event.replyEmbeds(this.error("Discord was already assigned")).queue();
+    }
+
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
 
     @Override
     public SubcommandData getData() {

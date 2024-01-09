@@ -5,14 +5,14 @@ import com.ambrosia.loans.discord.active.account.ActiveRequestAccount;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
 
-public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest> {
+public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest<?>> {
     LOAN(ActiveRequestLoan.class, "loan"),
     ACCOUNT(ActiveRequestAccount.class, "account");
 
-    private final Class<? extends ActiveRequest> type;
+    private final Class<? extends ActiveRequest<?>> type;
     private final String typeId;
 
-    ActiveRequestType(Class<? extends ActiveRequest> type, String typeId) {
+    ActiveRequestType(Class<? extends ActiveRequest<?>> type, String typeId) {
         this.type = type;
         this.typeId = typeId;
     }
@@ -23,7 +23,7 @@ public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest> {
     }
 
     @Override
-    public Class<? extends ActiveRequest> getTypeClass() {
+    public Class<? extends ActiveRequest<?>> getTypeClass() {
         return this.type;
     }
 }

@@ -1,7 +1,8 @@
 package com.ambrosia.loans.database.transaction;
 
 import com.ambrosia.loans.database.client.DClient;
-import com.ambrosia.loans.discord.base.Emeralds;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
+import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
 import io.ebean.Model;
 import java.sql.Timestamp;
 import javax.persistence.Column;
@@ -17,10 +18,8 @@ public class DTransaction extends Model {
     @Id
     public long id;
 
-    @ManyToOne()
-    @Column
+    @ManyToOne
     public DClient client;
-
     @Column(nullable = false)
     public Timestamp actionDate;
     @Column(nullable = false)
@@ -39,7 +38,11 @@ public class DTransaction extends Model {
     }
 
     public String display() {
-        return String.format("(%s) %s", Emeralds.message(amount, Integer.MAX_VALUE, false), type.displayName());
+        return String.format("(%s) %s", EmeraldsFormatter.of().setBold(false).format(amount()), type.displayName());
+    }
+
+    private Emeralds amount() {
+        return Emeralds.of(this.amount);
     }
 
 }

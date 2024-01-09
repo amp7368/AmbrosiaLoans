@@ -1,19 +1,27 @@
 package com.ambrosia.loans.discord.active.cash;
 
+import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.client.ClientApi;
 import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.loan.collateral.CollateralApi;
+import com.ambrosia.loans.database.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.loan.query.LoanApi;
 import com.ambrosia.loans.database.transaction.TransactionType;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.base.ActiveRequestSender;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
+import io.ebean.DB;
+import java.util.ArrayList;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
 public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
 
+    private final double rate = .05;
     private long clientId;
-    private int amount;
+    private long amount;
     private List<String> collateral;
     private String voucher;
     private String repayment;
@@ -23,10 +31,10 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         super(ActiveRequestType.LOAN.getTypeId(), null);
     }
 
-    public ActiveRequestLoan(Member sender, DClient client, int amount, List<String> collateral, String voucher, String repayment) {
+    public ActiveRequestLoan(Member sender, DClient client, long amount, List<String> collateral, String voucher, String repayment) {
         super(ActiveRequestType.LOAN.getTypeId(), new ActiveRequestSender(sender, client));
         this.amount = amount;
-        this.clientId = client.id;
+        this.clientId = client.getId();
         this.client = client;
         this.collateral = collateral;
         this.voucher = voucher;
@@ -38,9 +46,13 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return new ActiveRequestLoanGui(messageId, this);
     }
 
-    public void onApprove() {
-//        TransactionApi.createTransaction(this.getEndorserId(), DB.getDefault().reference(DClient.class, clientId), sign() * amount,
-//            TransactionType.LOAN);
+    public void onApprove() throws CreateEntityException {
+        List<DCollateral> collateral = new ArrayList<>();
+        for (String link : this.collateral) {
+            collateral.add(CollateralApi.createCollateral(link).entity);
+        }
+        DClient client = DB.reference(DClient.class, clientId);
+        LoanApi.createLoan(client, Emeralds.of((long) sign() * amount), this.rate, this.getEndorserId());
     }
 
     private int sign() {
@@ -55,12 +67,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return TransactionType.LOAN;
     }
 
-    public int getAmount() {
-        return amount;
-    }
-
-    public long getClientId() {
-        return clientId;
+    public Emeralds getAmount() {
+        return Emeralds.of(amount);
     }
 
     public DClient getClient() {
@@ -78,5 +86,9 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
     public String getRepayment() {
         return repayment;
+    }
+
+    public Emeralds getAmountAbs() {
+        return Emeralds.of(Math.abs(amount));
     }
 }
