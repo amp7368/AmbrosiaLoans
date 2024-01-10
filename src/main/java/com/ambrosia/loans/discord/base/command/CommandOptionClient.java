@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.base.command;
 
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.DClient;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class CommandOptionClient {

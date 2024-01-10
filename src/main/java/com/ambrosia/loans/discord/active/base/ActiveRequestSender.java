@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.active.base;
 
-import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordBot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;

@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.active.cash;
 
-import com.ambrosia.loans.database.client.ClientAccess;
-import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.DClient;
+import com.ambrosia.loans.database.entity.client.ClientAccess;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.active.base.ActiveRequestGui;
 import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
 import java.util.List;

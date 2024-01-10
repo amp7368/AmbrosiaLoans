@@ -4,7 +4,8 @@ import apple.lib.ebean.database.AppleEbeanDatabaseMetaConfig;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.init.InitDatabase;
 import java.util.List;
 import org.apache.logging.log4j.Logger;
 
@@ -21,6 +22,8 @@ public class DatabaseModule extends AppleModule {
             logger::info);
         new AmbrosiaDatabase();
         ClientApi.load();
+        InitDatabase.init();
+
         if (AmbrosiaDatabaseConfig.get().isExample())
             ExampleData.loadExample();
     }

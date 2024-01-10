@@ -1,22 +1,21 @@
 package com.ambrosia.loans.discord.active.account;
 
-import com.ambrosia.loans.database.client.ClientAccess;
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.DClient;
 import com.ambrosia.loans.database.base.util.CreateEntityException;
+import com.ambrosia.loans.database.entity.client.ClientAccess;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.base.ActiveRequestSender;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed.Field;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed.Field;
+import org.jetbrains.annotations.Nullable;
 
 public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui> {
 

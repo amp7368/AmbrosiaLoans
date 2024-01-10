@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.commands.dealer.profile;
 
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.CommandOption;
