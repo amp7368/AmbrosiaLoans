@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.simulate.snapshot;
 
-import com.ambrosia.loans.database.simulate.DAccountSimulation;
+import com.ambrosia.loans.database.entity.client.DClient;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -19,7 +19,7 @@ public class DAccountSnapshot extends Model {
     @Id
     private UUID id;
     @ManyToOne(optional = false)
-    private DAccountSimulation account;
+    private DClient client;
     @Index
     @Column(nullable = false)
     private Timestamp date;
@@ -28,9 +28,9 @@ public class DAccountSnapshot extends Model {
     @Column(nullable = false)
     private long accountDelta;
 
-    public DAccountSnapshot(DAccountSimulation account, Instant date, long accountBalance, long accountDelta) {
+    public DAccountSnapshot(DClient client, Instant date, long accountBalance, long accountDelta) {
         this.date = Timestamp.from(date);
-        this.account = account;
+        this.client = client;
         this.accountBalance = accountBalance;
         this.accountDelta = accountDelta;
     }

@@ -53,8 +53,6 @@ public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientA
         client.minecraft = ClientMinecraftDetails.fromUsername(clientName);
         client.discord = ClientDiscordDetails.fromMember(discord);
         client.save();
-        client.getAccountLog().save();
-        client.getAccountSimulation().save();
 
         ClientApi api = api(client);
         api.onUpdate();

@@ -1,6 +1,8 @@
 package com.ambrosia.loans.database.bank;
 
 import com.ambrosia.loans.bank.Bank;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.base.IAccountChange;
 import com.ambrosia.loans.database.log.invest.DInvest;
@@ -9,8 +11,6 @@ import com.ambrosia.loans.database.log.loan.DLoan;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.log.loan.query.QDLoan;
-import com.ambrosia.loans.database.simulate.DAccountSimulation;
-import com.ambrosia.loans.database.simulate.query.QDAccountSimulation;
 import com.ambrosia.loans.database.simulate.snapshot.query.QDAccountSnapshot;
 import io.ebean.CallableSql;
 import io.ebean.DB;
@@ -26,17 +26,16 @@ import java.util.List;
 public class RunBankSimulation {
 
     private static final CallableSql UPDATE_SIM_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
-        UPDATE account_sim cas
-        SET balance = COALESCE(q.account_balance, 0)
+        UPDATE client c
+        SET balance = COALESCE(q.account_balance, 0) -- account_balance might be null
         FROM (
-             SELECT DISTINCT ON (sim.id) sim.id,
-                                         ss.account_balance
-             FROM account_sim sim
-                      LEFT JOIN account_sim_snapshot ss ON sim.id = ss.account_id
-             ORDER BY sim.id,
+             SELECT DISTINCT ON (c.id) c.id,
+                                       ss.account_balance
+             FROM client c
+                      LEFT JOIN account_sim_snapshot ss ON c.id = ss.client_id
+             ORDER BY c.id,
                       ss.date DESC) AS q
-        WHERE cas.id = q.id;
-        """);
+        WHERE c.id = q.id;""");
 
     public static void simulateFromDate(Instant date) {
         Timestamp fromDate = Timestamp.from(date);
@@ -46,17 +45,17 @@ public class RunBankSimulation {
         int index = 0;
         for (DLoanPayment loan : loans) {
             loan.updateSimulation();
-            index = doRelaventAccountChange(accountChanges, index, loan.getDate());
-            List<DAccountSimulation> investors = findAllInvestors();
+            index = doRelevantAccountChange(accountChanges, index, loan.getDate());
+            List<DClient> investors = findAllInvestors();
             BigDecimal totalInvested = BigDecimal.valueOf(investors.stream()
-                .mapToLong(DAccountSimulation::getBalance)
+                .mapToLong(DClient::getBalance)
                 .sum());
 
             long amountLeft = BigDecimal.valueOf(loan.getAmount())
                 .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL64)
                 .longValue();
             long amountGiven = 0;
-            for (DAccountSimulation investor : investors) {
+            for (DClient investor : investors) {
                 long amountToInvestor = BigDecimal.valueOf(investor.getBalance())
                     .multiply(BigDecimal.valueOf(amountLeft))
                     .divide(totalInvested, RoundingMode.FLOOR)
@@ -68,10 +67,10 @@ public class RunBankSimulation {
 
             BankApi.updateBankBalance(loan.getAmount() - amountGiven, loan.getDate(), AccountEventType.PAYMENT);
         }
-        System.out.println(findAllInvestors().stream().map(DAccountSimulation::getBalance).toList());
+        System.out.println(findAllInvestors().stream().map(DClient::getBalance).toList());
     }
 
-    private static int doRelaventAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {
+    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
             if (accountChange.getDate().isAfter(loanDate))
@@ -81,8 +80,8 @@ public class RunBankSimulation {
         return index;
     }
 
-    private static List<DAccountSimulation> findAllInvestors() {
-        return new QDAccountSimulation().where()
+    private static List<DClient> findAllInvestors() {
+        return new QDClient().where()
             .balance.gt(0)
             .findList();
     }

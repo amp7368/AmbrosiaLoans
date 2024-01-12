@@ -24,17 +24,22 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
 
     public static LoanApi createLoan(DClient client, Emeralds amount, double rate, long brokerId) {
         // todo allow different starting dates
-        DLoan loan = new DLoan(client.getAccountLog(), amount.amount(), rate, brokerId);
+        DLoan loan = new DLoan(client, amount.amount(), rate, brokerId);
         loan.save();
         return api(loan);
     }
 
     public static List<LoanApi> findClientLoans(DClient client) {
-        return api(new QDLoan().where().account.eq(client.getAccountLog()).findStream());
+        return api(new QDLoan().where()
+            .client.eq(client)
+            .findStream());
     }
 
     public static List<LoanApi> findClientActiveLoans(DClient client) {
-        return api(new QDLoan().where().and().account.eq(client.getAccountLog()).status.eq(DLoanStatus.ACTIVE).endAnd().findStream());
+        return api(new QDLoan().where()
+            .client.eq(client)
+            .status.eq(DLoanStatus.ACTIVE)
+            .findStream());
     }
 
     public static List<LoanApi> findAllActiveLoans() {

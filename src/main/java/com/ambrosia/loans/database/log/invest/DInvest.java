@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.log.invest;
 
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.log.DAccountLog;
 import com.ambrosia.loans.database.log.base.AccountEvent;
 import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.base.IAccountChange;
@@ -18,7 +18,7 @@ public class DInvest extends AccountEvent implements IAccountChange {
     @Column(nullable = false)
     private long amount;
 
-    public DInvest(DAccountLog account, Instant date, DStaffConductor conductor, long amount, AccountEventType type) {
+    public DInvest(DClient account, Instant date, DStaffConductor conductor, long amount, AccountEventType type) {
         super(account, date, conductor, type);
         if (type != AccountEventType.INVEST && type != AccountEventType.WITHDRAWAL) {
             String msg = "Investment must be %s or %s"
@@ -26,7 +26,6 @@ public class DInvest extends AccountEvent implements IAccountChange {
                     AccountEventType.WITHDRAWAL.displayName());
             throw new IllegalStateException(msg);
         }
-        this.account = account;
         this.amount = amount;
     }
 
@@ -37,8 +36,7 @@ public class DInvest extends AccountEvent implements IAccountChange {
 
     @Override
     public void updateSimulation() {
-        DAccountSnapshot simulation = this.account.getClient()
-            .getAccountSimulation()
+        DAccountSnapshot simulation = this.account
             .updateBalance(this.amount, this.getDate());
     }
 }

@@ -47,9 +47,7 @@ public class DLoanPayment extends Model {
     }
 
     public void updateSimulation() {
-        this.loan.getAccount()
-            .getClient()
-            .getAccountSimulation()
+        this.loan.getClient()
             .updateBalance(amount, getDate());
     }
 }

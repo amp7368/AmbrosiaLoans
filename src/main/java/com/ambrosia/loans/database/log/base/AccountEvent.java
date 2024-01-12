@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.log.base;
 
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.log.DAccountLog;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -19,7 +19,7 @@ public class AccountEvent extends Model {
     protected UUID id;
     @Column(nullable = false)
     @ManyToOne(optional = false)
-    protected DAccountLog account;
+    protected DClient account;
     @Column(nullable = false)
     protected DStaffConductor conductor;
     @Column(nullable = false)
@@ -28,7 +28,7 @@ public class AccountEvent extends Model {
     @Column(nullable = false)
     protected AccountEventType type;
 
-    public AccountEvent(DAccountLog account, Instant date, DStaffConductor conductor, AccountEventType type) {
+    public AccountEvent(DClient account, Instant date, DStaffConductor conductor, AccountEventType type) {
         this.account = account;
         this.date = Timestamp.from(date);
         this.conductor = conductor;

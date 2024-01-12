@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.log.loan;
 
-import com.ambrosia.loans.database.log.DAccountLog;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.log.base.IAccountChange;
 import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
@@ -37,7 +37,7 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
     @Identity
     private long id;
     @ManyToOne
-    private DAccountLog account;
+    private DClient client;
     @OneToMany(cascade = CascadeType.ALL)
     private List<DLoanSection> sections;
     @OneToMany(cascade = CascadeType.ALL)
@@ -55,8 +55,8 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
     @Column(nullable = false)
     private long brokerId;
 
-    public DLoan(DAccountLog account, long initialAmount, double rate, long brokerId) {
-        this.account = account;
+    public DLoan(DClient client, long initialAmount, double rate, long brokerId) {
+        this.client = client;
         this.initialAmount = initialAmount;
         this.brokerId = brokerId;
         Instant now = Instant.now();
@@ -152,8 +152,8 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
         return Emeralds.of(amount.longValue());
     }
 
-    public DAccountLog getAccount() {
-        return this.account;
+    public DClient getClient() {
+        return this.client;
     }
 
     public void makePayment(DLoanPayment payment) {
@@ -182,6 +182,6 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
 
     @Override
     public void updateSimulation() {
-        this.account.getClient().getAccountSimulation().updateBalance(-this.initialAmount, getDate());
+        this.client.updateBalance(-this.initialAmount, getDate());
     }
 }

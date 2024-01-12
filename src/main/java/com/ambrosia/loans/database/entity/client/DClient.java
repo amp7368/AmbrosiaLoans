@@ -2,19 +2,23 @@ package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.log.DAccountLog;
+import com.ambrosia.loans.database.log.invest.DInvest;
 import com.ambrosia.loans.database.log.loan.DLoan;
-import com.ambrosia.loans.database.simulate.DAccountSimulation;
+import com.ambrosia.loans.database.simulate.snapshot.DAccountSnapshot;
+import io.ebean.DB;
 import io.ebean.Model;
+import io.ebean.Transaction;
 import io.ebean.annotation.Identity;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -35,15 +39,39 @@ public class DClient extends Model implements ClientAccess<DClient> {
     String displayName;
     @Column(nullable = false)
     final Timestamp dateCreated = Timestamp.from(Instant.now());
-    @OneToOne
-    private final DAccountLog accountLog;
-    @OneToOne
-    private final DAccountSimulation accountSimulation;
+
+    @Column
+    private long balance = 0;
+    @OneToMany
+    private final List<DAccountSnapshot> accountSnapshots = new ArrayList<>();
+    @OneToMany
+    private final List<DLoan> loans = new ArrayList<>();
+    @OneToMany
+    private final List<DInvest> investments = new ArrayList<>();
 
     public DClient(String displayName) {
         this.displayName = displayName;
-        this.accountLog = new DAccountLog(this);
-        this.accountSimulation = new DAccountSimulation(this);
+    }
+
+    public DAccountSnapshot updateBalance(long amount, Instant timestamp) {
+        try (Transaction transaction = DB.beginTransaction()) {
+            DAccountSnapshot snapshot = updateBalance(amount, timestamp, transaction);
+            transaction.commit();
+            return snapshot;
+        }
+    }
+
+    public DAccountSnapshot updateBalance(long amount, Instant timestamp, Transaction transaction) {
+        this.balance += amount;
+        DAccountSnapshot snapshot = new DAccountSnapshot(this, timestamp, balance, amount);
+        this.accountSnapshots.add(snapshot);
+        snapshot.save(transaction);
+        this.save(transaction);
+        return snapshot;
+    }
+
+    public long getBalance() {
+        return this.balance;
     }
 
 
@@ -77,14 +105,8 @@ public class DClient extends Model implements ClientAccess<DClient> {
     }
 
     public List<DLoan> getLoans() {
-        return this.accountLog.getLoans();
-    }
-
-    public DAccountLog getAccountLog() {
-        return this.accountLog;
-    }
-
-    public DAccountSimulation getAccountSimulation() {
-        return this.accountSimulation;
+        return loans.stream()
+            .sorted(Comparator.comparing(DLoan::getStartDate))
+            .toList();
     }
 }

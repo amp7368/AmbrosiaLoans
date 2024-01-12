@@ -16,7 +16,6 @@ import com.ambrosia.loans.database.log.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.log.loan.query.LoanApi;
 import com.ambrosia.loans.database.log.loan.query.QDLoan;
 import com.ambrosia.loans.database.log.loan.section.query.QDLoanSection;
-import com.ambrosia.loans.database.simulate.query.QDAccountSimulation;
 import com.ambrosia.loans.database.simulate.snapshot.query.QDAccountSnapshot;
 import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
@@ -37,16 +36,15 @@ public class ExampleData {
 
     public static void loadExample() {
         new QDStaffConductor().delete();
-        new QDClient().delete();
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
         new QDLoan().delete();
         new QDInvest().delete();
         new QDAccountSnapshot().delete();
-        new QDAccountSimulation().delete();
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
+        new QDClient().delete();
 
         try {
             insertClients();
@@ -97,11 +95,8 @@ public class ExampleData {
         clientInvestB = new DClient("ClientInvestB");
         clientInvestC = new DClient("ClientInvestC");
         clientNothingD = new DClient("ClientNothingD");
-        List.of(clientLoanA, clientLoanB, clientLoanC, clientInvestA, clientInvestB, clientInvestC, clientNothingD).forEach(client -> {
-            client.getAccountLog().save();
-            client.getAccountSimulation().save();
-            client.save();
-        });
+        List.of(clientLoanA, clientLoanB, clientLoanC, clientInvestA, clientInvestB, clientInvestC, clientNothingD).forEach(
+            Model::save);
     }
 
     private static void insertInvestments() {
