@@ -6,10 +6,12 @@ import io.ebean.annotation.DbEnumValue;
 public enum AccountEventType {
     LOAN(0),
     INVEST(1),
-    INTEREST(2),
-    PROFIT(3),
-    TRADE_GIVE(4),
-    TRADE_GET(5);
+    PAYMENT(2),
+    WITHDRAWAL(3),
+    INTEREST(4),
+    PROFIT(5),
+    TRADE_GIVE(6),
+    TRADE_GET(7);
     private final int id;
 
     AccountEventType(int id) {
@@ -23,5 +25,10 @@ public enum AccountEventType {
 
     public String displayName() {
         return Pretty.spaceEnumWords(this.name());
+    }
+
+    @Override
+    public String toString() {
+        return displayName();
     }
 }

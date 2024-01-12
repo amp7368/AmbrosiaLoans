@@ -36,4 +36,8 @@ public class DAccountLog extends Model {
             .sorted(Comparator.comparing(DLoan::getStartDate))
             .toList();
     }
+
+    public DClient getClient() {
+        return this.client;
+    }
 }

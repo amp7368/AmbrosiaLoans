@@ -25,7 +25,13 @@ public final class Emeralds {
 
     @Override
     public String toString() {
-        return EmeraldsFormatter.of().format(this);
+        return EmeraldsFormatter.of()
+            .setBold(false)
+            .format(this);
+    }
+
+    public Emeralds negative() {
+        return new Emeralds(-this.amount);
     }
 
 }

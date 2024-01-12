@@ -1,9 +1,11 @@
 package com.ambrosia.loans.database.log.loan;
 
 import com.ambrosia.loans.database.log.DAccountLog;
+import com.ambrosia.loans.database.log.base.IAccountChange;
 import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.query.LoanAccess;
+import com.ambrosia.loans.database.log.loan.query.LoanApi;
 import com.ambrosia.loans.database.log.loan.section.DLoanSection;
 import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
@@ -29,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model implements LoanAccess<DLoan> {
+public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
 
     @Id
     @Identity
@@ -43,7 +45,7 @@ public class DLoan extends Model implements LoanAccess<DLoan> {
     @OneToMany(cascade = CascadeType.ALL)
     private List<DCollateral> collateral;
     @Column
-    private long amount;
+    private long initialAmount;
     @Column(nullable = false)
     private Timestamp startDate;
     @Column
@@ -53,9 +55,9 @@ public class DLoan extends Model implements LoanAccess<DLoan> {
     @Column(nullable = false)
     private long brokerId;
 
-    public DLoan(DAccountLog account, long amount, double rate, long brokerId) {
+    public DLoan(DAccountLog account, long initialAmount, double rate, long brokerId) {
         this.account = account;
-        this.amount = amount;
+        this.initialAmount = initialAmount;
         this.brokerId = brokerId;
         Instant now = Instant.now();
         this.startDate = Timestamp.from(now);
@@ -75,8 +77,7 @@ public class DLoan extends Model implements LoanAccess<DLoan> {
         if (isPaymentLater) return null;
 
         Duration duration = Duration.between(paymentDate, sectionEndDateOrNow);
-        amount = amount.add(payment.getEffectiveAmount(duration, sectionRate));
-        return amount;
+        return payment.getEffectiveAmount(duration, sectionRate);
     }
 
     @Override
@@ -135,7 +136,7 @@ public class DLoan extends Model implements LoanAccess<DLoan> {
     }
 
     public Emeralds getTotalOwed() {
-        BigDecimal amount = BigDecimal.valueOf(this.amount);
+        BigDecimal amount = BigDecimal.valueOf(this.initialAmount);
         int paymentIndex = 0;
         for (DLoanSection section : getSections()) {
             amount = amount.add(section.getInterest(amount));
@@ -149,5 +150,38 @@ public class DLoan extends Model implements LoanAccess<DLoan> {
             }
         }
         return Emeralds.of(amount.longValue());
+    }
+
+    public DAccountLog getAccount() {
+        return this.account;
+    }
+
+    public void makePayment(DLoanPayment payment) {
+        this.payments.add(payment);
+        if (getTotalOwed().amount() < Emeralds.BLOCK) {
+            this.status = DLoanStatus.PAID;
+        }
+    }
+
+    public long getId() {
+        return this.id;
+    }
+
+    public List<DLoanPayment> getPayments() {
+        return this.payments;
+    }
+
+    public LoanApi api() {
+        return LoanApi.api(this);
+    }
+
+    @Override
+    public Instant getDate() {
+        return this.getStartDate();
+    }
+
+    @Override
+    public void updateSimulation() {
+        this.account.getClient().getAccountSimulation().updateBalance(-this.initialAmount, getDate());
     }
 }

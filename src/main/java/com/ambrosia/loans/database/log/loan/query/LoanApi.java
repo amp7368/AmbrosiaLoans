@@ -4,10 +4,12 @@ import com.ambrosia.loans.database.base.ModelApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.log.loan.DLoan;
 import com.ambrosia.loans.database.log.loan.DLoanStatus;
+import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.section.DLoanSection;
 import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +45,28 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
         return stream.map(LoanApi::api).toList();
     }
 
-    private static LoanApi api(DLoan loan) {
+    public static LoanApi api(DLoan loan) {
         return new LoanApi(loan);
+    }
+
+    public static DLoanPayment makePayment(DLoan loan, Emeralds amount) {
+        return makePayment(loan, amount, Instant.now());
+    }
+
+    public static DLoanPayment makePayment(DLoan loan, Emeralds amount, Instant timestamp) {
+        long totalOwed = loan.getTotalOwed().amount();
+        if (amount.amount() > totalOwed) {
+            String msg = "Paying too much! Attempted to pay %s on %s loan{%s}".formatted(amount, loan.getTotalOwed(), loan.getId());
+            throw new IllegalArgumentException(msg);
+        }
+        DLoanPayment payment = new DLoanPayment(loan, Timestamp.from(timestamp), amount.amount());
+        try (Transaction transaction = DB.beginTransaction()) {
+            loan.makePayment(payment);
+            payment.save(transaction);
+            loan.save(transaction);
+            transaction.commit();
+        }
+        return payment;
     }
 
     public void freeze() {
@@ -81,9 +103,6 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
             }
         }
         try (Transaction transaction = DB.beginTransaction()) {
-            System.out.println(oldSections.size());
-            System.out.println(newSections.size());
-
             oldSections.stream()
                 .filter(Predicate.not(newSections::contains))
                 .forEach(section -> section.delete(transaction));

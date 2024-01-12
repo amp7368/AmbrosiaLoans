@@ -27,6 +27,16 @@ public class DLoanPayment extends Model {
     @Column
     private long amount;
 
+    public DLoanPayment(DLoan loan, Timestamp date, long amount) {
+        this.loan = loan;
+        this.date = date;
+        this.amount = amount;
+    }
+
+    public long getAmount() {
+        return this.amount;
+    }
+
     public Instant getDate() {
         return this.date.toInstant();
     }
@@ -34,5 +44,12 @@ public class DLoanPayment extends Model {
     public BigDecimal getEffectiveAmount(Duration duration, BigDecimal rate) {
         BigDecimal amount = BigDecimal.valueOf(this.amount);
         return amount.add(Bank.interest(duration, amount, rate));
+    }
+
+    public void updateSimulation() {
+        this.loan.getAccount()
+            .getClient()
+            .getAccountSimulation()
+            .updateBalance(amount, getDate());
     }
 }
