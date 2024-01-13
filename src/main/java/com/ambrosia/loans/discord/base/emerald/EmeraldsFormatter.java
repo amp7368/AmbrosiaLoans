@@ -1,12 +1,13 @@
 package com.ambrosia.loans.discord.base.emerald;
 
+import static com.ambrosia.loans.discord.base.emerald.Emeralds.BLOCK;
+import static com.ambrosia.loans.discord.base.emerald.Emeralds.LIQUID;
+import static com.ambrosia.loans.discord.base.emerald.Emeralds.STACK;
+
 import apple.utilities.util.Pretty;
 
 public class EmeraldsFormatter {
 
-    private static final int STACK = (int) Math.pow(64, 3);
-    private static final int LIQUID = (int) Math.pow(64, 2);
-    private static final int BLOCK = 64;
 
     private boolean isBold = true;
     private int truncate = Integer.MAX_VALUE;
@@ -14,10 +15,6 @@ public class EmeraldsFormatter {
     private boolean inline = false;
 
     private EmeraldsFormatter() {
-    }
-
-    public static Emeralds leToEmeralds(double le) {
-        return Emeralds.of((long) (LIQUID * le));
     }
 
     public static EmeraldsFormatter of() {
@@ -70,7 +67,7 @@ public class EmeraldsFormatter {
         if (stx != 0) fieldsLeft -= append(message, stx, "STX", fieldsLeft, false);
         if (le != 0) fieldsLeft -= append(message, le, "LE", fieldsLeft, false);
         if (eb != 0) fieldsLeft -= append(message, eb, "EB", fieldsLeft, false);
-        if (e != 0) append(message, e, "E", fieldsLeft, true);
+        append(message, e, "E", fieldsLeft, true);
 
         if (includeTotal) {
             message.append(inline ? " " : "\n");

@@ -1,11 +1,11 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
-import com.ambrosia.loans.database.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi;
 import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
 import com.ambrosia.loans.discord.active.cash.ActiveRequestLoanGui;
 import com.ambrosia.loans.discord.base.command.SendMessage;
-import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import discord.util.dcf.modal.DCFModal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -47,7 +47,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
                 this.error = "'Amount in STX' must be positive";
                 return;
             }
-            this.emeralds = EmeraldsFormatter.leToEmeralds(stx * 64).amount();
+            this.emeralds = Emeralds.leToEmeralds(stx * 64).amount();
         } catch (NumberFormatException e) {
             this.error = "'Amount in STX' must be a decimal number";
         }

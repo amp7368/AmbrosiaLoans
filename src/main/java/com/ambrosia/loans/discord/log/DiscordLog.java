@@ -1,13 +1,12 @@
 package com.ambrosia.loans.discord.log;
 
-import com.ambrosia.loans.database.client.ClientDiscordDetails;
-import com.ambrosia.loans.database.client.ClientMinecraftDetails;
-import com.ambrosia.loans.database.client.DClient;
-import com.ambrosia.loans.database.transaction.DTransaction;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.log.base.AccountEvent;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.AmbrosiaColor;
-import com.ambrosia.loans.discord.base.AmbrosiaColor.AmbrosiaColorTransaction;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import discord.util.dcf.DCF;
 import java.time.Instant;
@@ -52,15 +51,15 @@ public class DiscordLog implements SendMessage {
         log(msg.build(), true);
     }
 
-    public void operation(DClient client, DTransaction operation) {
+    public void operation(DClient client, AccountEvent operation) {
         operation(client, operation, dcf.jda().getSelfUser(), false);
     }
 
-    public void operation(DClient client, DTransaction operation, User actor, boolean toDiscord) {
-        int color = operation.amount < 0 ? AmbrosiaColorTransaction.WITHDRAW : AmbrosiaColorTransaction.DEPOSIT;
-        EmbedBuilder msg = embed(operation.display(), actor).setColor(color);
-        client(msg, client).addBlankField(true).addField(String.format("Id: #%d", operation.id), "", true);
-        log(msg.build(), toDiscord);
+    public void operation(DClient client, AccountEvent operation, User actor, boolean toDiscord) {
+//        int color = operation.amount < 0 ? AmbrosiaColorTransaction.WITHDRAW : AmbrosiaColorTransaction.DEPOSIT;
+//        EmbedBuilder msg = embed(operation.display(), actor).setColor(color);
+//        client(msg, client).addBlankField(true).addField(String.format("Id: #%d", operation.id), "", true);
+//        log(msg.build(), toDiscord);
     }
 
     private void log(MessageEmbed msg, boolean toDiscord) {

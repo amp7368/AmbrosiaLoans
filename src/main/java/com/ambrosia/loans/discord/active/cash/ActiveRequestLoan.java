@@ -1,12 +1,12 @@
 package com.ambrosia.loans.discord.active.cash;
 
 import com.ambrosia.loans.database.base.util.CreateEntityException;
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.DClient;
-import com.ambrosia.loans.database.loan.collateral.CollateralApi;
-import com.ambrosia.loans.database.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.loan.query.LoanApi;
-import com.ambrosia.loans.database.transaction.TransactionType;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.log.base.AccountEventType;
+import com.ambrosia.loans.database.log.loan.collateral.CollateralApi;
+import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.log.loan.query.LoanApi;
 import com.ambrosia.loans.discord.active.ActiveRequestType;
 import com.ambrosia.loans.discord.active.base.ActiveRequest;
 import com.ambrosia.loans.discord.active.base.ActiveRequestSender;
@@ -63,8 +63,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
     public void onComplete() {
     }
 
-    public TransactionType transactionType() {
-        return TransactionType.LOAN;
+    public AccountEventType transactionType() {
+        return AccountEventType.LOAN;
     }
 
     public Emeralds getAmount() {

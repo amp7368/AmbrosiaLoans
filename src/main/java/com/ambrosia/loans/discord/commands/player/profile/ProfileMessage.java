@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.commands.player.profile;
 
-import com.ambrosia.loans.database.client.ClientApi;
-import com.ambrosia.loans.database.client.query.ClientLoanSummary;
+import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.query.ClientLoanSummary;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.AmbrosiaColor;
 import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
