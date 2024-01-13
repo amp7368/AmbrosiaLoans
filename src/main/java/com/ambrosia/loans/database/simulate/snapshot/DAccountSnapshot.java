@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.simulate.snapshot;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.log.base.AccountEventType;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -27,11 +28,14 @@ public class DAccountSnapshot extends Model {
     private long accountBalance;
     @Column(nullable = false)
     private long accountDelta;
+    @Column(nullable = false)
+    private AccountEventType event;
 
-    public DAccountSnapshot(DClient client, Instant date, long accountBalance, long accountDelta) {
+    public DAccountSnapshot(DClient client, Instant date, long accountBalance, long accountDelta, AccountEventType event) {
         this.date = Timestamp.from(date);
         this.client = client;
         this.accountBalance = accountBalance;
         this.accountDelta = accountDelta;
+        this.event = event;
     }
 }

@@ -12,6 +12,7 @@ import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.log.loan.query.QDLoan;
 import com.ambrosia.loans.database.simulate.snapshot.query.QDAccountSnapshot;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.CallableSql;
 import io.ebean.DB;
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 
 public class RunBankSimulation {
 
@@ -47,27 +49,39 @@ public class RunBankSimulation {
             loan.updateSimulation();
             index = doRelevantAccountChange(accountChanges, index, loan.getDate());
             List<DClient> investors = findAllInvestors();
-            BigDecimal totalInvested = BigDecimal.valueOf(investors.stream()
-                .mapToLong(DClient::getBalance)
-                .sum());
+            BigDecimal totalInvested = reduceToSum(investors);
 
-            long amountLeft = BigDecimal.valueOf(loan.getAmount())
+            long amountToInvestors = BigDecimal.valueOf(loan.getAmount())
                 .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL64)
                 .longValue();
-            long amountGiven = 0;
-            for (DClient investor : investors) {
-                long amountToInvestor = BigDecimal.valueOf(investor.getBalance())
-                    .multiply(BigDecimal.valueOf(amountLeft))
-                    .divide(totalInvested, RoundingMode.FLOOR)
-                    .longValue();
-                amountLeft -= amountToInvestor;
-                amountGiven += amountToInvestor;
-                investor.updateBalance(amountToInvestor, loan.getDate());
+            long amountGiven = giveToInvestors(loan, investors, amountToInvestors, totalInvested);
+            for (int size = accountChanges.size(); index < size; index++) {
+                accountChanges.get(index).updateSimulation();
             }
-
             BankApi.updateBankBalance(loan.getAmount() - amountGiven, loan.getDate(), AccountEventType.PAYMENT);
         }
         System.out.println(findAllInvestors().stream().map(DClient::getBalance).toList());
+    }
+
+    private static long giveToInvestors(DLoanPayment loan, List<DClient> investors, long amountToInvestors, BigDecimal totalInvested) {
+        long amountGiven = 0;
+        for (DClient investor : investors) {
+            long amountToInvestor = BigDecimal.valueOf(investor.getBalance().amount())
+                .multiply(BigDecimal.valueOf(amountToInvestors))
+                .divide(totalInvested, RoundingMode.FLOOR)
+                .longValue();
+            amountGiven += amountToInvestor;
+            investor.updateBalance(amountToInvestor, loan.getDate(), AccountEventType.PROFIT);
+        }
+        return amountGiven;
+    }
+
+    @NotNull
+    private static BigDecimal reduceToSum(List<DClient> investors) {
+        return BigDecimal.valueOf(investors.stream()
+            .map(DClient::getBalance)
+            .mapToLong(Emeralds::amount)
+            .sum());
     }
 
     private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {

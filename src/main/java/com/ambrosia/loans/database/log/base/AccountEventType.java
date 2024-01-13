@@ -19,8 +19,8 @@ public enum AccountEventType {
     }
 
     @DbEnumValue
-    public int getId() {
-        return id;
+    public String getId() {
+        return name();
     }
 
     public String displayName() {

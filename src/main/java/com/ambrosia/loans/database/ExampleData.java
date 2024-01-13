@@ -22,6 +22,7 @@ import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
 import io.ebean.Model;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class ExampleData {
@@ -32,6 +33,7 @@ public class ExampleData {
     private static DClient clientInvestA;
     private static DClient clientInvestB;
     private static DClient clientInvestC;
+    private static DClient clientWithdrawalA;
     private static DClient clientNothingD;
 
     public static void loadExample() {
@@ -52,10 +54,13 @@ public class ExampleData {
             insertInvestments();
             createPayments();
             RunBankSimulation.simulateFromDate(Instant.EPOCH);
+            withdrawals();
+            RunBankSimulation.simulateFromDate(Instant.EPOCH);
         } catch (CreateEntityException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     private static void createPayments() {
         clients().forEach(Model::refresh);
@@ -67,7 +72,10 @@ public class ExampleData {
     }
 
     private static List<DClient> clients() {
-        return List.of(clientLoanA, clientLoanB, clientLoanC, clientInvestA, clientInvestB, clientInvestC, clientNothingD);
+        return List.of(clientLoanA, clientLoanB, clientLoanC,
+            clientInvestA, clientInvestB, clientInvestC,
+            clientNothingD,
+            clientWithdrawalA);
     }
 
 
@@ -79,7 +87,8 @@ public class ExampleData {
         loanA.changeToNewRate(.01, monthAgo);
 
         LoanApi loanB = LoanApi.createLoan(clientLoanB, Emeralds.leToEmeralds(64), .00, 0);
-
+        loanB.getEntity().setStartDate(monthAgo.plus(1, ChronoUnit.DAYS));
+        loanA.getEntity().save();
         LoanApi loanC = LoanApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, 0);
     }
 
@@ -95,15 +104,27 @@ public class ExampleData {
         clientInvestB = new DClient("ClientInvestB");
         clientInvestC = new DClient("ClientInvestC");
         clientNothingD = new DClient("ClientNothingD");
-        List.of(clientLoanA, clientLoanB, clientLoanC, clientInvestA, clientInvestB, clientInvestC, clientNothingD).forEach(
-            Model::save);
+        clientWithdrawalA = new DClient("ClientWithdrawal");
+        clients().forEach(Model::save);
+    }
+
+    private static void withdrawals() {
+        Instant bitAgo = Instant.now().minus(30, ChronoUnit.DAYS);
+        InvestApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256));
+        InvestApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256));
     }
 
     private static void insertInvestments() {
-        DInvest investmentA = InvestApi.createInvestment(clientInvestA, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(5));
-        for (int i = 0; i < 6; i++) {
-            DInvest investmentB = InvestApi.createInvestment(clientInvestB, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(64));
+        Instant longAgo = Instant.now().minus(60, ChronoUnit.DAYS);
+        DInvest investmentA = InvestApi.createInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
+            Emeralds.leToEmeralds(5));
+        DInvest withdrawalA = InvestApi.createInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
+            Emeralds.leToEmeralds(256));
+        for (int i = 0; i < 3; i++) {
+            DInvest investmentB = InvestApi.createInvestment(clientInvestB, longAgo, DStaffConductor.SYSTEM,
+                Emeralds.leToEmeralds(128));
         }
-        DInvest investmentC = InvestApi.createInvestment(clientInvestC, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(128));
+        DInvest investmentC = InvestApi.createInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
+            Emeralds.leToEmeralds(128));
     }
 }

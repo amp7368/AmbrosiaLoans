@@ -7,4 +7,6 @@ public interface IAccountChange {
     Instant getDate();
 
     void updateSimulation();
+
+    AccountEventType getEventType();
 }

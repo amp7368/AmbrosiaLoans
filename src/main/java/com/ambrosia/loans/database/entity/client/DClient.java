@@ -2,9 +2,11 @@ package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.invest.DInvest;
 import com.ambrosia.loans.database.log.loan.DLoan;
 import com.ambrosia.loans.database.simulate.snapshot.DAccountSnapshot;
+import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
@@ -53,25 +55,25 @@ public class DClient extends Model implements ClientAccess<DClient> {
         this.displayName = displayName;
     }
 
-    public DAccountSnapshot updateBalance(long amount, Instant timestamp) {
+    public DAccountSnapshot updateBalance(long amount, Instant timestamp, AccountEventType eventType) {
         try (Transaction transaction = DB.beginTransaction()) {
-            DAccountSnapshot snapshot = updateBalance(amount, timestamp, transaction);
+            DAccountSnapshot snapshot = updateBalance(amount, timestamp, eventType, transaction);
             transaction.commit();
             return snapshot;
         }
     }
 
-    public DAccountSnapshot updateBalance(long amount, Instant timestamp, Transaction transaction) {
+    public DAccountSnapshot updateBalance(long amount, Instant timestamp, AccountEventType eventType, Transaction transaction) {
         this.balance += amount;
-        DAccountSnapshot snapshot = new DAccountSnapshot(this, timestamp, balance, amount);
+        DAccountSnapshot snapshot = new DAccountSnapshot(this, timestamp, balance, amount, eventType);
         this.accountSnapshots.add(snapshot);
         snapshot.save(transaction);
         this.save(transaction);
         return snapshot;
     }
 
-    public long getBalance() {
-        return this.balance;
+    public Emeralds getBalance() {
+        return Emeralds.of(this.balance);
     }
 
 

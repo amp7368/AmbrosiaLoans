@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.log.loan;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.base.IAccountChange;
 import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
@@ -182,6 +183,11 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
 
     @Override
     public void updateSimulation() {
-        this.client.updateBalance(-this.initialAmount, getDate());
+        this.client.updateBalance(-this.initialAmount, getDate(), getEventType());
+    }
+
+    @Override
+    public AccountEventType getEventType() {
+        return AccountEventType.LOAN;
     }
 }

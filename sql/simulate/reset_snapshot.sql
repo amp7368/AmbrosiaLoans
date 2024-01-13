@@ -10,8 +10,13 @@ FROM (
               ss.date DESC) AS q
 WHERE c.id = q.id;
 
-SELECT *
+SELECT client.display_name,
+       event,
+       account_balance / 64 / 64 / 64.0 bal,
+       account_delta / 64 / 64 / 64.0   delta,
+       date
 FROM account_sim_snapshot
+         LEFT JOIN client ON client_id = client.id
 ORDER BY date;
 
 SELECT *

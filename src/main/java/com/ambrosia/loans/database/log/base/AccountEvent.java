@@ -26,12 +26,12 @@ public class AccountEvent extends Model {
     protected Timestamp date;
     @Index
     @Column(nullable = false)
-    protected AccountEventType type;
+    protected AccountEventType eventType;
 
-    public AccountEvent(DClient account, Instant date, DStaffConductor conductor, AccountEventType type) {
+    public AccountEvent(DClient account, Instant date, DStaffConductor conductor, AccountEventType eventType) {
         this.account = account;
         this.date = Timestamp.from(date);
         this.conductor = conductor;
-        this.type = type;
+        this.eventType = eventType;
     }
 }

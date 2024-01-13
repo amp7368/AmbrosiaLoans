@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.log.loan.payment;
 
 import com.ambrosia.loans.bank.Bank;
+import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.loan.DLoan;
 import io.ebean.Model;
 import java.math.BigDecimal;
@@ -47,7 +48,6 @@ public class DLoanPayment extends Model {
     }
 
     public void updateSimulation() {
-        this.loan.getClient()
-            .updateBalance(amount, getDate());
+        this.loan.getClient().updateBalance(amount, getDate(), AccountEventType.PAYMENT);
     }
 }

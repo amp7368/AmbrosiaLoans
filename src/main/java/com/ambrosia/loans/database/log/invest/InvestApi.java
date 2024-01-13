@@ -11,25 +11,29 @@ import org.jetbrains.annotations.NotNull;
 
 public class InvestApi {
 
-    public static DInvest createInvestment(DClient client, DStaffConductor conductor, Emeralds emeralds) {
-        return createInvestEvent(client, conductor, emeralds, AccountEventType.INVEST);
+    public static DInvest createInvestment(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+        return createInvestEvent(client, date, conductor, emeralds, AccountEventType.INVEST);
     }
 
-    public static DInvest createWithdrawal(DClient client, DStaffConductor conductor, Emeralds emeralds) {
-        return createInvestEvent(client, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
+    public static DInvest createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+        if (client.getBalance().amount() < emeralds.amount()) {
+            String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, client.getBalance());
+            throw new IllegalStateException(msg);
+        }
+        return createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
     }
 
     @NotNull
-    private static DInvest createInvestEvent(DClient client, DStaffConductor conductor, Emeralds emeralds,
+    private static DInvest createInvestEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds,
         AccountEventType type) {
 
-        Instant date = Instant.now();
         DInvest investment = new DInvest(client, date, conductor, emeralds.amount(), type);
         try (Transaction transaction = DB.beginTransaction()) {
             investment.save(transaction);
-            client.updateBalance(emeralds.amount(), date, transaction);
+            client.updateBalance(emeralds.amount(), date, type, transaction);
             transaction.commit();
         }
         return investment;
     }
+
 }
