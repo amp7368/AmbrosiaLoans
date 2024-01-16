@@ -17,13 +17,13 @@ import javax.persistence.Table;
 public class DStaffConductor extends Model {
 
     public static DStaffConductor SYSTEM;
-    @Column(nullable = false)
-    private final Timestamp dateCreated = Timestamp.from(Instant.now());
     @Id
     @Identity
     private long id;
     @Column(nullable = false)
     private String username;
+    @Column(nullable = false)
+    private final Timestamp dateCreated = Timestamp.from(Instant.now());
 
     @OneToOne // optional
     private DClient client;
@@ -42,10 +42,16 @@ public class DStaffConductor extends Model {
 
     public static void insertDefaultConductors() {
         String systemUsername = "System";
-        int systemId = 0;
+        int systemId = 1; // id of 0 will make it autoassign an id
 
-        if (new QDStaffConductor().where().id.eq(systemId).exists()) return;
+        DStaffConductor.SYSTEM = new QDStaffConductor().where().id.eq(systemId).findOne();
+        if (DStaffConductor.SYSTEM != null) return;
         DStaffConductor.SYSTEM = new DStaffConductor(systemId, systemUsername, null);
         DStaffConductor.SYSTEM.save();
+    }
+
+    private DStaffConductor setId(int id) {
+        this.id = id;
+        return this;
     }
 }

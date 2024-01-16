@@ -23,7 +23,7 @@ public class ProfileMessage {
         String authorIcon;
         String authorName;
         if (client.getDiscord() != null) {
-            authorName = client.getDiscord().fullName();
+            authorName = client.getDiscord().getUsername();
             authorIcon = client.getDiscord().avatarUrl;
         } else {
             authorName = null;

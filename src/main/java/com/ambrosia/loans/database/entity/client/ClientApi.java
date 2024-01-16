@@ -51,6 +51,7 @@ public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientA
     public static ClientApi createClient(String clientName, Member discord) throws CreateEntityException {
         DClient client = new DClient(clientName);
         client.minecraft = ClientMinecraftDetails.fromUsername(clientName);
+        if (client.minecraft == null) throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(clientName));
         client.discord = ClientDiscordDetails.fromMember(discord);
         client.save();
 

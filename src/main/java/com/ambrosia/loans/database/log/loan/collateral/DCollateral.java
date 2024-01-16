@@ -28,7 +28,8 @@ public class DCollateral extends Model {
     @Lob
     private byte[] image;
 
-    public DCollateral(String link) {
+    public DCollateral(DLoan loan, String link) {
+        this.loan = loan;
         this.link = link;
     }
 

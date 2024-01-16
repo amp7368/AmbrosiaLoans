@@ -2,8 +2,8 @@ package com.ambrosia.loans;
 
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.ApplePlugin;
-import com.ambrosia.loans.bank.Bank;
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.discord.DiscordModule;
 import java.util.List;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
@@ -32,7 +32,7 @@ public class Ambrosia extends ApplePlugin {
 
     @Override
     public List<AppleModule> createModules() {
-        return List.of(new DatabaseModule(), new Bank());
+        return List.of(new DatabaseModule(), new DiscordModule());
     }
 
     @Override

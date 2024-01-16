@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.active.base;
 
+import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredDormantGui;
 import net.dv8tion.jda.api.entities.User;
 
@@ -8,12 +9,21 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
     public String typeId;
     public ActiveRequestStage stage = ActiveRequestStage.CREATED;
     public ActiveRequestSender sender;
-    private String endorser;
-    private long endorserId;
+    protected Long id;
+    protected String endorser;
+    protected long endorserId;
 
     public ActiveRequest(String typeId, ActiveRequestSender sender) {
         this.typeId = typeId;
         this.sender = sender;
+    }
+
+    public Long getRequestId() {
+        return id;
+    }
+
+    public void setRequestId() {
+        this.id = ActiveRequestDatabase.getId();
     }
 
     @Override

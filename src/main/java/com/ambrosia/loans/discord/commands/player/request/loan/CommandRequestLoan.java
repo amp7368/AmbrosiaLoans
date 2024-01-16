@@ -10,11 +10,9 @@ public class CommandRequestLoan extends BaseSubCommand {
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
         ClientApi client = ClientApi.findByDiscord(event.getUser().getIdLong());
-        if (client.isEmpty()) {
-            errorRegisterWithStaff(event);
-            return;
-        }
-        event.replyModal(RequestLoanModalType.get().buildModal()).queue();
+
+        RequestLoanModalType modalType = RequestLoanModalType.get(client.isEmpty());
+        event.replyModal(modalType.buildModal()).queue();
     }
 
     @Override

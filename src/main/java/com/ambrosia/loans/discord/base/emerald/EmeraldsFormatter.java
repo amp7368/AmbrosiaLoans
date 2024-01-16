@@ -67,7 +67,7 @@ public class EmeraldsFormatter {
         if (stx != 0) fieldsLeft -= append(message, stx, "STX", fieldsLeft, false);
         if (le != 0) fieldsLeft -= append(message, le, "LE", fieldsLeft, false);
         if (eb != 0) fieldsLeft -= append(message, eb, "EB", fieldsLeft, false);
-        append(message, e, "E", fieldsLeft, true);
+        if (e != 0 || message.isEmpty()) append(message, e, "E", fieldsLeft, true);
 
         if (includeTotal) {
             message.append(inline ? " " : "\n");

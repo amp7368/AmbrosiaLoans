@@ -21,4 +21,8 @@ public enum ActiveRequestStage {
     public int getColor() {
         return color;
     }
+
+    public boolean isComplete() {
+        return this == COMPLETED;
+    }
 }
