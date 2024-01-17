@@ -1,12 +1,12 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.invest.DInvest;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.log.base.AccountEventType;
-import com.ambrosia.loans.database.log.invest.DInvest;
-import com.ambrosia.loans.database.log.loan.DLoan;
-import com.ambrosia.loans.database.simulate.snapshot.DAccountSnapshot;
-import com.ambrosia.loans.discord.base.emerald.Emeralds;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;

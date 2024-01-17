@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.base;
 
-import com.ambrosia.loans.database.base.util.CreateEntityException;
-import com.ambrosia.loans.database.base.util.UniqueMessages;
+import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.util.UniqueMessages;
 import io.ebean.DB;
 import io.ebean.Model;
 

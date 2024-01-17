@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.bank;
 
-import com.ambrosia.loans.database.log.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;

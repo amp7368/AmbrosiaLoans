@@ -4,22 +4,23 @@ import apple.lib.ebean.database.AppleEbeanDatabaseMetaConfig;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.AmbrosiaDatabase.AmbrosiaDatabaseConfig;
 import com.ambrosia.loans.database.entity.client.ClientApi;
-import com.ambrosia.loans.database.init.InitDatabase;
+import com.ambrosia.loans.database.system.init.ExampleData;
+import com.ambrosia.loans.database.system.init.InitDatabase;
 import java.util.List;
-import org.apache.logging.log4j.Logger;
 
 public class DatabaseModule extends AppleModule {
 
 
     @Override
     public void onLoad() {
-        Logger logger = Ambrosia.get().logger();
         AppleEbeanDatabaseMetaConfig.configureMeta(
             Ambrosia.class,
             Ambrosia.get().getDataFolder(),
-            logger::error,
-            logger::info);
+            logger()::error,
+            logger()::info);
+
         new AmbrosiaDatabase();
         ClientApi.load();
         InitDatabase.init();

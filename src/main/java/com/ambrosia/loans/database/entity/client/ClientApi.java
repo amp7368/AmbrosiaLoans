@@ -1,11 +1,12 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.base.ModelApi;
-import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.ClientLoanSummary;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileMessage;
 import java.util.HashMap;
 import java.util.List;
@@ -92,5 +93,10 @@ public class ClientApi extends ModelApi<DClient> implements ClientAccess<ClientA
     @Override
     public ClientApi getSelf() {
         return this;
+    }
+
+    @Override
+    public List<DLoan> getLoans() {
+        return getEntity().getLoans();
     }
 }

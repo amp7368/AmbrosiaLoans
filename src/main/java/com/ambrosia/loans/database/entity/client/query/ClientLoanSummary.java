@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.entity.client.query;
 
-import com.ambrosia.loans.database.log.loan.DLoan;
-import com.ambrosia.loans.discord.base.emerald.Emeralds;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import java.util.List;
 
 public class ClientLoanSummary {

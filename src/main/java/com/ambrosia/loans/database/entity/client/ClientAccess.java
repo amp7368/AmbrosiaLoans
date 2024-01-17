@@ -3,7 +3,9 @@ package com.ambrosia.loans.database.entity.client;
 import com.ambrosia.loans.database.base.BaseAccess;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.function.Function;
 
 public interface ClientAccess<Self> extends BaseAccess<Self, DClient> {
@@ -35,6 +37,8 @@ public interface ClientAccess<Self> extends BaseAccess<Self, DClient> {
     default void setDisplayName(String displayName) {
         getEntity().setDisplayName(displayName);
     }
+
+    List<DLoan> getLoans();
 
     default Timestamp getDateCreated() {
         return getEntity().dateCreated;

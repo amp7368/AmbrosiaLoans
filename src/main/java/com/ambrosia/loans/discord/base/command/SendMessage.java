@@ -1,11 +1,22 @@
 package com.ambrosia.loans.discord.base.command;
 
-import com.ambrosia.loans.discord.base.AmbrosiaColor;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
+import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
+import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.Nullable;
 
 public interface SendMessage {
+
+    static SendMessage get() {
+        return new SendMessage() {
+        };
+    }
 
     default EmbedBuilder success() {
         return new EmbedBuilder().setColor(AmbrosiaColor.SUCCESS);
@@ -16,31 +27,47 @@ public interface SendMessage {
     }
 
     default EmbedBuilder error() {
-        return new EmbedBuilder().setColor(AmbrosiaColor.BAD);
+        return new EmbedBuilder()
+            .setAuthor("Error! " + DiscordEmojis.DENY)
+            .setColor(AmbrosiaColor.BAD);
     }
 
     default MessageEmbed error(String msg) {
         return error().setDescription(msg).build();
     }
 
-    default MessageEmbed badRole(String role, SlashCommandInteractionEvent event) {
-        return error(String.format("You must be a %s to run '/%s'", role, event.getFullCommandName()));
+    @Nullable
+    default <T> T findOption(SlashCommandInteractionEvent event, String optionName, Function<OptionMapping, T> getAs) {
+        return findOption(event, optionName, getAs, false);
     }
 
-    default MessageEmbed missingOption(String option) {
-        return error(String.format("'%s' is required", option));
+    @Nullable
+    default <T> T findOption(SlashCommandInteractionEvent event, String optionName, Function<OptionMapping, T> getAs,
+        boolean isRequired) {
+        OptionMapping option = event.getOption(optionName);
+        if (option == null || getAs.apply(option) == null) {
+            if (isRequired)
+                ErrorMessages.missingOption(optionName)
+                    .replyError(event);
+            return null;
+        }
+        return getAs.apply(option);
     }
 
-    default void missingOption(SlashCommandInteractionEvent event, String option) {
-        event.replyEmbeds(missingOption(option)).queue();
+    default void replyError(SlashCommandInteractionEvent event, String msg) {
+        event.replyEmbeds(error(msg))
+            .setEphemeral(true)
+            .queue();
     }
 
-    default void errorRegisterWithStaff(SlashCommandInteractionEvent event) {
-        event.replyEmbeds(error("To register your account use **/request account** and fill in your Minecraft username."))
-            .setEphemeral(true).queue();
+    default void replyError(SlashCommandInteractionEvent event, MessageCreateData msg) {
+        event.reply(msg)
+            .setEphemeral(true)
+            .queue();
     }
 
-    default MessageEmbed errorRegisterWithStaff() {
-        return error("To register your account use **/request account** and fill in your Minecraft username.");
+    default void replySuccess(SlashCommandInteractionEvent event, String msg) {
+        event.replyEmbeds(success(msg)).queue();
     }
+
 }

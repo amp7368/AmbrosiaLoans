@@ -1,12 +1,12 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
-import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.entity.client.ClientApi;
-import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
-import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
-import com.ambrosia.loans.discord.active.cash.ActiveRequestLoanGui;
+import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.SendMessage;
-import com.ambrosia.loans.discord.base.emerald.Emeralds;
+import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.request.cash.ActiveRequestLoan;
+import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.modal.DCFModal;
 import java.util.ArrayList;
 import java.util.HashSet;
