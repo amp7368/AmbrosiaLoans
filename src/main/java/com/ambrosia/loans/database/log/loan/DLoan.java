@@ -1,13 +1,17 @@
 package com.ambrosia.loans.database.log.loan;
 
+import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.log.base.AccountEventType;
 import com.ambrosia.loans.database.log.base.IAccountChange;
 import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.log.loan.comment.DLoanComment;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.query.LoanAccess;
 import com.ambrosia.loans.database.log.loan.query.LoanApi;
 import com.ambrosia.loans.database.log.loan.section.DLoanSection;
+import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
 import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
@@ -27,6 +31,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,16 +58,45 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
     private Timestamp endDate;
     @Column(nullable = false)
     private DLoanStatus status;
-    @Column(nullable = false)
-    private long brokerId;
+    @ManyToOne(optional = false)
+    private DStaffConductor conductor;
+    @Column
+    private String reason;
+    @OneToOne
+    private DClient vouch;
+    @Column
+    private String discount;
+    @Column
+    private String repayment;
+    @OneToMany
+    private List<DLoanComment> comments;
 
-    public DLoan(DClient client, long initialAmount, double rate, long brokerId) {
+    public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor) {
         this.client = client;
         this.initialAmount = initialAmount;
-        this.brokerId = brokerId;
+        this.conductor = conductor;
         Instant now = Instant.now();
         this.startDate = Timestamp.from(now);
         this.sections = List.of(new DLoanSection(this, rate, now));
+        this.status = DLoanStatus.ACTIVE;
+    }
+
+    public DLoan(ActiveRequestLoan request) throws CreateEntityException {
+        this.client = request.getClient();
+        this.initialAmount = request.getAmount().amount();
+        this.conductor = request.getConductor();
+        this.reason = request.getReason();
+        this.repayment = request.getRepayment();
+        this.vouch = request.getVouchClient();
+        if (request.getStartDate() == null)
+            this.startDate = Timestamp.from(Instant.now());
+        else
+            this.startDate = Timestamp.from(request.getStartDate());
+        Double rate = request.getRate();
+        if (rate == null) throw new CreateEntityException("Rate has not been set!");
+        DLoanSection firstSection = new DLoanSection(this, rate, this.startDate.toInstant());
+        this.sections = List.of(firstSection);
+        this.discount = request.getDiscount();
         this.status = DLoanStatus.ACTIVE;
     }
 

@@ -33,7 +33,7 @@ public class DiscordLog implements SendMessage {
 
     public void modifyDiscord(DClient client, User actor) {
         EmbedBuilder msg = normal("Modify Discord", actor);
-        client(msg, client).setDescription(client.getDiscord(ClientDiscordDetails::fullName))
+        client(msg, client).setDescription(client.getDiscord(ClientDiscordDetails::getUsername))
             .setThumbnail(client.getDiscord().avatarUrl);
         log(msg.build(), true);
     }

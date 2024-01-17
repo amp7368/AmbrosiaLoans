@@ -7,7 +7,6 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.messages.checkin.query.QDCheckInMessage;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 import com.ambrosia.loans.database.log.invest.DInvest;
 import com.ambrosia.loans.database.log.invest.InvestApi;
 import com.ambrosia.loans.database.log.invest.query.QDInvest;
@@ -37,7 +36,6 @@ public class ExampleData {
     private static DClient clientNothingD;
 
     public static void loadExample() {
-        new QDStaffConductor().delete();
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
         new QDLoan().delete();
@@ -80,16 +78,16 @@ public class ExampleData {
 
 
     private static void insertLoans() throws CreateEntityException {
-        LoanApi loanA = LoanApi.createLoan(clientLoanA, Emeralds.leToEmeralds(64), .05, 0);
+        LoanApi loanA = LoanApi.createLoan(clientLoanA, Emeralds.leToEmeralds(64), .05, DStaffConductor.SYSTEM);
         Instant monthAgo = Instant.now().minus(Duration.ofDays(30));
         loanA.getEntity().setStartDate(monthAgo.minus(Duration.ofDays(30)));
         loanA.getEntity().save();
         loanA.changeToNewRate(.01, monthAgo);
 
-        LoanApi loanB = LoanApi.createLoan(clientLoanB, Emeralds.leToEmeralds(64), .00, 0);
+        LoanApi loanB = LoanApi.createLoan(clientLoanB, Emeralds.leToEmeralds(64), .00, DStaffConductor.SYSTEM);
         loanB.getEntity().setStartDate(monthAgo.plus(1, ChronoUnit.DAYS));
         loanA.getEntity().save();
-        LoanApi loanC = LoanApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, 0);
+        LoanApi loanC = LoanApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, DStaffConductor.SYSTEM);
     }
 
     private static void print(LoanApi loanA) {

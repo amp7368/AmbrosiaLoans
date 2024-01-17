@@ -26,7 +26,15 @@ public class ClientDiscordDetails {
         return new ClientDiscordDetails(member);
     }
 
-    public String fullName() {
+    public String getUsername() {
         return this.username;
+    }
+
+    public String getAvatarUrl() {
+        return this.avatarUrl;
+    }
+
+    public Long getDiscordId() {
+        return discordId;
     }
 }

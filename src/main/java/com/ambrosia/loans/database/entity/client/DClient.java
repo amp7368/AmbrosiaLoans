@@ -46,7 +46,7 @@ public class DClient extends Model implements ClientAccess<DClient> {
     private long balance = 0;
     @OneToMany
     private final List<DAccountSnapshot> accountSnapshots = new ArrayList<>();
-    @OneToMany
+    @OneToMany(mappedBy = "client")
     private final List<DLoan> loans = new ArrayList<>();
     @OneToMany
     private final List<DInvest> investments = new ArrayList<>();
@@ -110,5 +110,14 @@ public class DClient extends Model implements ClientAccess<DClient> {
         return loans.stream()
             .sorted(Comparator.comparing(DLoan::getStartDate))
             .toList();
+    }
+
+    public String getEffectiveName() {
+        if (this.displayName != null) return this.displayName;
+        String minecraft = getMinecraft(ClientMinecraftDetails::getName);
+        if (minecraft != null) return minecraft;
+        String discord = getDiscord(ClientDiscordDetails::getUsername);
+        if (discord != null) return discord;
+        return "error";
     }
 }

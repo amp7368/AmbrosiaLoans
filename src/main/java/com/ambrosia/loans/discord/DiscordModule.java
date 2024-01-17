@@ -3,16 +3,20 @@ package com.ambrosia.loans.discord;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.commands.dealer.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.dealer.profile.CreateProfileCommand;
 import com.ambrosia.loans.discord.commands.dealer.view.ViewProfileCommand;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
+import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
+import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
+import java.time.ZoneId;
 import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -22,7 +26,8 @@ public class DiscordModule extends AppleModule {
 
     public static final String AMBROSIA_ICON =
         "https://cdn.discordapp" + ".com/icons/923749890104885271/a_52da37c184005a14d15538cb62271b9b.webp";
-
+    public static final int MAX_CHOICES = 25;
+    public static final ZoneId TIME_ZONE = ZoneId.of("America/Los_Angeles");
     private static DiscordModule instance;
 
     public DiscordModule() {
@@ -51,7 +56,6 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnable() {
-
         JDABuilder builder = JDABuilder.createDefault(DiscordConfig.get().token);
         JDA jda = builder.build();
         try {
@@ -64,20 +68,22 @@ public class DiscordModule extends AppleModule {
         DCF dcf = new DCF(jda);
         DiscordBot.SELF_USER_AVATAR = jda.getSelfUser().getAvatarUrl();
         DiscordBot.dcf = dcf;
+        jda.addEventListener(new AutoCompleteListener());
 
         ActiveRequestDatabase.load();
 
         DCFCommandManager commands = dcf.commands();
         // employee commands
-        commands.addCommand(new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
+        commands.addCommand(new CommandStaffModifyRequest(), new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
-        commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest());
+        commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest(), new CommandModifyRequest());
 
         commands.updateCommands();
 
-        dcf.modals().add(new RequestLoanModalType());
+        dcf.modals().add(new RequestLoanModalType(true));
+        dcf.modals().add(new RequestLoanModalType(false));
     }
 
     @Override

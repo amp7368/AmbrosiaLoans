@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
+import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.entity.client.ClientApi;
 import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
@@ -19,22 +20,27 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     private static final Set<Character> URL_CHARACTERS = new HashSet<>();
 
     static {
-        URL_CHARACTERS.addAll(";,/?:@&=+$-_.!~*'()#".chars().mapToObj(c -> (char) c).toList());
+        // does a url contain commas?
+        URL_CHARACTERS.addAll(";/?:@&=+$-_.!~*'()#".chars().mapToObj(c -> (char) c).toList());
         String alphabet = "abcdefghijklmnopqrstuvwxyz";
         URL_CHARACTERS.addAll(alphabet.chars().mapToObj(c -> (char) c).toList());
-        URL_CHARACTERS.addAll(alphabet.chars().mapToObj(c -> (char) c).toList());
+        URL_CHARACTERS.addAll(alphabet.chars().mapToObj(c -> Character.toUpperCase((char) c)).toList());
         URL_CHARACTERS.addAll("0123456789".chars().mapToObj(c -> (char) c).toList());
     }
 
-    private String voucher;
+    private String discount;
     private long emeralds;
     private String repayment;
     private List<String> collateral;
     private String error = null;
+    private String minecraft;
+    private String reason;
+    private String vouch;
 
-    public void setVoucher(ModalMapping modalMapping) {
-        this.voucher = modalMapping.getAsString();
+    public void setMinecraft(ModalMapping modalMapping) {
+        this.minecraft = modalMapping.getAsString();
     }
+
 
     public void setEmeralds(ModalMapping modalMapping) {
         final String value = modalMapping.getAsString();
@@ -51,6 +57,11 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         } catch (NumberFormatException e) {
             this.error = "'Amount in STX' must be a decimal number";
         }
+    }
+
+
+    public void setReason(ModalMapping modalMapping) {
+        this.reason = modalMapping.getAsString();
     }
 
     public void setRepayment(ModalMapping modalMapping) {
@@ -71,6 +82,14 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         if (!url.isEmpty()) collateral.add(url.toString());
     }
 
+    public void setVouch(ModalMapping modalMapping) {
+        this.vouch = modalMapping.getAsString();
+    }
+
+    public void setDiscount(ModalMapping modalMapping) {
+        this.discount = modalMapping.getAsString();
+    }
+
     @Override
     public void onEvent(ModalInteractionEvent event) {
         if (this.error != null) {
@@ -79,15 +98,27 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         }
         ClientApi client = ClientApi.findByDiscord(event.getUser().getIdLong());
         if (client.isEmpty()) {
-            event.replyEmbeds(errorRegisterWithStaff()).setEphemeral(true).queue();
-            return;
+            try {
+                client = ClientApi.createClient(minecraft, event.getMember());
+            } catch (CreateEntityException e) {
+                event.replyEmbeds(error(e.getMessage())).setEphemeral(true).queue();
+                return;
+            }
         }
-        ActiveRequestLoan request = new ActiveRequestLoan(event.getMember(), client.entity, this.emeralds, this.collateral,
-            this.voucher, this.repayment);
+        ActiveRequestLoan request = new ActiveRequestLoan(
+            client.entity,
+            this.emeralds,
+            this.reason,
+            this.repayment,
+            this.collateral,
+            this.vouch,
+            this.discount
+        );
 
         ActiveRequestLoanGui gui = request.create();
         event.reply(gui.makeClientMessage()).queue();
         gui.send(ActiveRequestDatabase::sendRequest);
     }
+
 
 }

@@ -2,11 +2,15 @@ package com.ambrosia.loans.discord.active.base;
 
 import apple.utilities.util.ArrayUtils;
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.List;
+import java.util.function.Consumer;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -21,20 +25,40 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     private static final String BUTTON_COMPLETE_ID = "complete";
     private static final String BUTTON_APPROVE_ID = "approve";
     private static final String BUTTON_BACK_ID = "back";
+    private static final String BUTTON_RESET_STAGE_ID = "reset";
     private static final Button BUTTON_BACK = Button.secondary(BUTTON_BACK_ID, "Back");
     private static final Button BUTTON_COMPLETE = Button.success(BUTTON_COMPLETE_ID, "Complete");
     private static final Button BUTTON_DENY = Button.danger(BUTTON_DENY_ID, "Deny");
     private static final Button BUTTON_CLAIM = Button.primary(BUTTON_CLAIM_ID, "Claim");
     private static final Button BUTTON_APPROVE = Button.primary(BUTTON_APPROVE_ID, "Approve");
+    private static final Button BUTTON_RESET_STAGE = Button.primary(BUTTON_RESET_STAGE_ID, "Reset");
     private String error = null;
 
     public ActiveRequestGui(long message, Data data) {
         super(message, data);
-        this.registerButton(BUTTON_DENY_ID, this::deny);
-        this.registerButton(BUTTON_CLAIM_ID, this::claim);
-        this.registerButton(BUTTON_APPROVE_ID, this::approve);
-        this.registerButton(BUTTON_COMPLETE_ID, this::complete);
-        this.registerButton(BUTTON_BACK_ID, this::unClaim);
+        this.registerButton(BUTTON_DENY_ID, e -> this.checkPermissions(e, this::deny));
+        this.registerButton(BUTTON_CLAIM_ID, e -> this.checkPermissions(e, this::claim));
+        this.registerButton(BUTTON_APPROVE_ID, e -> this.checkPermissions(e, this::approve));
+        this.registerButton(BUTTON_COMPLETE_ID, e -> this.checkPermissions(e, this::complete));
+        this.registerButton(BUTTON_BACK_ID, e -> this.checkPermissions(e, this::unClaim));
+        this.registerButton(BUTTON_RESET_STAGE_ID, e -> this.checkPermissions(e, this::reset));
+    }
+
+
+    private void checkPermissions(ButtonInteractionEvent event, Consumer<ButtonInteractionEvent> callback) {
+        Member sender = event.getMember();
+        if (sender == null) return;
+        DiscordPermissions perms = DiscordPermissions.get();
+        List<Role> roles = sender.getRoles();
+        boolean isEmployee = perms.isEmployee(roles) || perms.isManager(roles);
+        if (isEmployee) {
+            callback.accept(event);
+            save();
+        }
+    }
+
+    private void reset(ButtonInteractionEvent event) {
+        this.data.stage = ActiveRequestStage.CREATED;
     }
 
     private void approve(ButtonInteractionEvent event) {
@@ -98,7 +122,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected MessageCreateData makeMessage(String... extraDescription) {
         MessageCreateBuilder message = new MessageCreateBuilder();
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s - (%s)", title(), stageName()), titleUrl());
+        embed.setTitle(String.format("%s - (%s) [%d]", title(), stageName(), data.getRequestId()));
         embed.setColor(this.data.stage.getColor());
         data.sender.author(embed);
         String description = this.generateDescription(ArrayUtils.combine(extraDescription, error, String[]::new));
@@ -106,7 +130,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         this.fields().forEach(embed::addField);
         message.setEmbeds(embed.build());
         List<Button> components = switch (data.stage) {
-            case ERROR, DENIED, COMPLETED -> List.of();
+            case ERROR -> List.of(BUTTON_RESET_STAGE);
+            case DENIED, COMPLETED -> List.of();
             case APPROVED -> List.of(BUTTON_COMPLETE);
             case CLAIMED -> this.getClaimedComponents();
             case CREATED, UNCLAIMED -> this.getInitialComponents();
@@ -157,10 +182,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected abstract String description();
 
     protected abstract String title();
-
-    protected String titleUrl() {
-        return null;
-    }
 
     protected void updateSender() {
         String updateMessage = switch (this.data.stage) {

@@ -15,6 +15,7 @@ public class HelpCommandsPage extends HelpGuiPage {
     @Override
     protected MessageEmbed makeEmbed(EmbedBuilder eb) {
         eb.addField("/request account [IGN]", "Request to create a profile with your Minecraft in-game name", false);
+        eb.addField("/request loan", "Request to take out a loan by filling out the form", false);
         eb.addField("/request withdraw [emeralds]", "Request to cashout emeralds from your account", false);
         eb.addField("/request deposit [emeralds]", "Request to deposit emeralds into your account", false);
         eb.addField("/profile", "Display your profile", false);

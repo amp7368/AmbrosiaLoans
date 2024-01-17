@@ -1,12 +1,11 @@
 package com.ambrosia.loans.bank;
 
-import apple.lib.modules.AppleModule;
 import ch.obermuhlner.math.big.BigDecimalMath;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Duration;
 
-public class Bank extends AppleModule {
+public class Bank {
 
     public static final Duration INTEREST_INTERVAL = Duration.ofDays(7);
     public static final Duration INTEREST_ACCUMULATE_INTERVAL = Duration.ofDays(7);
@@ -23,14 +22,5 @@ public class Bank extends AppleModule {
         BigDecimal exponent = time.multiply(rate);
         BigDecimal multiplier = BigDecimalMath.pow(BigDecimal.valueOf(Math.E), exponent, MathContext.DECIMAL128);
         return amount.multiply(multiplier);
-    }
-
-    @Override
-    public void onEnable() {
-    }
-
-    @Override
-    public String getName() {
-        return "Bank";
     }
 }

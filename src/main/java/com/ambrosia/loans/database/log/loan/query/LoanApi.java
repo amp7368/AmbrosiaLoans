@@ -1,11 +1,15 @@
 package com.ambrosia.loans.database.log.loan.query;
 
 import com.ambrosia.loans.database.base.ModelApi;
+import com.ambrosia.loans.database.base.util.CreateEntityException;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.log.loan.DLoan;
 import com.ambrosia.loans.database.log.loan.DLoanStatus;
+import com.ambrosia.loans.database.log.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.log.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.log.loan.section.DLoanSection;
+import com.ambrosia.loans.discord.active.cash.ActiveRequestLoan;
 import com.ambrosia.loans.discord.base.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -22,12 +26,27 @@ public class LoanApi extends ModelApi<DLoan> implements LoanAccess<LoanApi> {
         super(entity);
     }
 
-    public static LoanApi createLoan(DClient client, Emeralds amount, double rate, long brokerId) {
+    public static LoanApi createLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor) {
         // todo allow different starting dates
-        DLoan loan = new DLoan(client, amount.amount(), rate, brokerId);
+        DLoan loan = new DLoan(client, amount.amount(), rate, conductor);
+        System.out.println(conductor);
         loan.save();
         return api(loan);
     }
+
+    public static LoanApi createLoan(ActiveRequestLoan request) throws CreateEntityException {
+        DLoan loan = new DLoan(request);
+
+        try (Transaction transaction = DB.beginTransaction()) {
+            loan.save(transaction);
+            for (String link : request.getCollateral())
+                new DCollateral(loan, link).save(transaction);
+            transaction.commit();
+        }
+        loan.refresh();
+        return api(loan);
+    }
+
 
     public static List<LoanApi> findClientLoans(DClient client) {
         return api(new QDLoan().where()
