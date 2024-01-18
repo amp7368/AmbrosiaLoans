@@ -15,7 +15,7 @@ public class VouchAutoComplete extends AmbrosiaAutoComplete<DClient> {
 
     @Override
     protected List<DClient> autoComplete(@NotNull CommandAutoCompleteInteractionEvent event, String arg) {
-        return ClientSearch.findByNamePartial(arg);
+        return ClientSearch.autoComplete(arg);
     }
 
     @NotNull

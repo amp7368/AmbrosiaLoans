@@ -5,8 +5,6 @@ import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.comment.DLoanComment;
 import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
-import com.ambrosia.loans.database.account.event.loan.query.LoanAccess;
-import com.ambrosia.loans.database.account.event.loan.query.LoanApi;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -37,7 +35,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
+public class DLoan extends Model implements IAccountChange, LoanAccess {
 
     @Id
     @Identity
@@ -120,11 +118,6 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
         return this;
     }
 
-    @Override
-    public DLoan getSelf() {
-        return this;
-    }
-
     public Instant getStartDate() {
         return this.startDate.toInstant();
     }
@@ -204,10 +197,6 @@ public class DLoan extends Model implements LoanAccess<DLoan>, IAccountChange {
 
     public List<DLoanPayment> getPayments() {
         return this.payments;
-    }
-
-    public LoanApi api() {
-        return LoanApi.api(this);
     }
 
     @Override

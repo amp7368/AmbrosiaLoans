@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.request.account;
 
-import com.ambrosia.loans.database.entity.client.ClientAccess;
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.util.CreateEntityException;
@@ -31,17 +31,17 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
         ClientMinecraftDetails minecraftDetails = ClientMinecraftDetails.fromUsername(minecraft);
         if (minecraftDetails == null)
             throw new UpdateAccountException(String.format("Minecraft account: '%s' not found", minecraft));
-        this.original = ClientApi.findByDiscord(discord.getIdLong()).entity;
+        this.original = ClientQueryApi.findByDiscord(discord.getIdLong());
         if (displayName == null) displayName = minecraft;
         if (this.original == null) {
             try {
-                this.original = ClientApi.createClient(discord.getEffectiveName(), discord).entity;
+                this.original = ClientCreateApi.createClient(discord.getEffectiveName(), discord);
             } catch (CreateEntityException e) {
                 throw new UpdateAccountException(e.getMessage());
             }
         }
         sender.setClient(original);
-        this.updated = ClientApi.findById(original.getId()).entity;
+        this.updated = ClientQueryApi.findById(original.getId());
         if (updated == null) throw new IllegalStateException("Client " + original.getId() + " does not exist!");
         this.updated.setMinecraft(minecraftDetails);
         if (displayName != null) this.updated.setDisplayName(displayName);
@@ -56,11 +56,16 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
     }
 
     public void onComplete() throws UpdateAccountException {
-        ClientApi newVersion = ClientApi.findById(updated.getId());
-        if (newVersion.entity == null) throw new UpdateAccountException("Client no longer exists");
-        updateField(ClientAccess::getMinecraft, newVersion::setMinecraft);
-        updateField(ClientAccess::getDisplayName, newVersion::setDisplayName);
-        if (!newVersion.trySave()) throw new UpdateAccountException("Client is not unique");
+        DClient newVersion = ClientQueryApi.findById(updated.getId());
+        if (newVersion == null) throw new UpdateAccountException("Client no longer exists");
+        updateField(DClient::getMinecraft, newVersion::setMinecraft);
+        updateField(DClient::getDisplayName, newVersion::setDisplayName);
+        try {
+            newVersion.save();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new UpdateAccountException("Client is not unique");
+        }
     }
 
     public <T> void updateField(Function<DClient, T> extract, Consumer<T> setter) {
@@ -71,8 +76,8 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
 
     public List<Field> displayFields() {
         List<Field> fields = new ArrayList<>();
-        fields.add(checkEqual(ClientAccess::getDisplayName, Function.identity(), "Profile DisplayName"));
-        fields.add(checkEqual(ClientAccess::getMinecraft, mc -> mc.name, "Minecraft"));
+        fields.add(checkEqual(DClient::getDisplayName, Function.identity(), "Profile DisplayName"));
+        fields.add(checkEqual(DClient::getMinecraft, mc -> mc.name, "Minecraft"));
         fields.removeIf(Objects::isNull);
         return fields;
     }

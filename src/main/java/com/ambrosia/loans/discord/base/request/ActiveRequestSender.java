@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.base.request;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
@@ -15,6 +15,10 @@ public class ActiveRequestSender {
     private transient DClient client;
 
     public ActiveRequestSender(DClient client) {
+        if (client == null) {
+            this.clientId = -1;
+            return;
+        }
         this.clientId = client.getId();
         this.client = client;
     }
@@ -24,7 +28,7 @@ public class ActiveRequestSender {
 
     public DClient getClient() {
         if (client != null) return client;
-        return client = ClientApi.findById(this.clientId).entity;
+        return client = ClientQueryApi.findById(this.clientId);
     }
 
     public void setClient(DClient client) {

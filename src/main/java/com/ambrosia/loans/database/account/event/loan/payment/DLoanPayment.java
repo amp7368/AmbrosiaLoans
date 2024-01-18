@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.account.event.loan.payment;
 
 import com.ambrosia.loans.Bank;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import io.ebean.Model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -28,9 +28,9 @@ public class DLoanPayment extends Model {
     @Column
     private long amount;
 
-    public DLoanPayment(DLoan loan, Timestamp date, long amount) {
+    public DLoanPayment(DLoan loan, Instant date, long amount) {
         this.loan = loan;
-        this.date = date;
+        this.date = Timestamp.from(date);
         this.amount = amount;
     }
 

@@ -1,6 +1,8 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -96,17 +98,17 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             event.replyEmbeds(error(error)).setEphemeral(true).queue();
             return;
         }
-        ClientApi client = ClientApi.findByDiscord(event.getUser().getIdLong());
-        if (client.isEmpty()) {
+        DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
+        if (client == null) {
             try {
-                client = ClientApi.createClient(minecraft, event.getMember());
+                client = ClientCreateApi.createClient(minecraft, event.getMember());
             } catch (CreateEntityException e) {
                 event.replyEmbeds(error(e.getMessage())).setEphemeral(true).queue();
                 return;
             }
         }
         ActiveRequestLoan request = new ActiveRequestLoan(
-            client.entity,
+            client,
             this.emeralds,
             this.reason,
             this.repayment,

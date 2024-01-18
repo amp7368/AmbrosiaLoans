@@ -4,9 +4,10 @@ import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
 import com.ambrosia.loans.database.account.event.invest.DInvest;
 import com.ambrosia.loans.database.account.event.invest.InvestApi;
 import com.ambrosia.loans.database.account.event.invest.query.QDInvest;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
 import com.ambrosia.loans.database.account.event.loan.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.account.event.loan.payment.query.QDLoanPayment;
-import com.ambrosia.loans.database.account.event.loan.query.LoanApi;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSection;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
@@ -62,11 +63,11 @@ public class ExampleData {
 
     private static void createPayments() {
         clients().forEach(Model::refresh);
-        LoanApi.makePayment(clientLoanA.getLoans().get(0), Emeralds.leToEmeralds(16));
-        LoanApi.makePayment(clientLoanB.getLoans().get(0), Emeralds.leToEmeralds(32));
-        LoanApi.makePayment(clientLoanB.getLoans().get(0), Emeralds.leToEmeralds(32));
-        print(clientLoanA.getLoans().get(0).api());
-        print(clientLoanB.getLoans().get(0).api());
+        clientLoanA.getLoans().get(0).makePayment(Emeralds.leToEmeralds(16));
+        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32));
+        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32));
+        print(clientLoanA.getLoans().get(0));
+        print(clientLoanB.getLoans().get(0));
     }
 
     private static List<DClient> clients() {
@@ -78,20 +79,20 @@ public class ExampleData {
 
 
     private static void insertLoans() throws CreateEntityException {
-        LoanApi loanA = LoanApi.createLoan(clientLoanA, Emeralds.leToEmeralds(64), .05, DStaffConductor.SYSTEM);
+        DLoan loanA = LoanCreateApi.createLoan(clientLoanA, Emeralds.leToEmeralds(64), .05, DStaffConductor.SYSTEM);
         Instant monthAgo = Instant.now().minus(Duration.ofDays(30));
-        loanA.getEntity().setStartDate(monthAgo.minus(Duration.ofDays(30)));
-        loanA.getEntity().save();
+        loanA.setStartDate(monthAgo.minus(Duration.ofDays(30)));
+        loanA.save();
         loanA.changeToNewRate(.01, monthAgo);
 
-        LoanApi loanB = LoanApi.createLoan(clientLoanB, Emeralds.leToEmeralds(64), .00, DStaffConductor.SYSTEM);
-        loanB.getEntity().setStartDate(monthAgo.plus(1, ChronoUnit.DAYS));
-        loanA.getEntity().save();
-        LoanApi loanC = LoanApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, DStaffConductor.SYSTEM);
+        DLoan loanB = LoanCreateApi.createLoan(clientLoanB, Emeralds.leToEmeralds(64), .00, DStaffConductor.SYSTEM);
+        loanB.setStartDate(monthAgo.plus(1, ChronoUnit.DAYS));
+        loanA.save();
+        DLoan loanC = LoanCreateApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, DStaffConductor.SYSTEM);
     }
 
-    private static void print(LoanApi loanA) {
-        System.err.println(EmeraldsFormatter.of().setBold(false).format(loanA.getEntity().getTotalOwed()));
+    private static void print(DLoan loanA) {
+        System.err.println(EmeraldsFormatter.of().setBold(false).format(loanA.getTotalOwed()));
     }
 
     private static void insertClients() {

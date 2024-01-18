@@ -1,7 +1,5 @@
 package com.ambrosia.loans.discord.base.command.option;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
-import com.ambrosia.loans.database.entity.client.DClient;
 import java.util.function.Function;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -25,14 +23,6 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
             if (v == null) return null;
             return mapping2.apply(v);
         });
-    }
-
-    public static DClient findClient(SlashCommandInteractionEvent event) {
-        return findClientApi(event).entity;
-    }
-
-    public static ClientApi findClientApi(SlashCommandInteractionEvent event) {
-        return ClientApi.findByName(CommandOption.CLIENT.getRequired(event));
     }
 
     public V getOptionalMap1(SlashCommandInteractionEvent event) {

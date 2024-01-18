@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.base.command.modify;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
@@ -34,11 +34,11 @@ public interface BaseModifyLoanRequest extends BaseModifyRequest {
 
     default ModifyRequestMsg setVouch(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
         String vouch = CommandOption.VOUCH.getOptionalMap1(event);
-        ClientApi vouchClient = CommandOption.VOUCH.getOptional(event);
-        if (vouchClient.isEmpty())
+        DClient vouchClient = CommandOption.VOUCH.getOptional(event);
+        if (vouchClient == null)
             return ModifyRequestMsg.error("Cannot find client '%s'".formatted(vouch));
         loan.getData().setVouchClient(vouchClient.getEntity());
-        return ModifyRequestMsg.info("%s set as vouch".formatted(vouchClient.entity.getEffectiveName()));
+        return ModifyRequestMsg.info("%s set as vouch".formatted(vouchClient.getEffectiveName()));
     }
 
     default void replyChanges(SlashCommandInteractionEvent event, List<ModifyRequestMsg> changes, ActiveRequestLoanGui loan) {

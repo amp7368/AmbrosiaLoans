@@ -5,7 +5,6 @@ import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.AmbrosiaDatabase.AmbrosiaDatabaseConfig;
-import com.ambrosia.loans.database.entity.client.ClientApi;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.init.InitDatabase;
 import java.util.List;
@@ -22,7 +21,6 @@ public class DatabaseModule extends AppleModule {
             logger()::info);
 
         new AmbrosiaDatabase();
-        ClientApi.load();
         InitDatabase.init();
 
         if (AmbrosiaDatabaseConfig.get().isExample())

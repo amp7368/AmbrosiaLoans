@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.commands.player.request.loan;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -9,9 +10,9 @@ public class CommandRequestLoan extends BaseSubCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ClientApi client = ClientApi.findByDiscord(event.getUser().getIdLong());
+        DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
 
-        RequestLoanModalType modalType = RequestLoanModalType.get(client.isEmpty());
+        RequestLoanModalType modalType = RequestLoanModalType.get(client == null);
         event.replyModal(modalType.buildModal()).queue();
     }
 
