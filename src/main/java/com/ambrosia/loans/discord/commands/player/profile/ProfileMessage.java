@@ -1,20 +1,20 @@
 package com.ambrosia.loans.discord.commands.player.profile;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.ClientLoanSummary;
 import com.ambrosia.loans.discord.DiscordModule;
-import com.ambrosia.loans.discord.base.AmbrosiaColor;
-import com.ambrosia.loans.discord.base.emerald.EmeraldsFormatter;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class ProfileMessage {
 
-    private final ClientApi client;
+    private final DClient client;
     private String titleExtra;
 
-    public ProfileMessage(ClientApi client) {
+    public ProfileMessage(DClient client) {
         this.client = client;
     }
 
@@ -43,7 +43,7 @@ public class ProfileMessage {
             embed.setTitle(client.getDisplayName());
             embed.setFooter(" - | Created", DiscordModule.AMBROSIA_ICON);
         }
-        embed.setTimestamp(client.getDateCreated().toInstant());
+        embed.setTimestamp(client.getDateCreated());
 
         embed.addBlankField(false);
         ClientLoanSummary loanSummary = client.getLoanSummary();

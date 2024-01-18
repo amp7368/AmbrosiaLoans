@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.commands.player.help;
 
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.base.AmbrosiaColor;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
 import net.dv8tion.jda.api.EmbedBuilder;

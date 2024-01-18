@@ -1,15 +1,12 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.event.invest.DInvest;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.log.base.AccountEventType;
-import com.ambrosia.loans.database.log.invest.DInvest;
-import com.ambrosia.loans.database.log.loan.DLoan;
-import com.ambrosia.loans.database.simulate.snapshot.DAccountSnapshot;
-import com.ambrosia.loans.discord.base.emerald.Emeralds;
-import io.ebean.DB;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
-import io.ebean.Transaction;
 import io.ebean.annotation.Identity;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -25,7 +22,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "client")
-public class DClient extends Model implements ClientAccess<DClient> {
+public class DClient extends Model implements ClientAccess {
 
     @Id
     @Column
@@ -55,55 +52,23 @@ public class DClient extends Model implements ClientAccess<DClient> {
         this.displayName = displayName;
     }
 
-    public DAccountSnapshot updateBalance(long amount, Instant timestamp, AccountEventType eventType) {
-        try (Transaction transaction = DB.beginTransaction()) {
-            DAccountSnapshot snapshot = updateBalance(amount, timestamp, eventType, transaction);
-            transaction.commit();
-            return snapshot;
-        }
-    }
-
-    public DAccountSnapshot updateBalance(long amount, Instant timestamp, AccountEventType eventType, Transaction transaction) {
-        this.balance += amount;
-        DAccountSnapshot snapshot = new DAccountSnapshot(this, timestamp, balance, amount, eventType);
-        this.accountSnapshots.add(snapshot);
-        snapshot.save(transaction);
-        this.save(transaction);
-        return snapshot;
-    }
 
     public Emeralds getBalance() {
         return Emeralds.of(this.balance);
     }
 
+    public DClient setBalance(long balance) {
+        this.balance = balance;
+        return this;
+    }
 
     @Override
     public DClient getEntity() {
         return this;
     }
 
-    @Override
-    public DClient getSelf() {
-        return null;
-    }
-
-    @Override
-    public void setMinecraft(ClientMinecraftDetails minecraft) {
-        this.minecraft = minecraft;
-    }
-
-    @Override
-    public void setDiscord(ClientDiscordDetails discord) {
-        this.discord = discord;
-    }
-
-    @Override
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public ClientApi api() {
-        return new ClientApi(this);
+    public long getId() {
+        return id;
     }
 
     public List<DLoan> getLoans() {
@@ -119,5 +84,38 @@ public class DClient extends Model implements ClientAccess<DClient> {
         String discord = getDiscord(ClientDiscordDetails::getUsername);
         if (discord != null) return discord;
         return "error";
+    }
+
+    public ClientMinecraftDetails getMinecraft() {
+        return minecraft;
+    }
+
+    public void setMinecraft(ClientMinecraftDetails minecraft) {
+        this.minecraft = minecraft;
+    }
+
+    public DClient addAccountSnapshot(DAccountSnapshot snapshot) {
+        this.accountSnapshots.add(snapshot);
+        return this;
+    }
+
+    public ClientDiscordDetails getDiscord() {
+        return this.discord;
+    }
+
+    public void setDiscord(ClientDiscordDetails discord) {
+        this.discord = discord;
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public Instant getDateCreated() {
+        return this.dateCreated.toInstant();
     }
 }

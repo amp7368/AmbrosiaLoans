@@ -1,29 +1,30 @@
 package com.ambrosia.loans.discord.commands.player.profile;
 
-import com.ambrosia.loans.database.entity.client.ClientApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.base.command.client.BaseClientCommand;
+import com.ambrosia.loans.discord.commands.player.profile.loan.LoanProfileCommand;
+import discord.util.dcf.slash.DCFSlashSubCommand;
+import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class ProfileCommand extends BaseCommand {
+public class ProfileCommand extends BaseClientCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
-        DClient client = ClientApi.findByDiscord(event.getUser().getIdLong()).entity;
-        if (client == null) {
-            this.errorRegisterWithStaff(event);
-            return;
-        }
-        new ProfileMessage(client.api()).reply(event);
+    public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
+
     }
 
+
+    @Override
+    public List<DCFSlashSubCommand> getSubCommands() {
+        return List.of(new LoanProfileCommand());
+    }
 
     @Override
     public SlashCommandData getData() {
         SlashCommandData command = Commands.slash("profile", "View your profile");
         return command.setGuildOnly(true);
     }
-
 }

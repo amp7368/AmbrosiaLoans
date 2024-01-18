@@ -2,11 +2,11 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
-import com.ambrosia.loans.discord.active.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
-import com.ambrosia.loans.discord.commands.dealer.profile.CommandLink;
-import com.ambrosia.loans.discord.commands.dealer.profile.CreateProfileCommand;
-import com.ambrosia.loans.discord.commands.dealer.view.ViewProfileCommand;
+import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
+import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
+import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;

@@ -12,7 +12,7 @@ import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 public class ClientSearch {
 
-    public static List<DClient> findByNamePartial(String match) {
+    public static List<DClient> autoComplete(String match) {
         List<ClientName> byName = new ArrayList<>();
         List<DClient> clients = new QDClient().findList();
         for (DClient client : clients) {

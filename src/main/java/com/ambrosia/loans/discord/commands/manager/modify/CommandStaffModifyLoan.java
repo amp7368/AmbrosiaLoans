@@ -1,10 +1,10 @@
 package com.ambrosia.loans.discord.commands.manager.modify;
 
 import com.ambrosia.loans.discord.DiscordModule;
-import com.ambrosia.loans.discord.active.cash.ActiveRequestLoanGui;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
-import com.ambrosia.loans.discord.commands.base.BaseModifyLoanRequest;
-import com.ambrosia.loans.discord.commands.base.ModifyRequestMsg;
+import com.ambrosia.loans.discord.base.command.modify.BaseModifyLoanRequest;
+import com.ambrosia.loans.discord.base.command.modify.ModifyRequestMsg;
+import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;

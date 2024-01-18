@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.bank;
 
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
-import com.ambrosia.loans.database.log.base.AccountEventType;
 import java.sql.Timestamp;
 import java.time.Instant;
 
