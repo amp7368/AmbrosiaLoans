@@ -12,6 +12,16 @@ import java.util.List;
 public class DatabaseModule extends AppleModule {
 
 
+    private static DatabaseModule instance;
+
+    public DatabaseModule() {
+        instance = this;
+    }
+
+    public static DatabaseModule get() {
+        return instance;
+    }
+
     @Override
     public void onLoad() {
         AppleEbeanDatabaseMetaConfig.configureMeta(

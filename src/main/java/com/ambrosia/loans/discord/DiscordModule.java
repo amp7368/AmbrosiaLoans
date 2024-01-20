@@ -2,11 +2,7 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
-import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
-import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
-import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
-import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
@@ -14,6 +10,10 @@ import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
+import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
+import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
+import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
+import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import java.time.ZoneId;
@@ -25,7 +25,7 @@ import net.dv8tion.jda.api.entities.Activity;
 public class DiscordModule extends AppleModule {
 
     public static final String AMBROSIA_ICON =
-        "https://cdn.discordapp" + ".com/icons/923749890104885271/a_52da37c184005a14d15538cb62271b9b.webp";
+        "https://cdn.discordapp.com/icons/923749890104885271/a_52da37c184005a14d15538cb62271b9b.webp";
     public static final int MAX_CHOICES = 25;
     public static final ZoneId TIME_ZONE = ZoneId.of("America/Los_Angeles");
     private static DiscordModule instance;

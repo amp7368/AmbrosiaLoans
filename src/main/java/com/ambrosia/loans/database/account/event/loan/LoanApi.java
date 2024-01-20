@@ -40,20 +40,29 @@ public interface LoanApi {
 
         static DLoan createLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor) {
             DLoan loan = new DLoan(client, amount.amount(), rate, conductor);
-            loan.save();
+            client.addLoan(loan);
+            try (Transaction transaction = DB.beginTransaction()) {
+                loan.save(transaction);
+                client.save(transaction);
+                transaction.commit();
+            }
             return loan;
         }
 
         static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException {
             DLoan loan = new DLoan(request);
+            DClient client = loan.getClient();
 
             try (Transaction transaction = DB.beginTransaction()) {
                 loan.save(transaction);
                 for (String link : request.getCollateral())
                     new DCollateral(loan, link).save(transaction);
+                client.addLoan(loan);
+                client.save(transaction);
                 transaction.commit();
             }
             loan.refresh();
+            client.refresh();
             return loan;
         }
 

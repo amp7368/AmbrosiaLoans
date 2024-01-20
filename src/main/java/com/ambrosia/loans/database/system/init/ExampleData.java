@@ -64,8 +64,11 @@ public class ExampleData {
     private static void createPayments() {
         clients().forEach(Model::refresh);
         clientLoanA.getLoans().get(0).makePayment(Emeralds.leToEmeralds(16));
+
         clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32));
         clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32));
+
+        clientLoanC.getLoans().get(0).makePayment(Emeralds.leToEmeralds(1));
         print(clientLoanA.getLoans().get(0));
         print(clientLoanB.getLoans().get(0));
     }
@@ -116,7 +119,7 @@ public class ExampleData {
     private static void insertInvestments() {
         Instant longAgo = Instant.now().minus(60, ChronoUnit.DAYS);
         DInvest investmentA = InvestApi.createInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
-            Emeralds.leToEmeralds(5));
+            Emeralds.leToEmeralds(500));
         DInvest withdrawalA = InvestApi.createInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(256));
         for (int i = 0; i < 3; i++) {

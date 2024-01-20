@@ -1,8 +1,9 @@
 package com.ambrosia.loans.database.account.event.invest;
 
-import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -16,8 +17,9 @@ public class InvestApi {
     }
 
     public static DInvest createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
-        if (client.getBalance().amount() < emeralds.amount()) {
-            String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, client.getBalance());
+        BalanceWithInterest balance = client.getBalanceWithInterest(Instant.now());
+        if (balance.total() < emeralds.amount()) {
+            String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance.total());
             throw new IllegalStateException(msg);
         }
         return createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);

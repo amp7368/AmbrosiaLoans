@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account.event.loan;
 
+import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
@@ -31,11 +32,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model implements IAccountChange, LoanAccess {
+public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange {
 
     @Id
     @Identity
@@ -118,6 +120,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess {
         return this;
     }
 
+    @NotNull
+    @Override
     public Instant getStartDate() {
         return this.startDate.toInstant();
     }
@@ -136,6 +140,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess {
             this.save(transaction);
             transaction.commit();
         }
+    }
+
+    @Nullable
+    @Override
+    public Instant getEndDate() {
+        if (this.endDate == null) return null;
+        return this.endDate.toInstant();
     }
 
     private void extendStartDate(Instant newStartDate, Transaction transaction) {
@@ -160,24 +171,39 @@ public class DLoan extends Model implements IAccountChange, LoanAccess {
     }
 
     public List<DLoanSection> getSections() {
-        return this.sections.stream().sorted(Comparator.comparing(DLoanSection::getStartDate, Instant::compareTo)).toList();
+        return this.sections.stream()
+            .sorted(Comparator.comparing(DLoanSection::getStartDate))
+            .toList();
     }
 
     public Emeralds getTotalOwed() {
-        BigDecimal amount = BigDecimal.valueOf(this.initialAmount);
+        Emeralds interest = getInterest(BigDecimal.valueOf(-initialAmount), getStartDate(), Instant.now(), true);
+        return interest.add(this.initialAmount);
+    }
+
+    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end, boolean includePayments) {
+        BigDecimal balance = accountBalanceAtStart.negate();
+        // todo what happens if a loan becomes inactive and you re-simulate. Redo how loans work
+        if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
+            String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
+            DatabaseModule.get().logger().warn(msg);
+            return Emeralds.of(0);
+        }
         int paymentIndex = 0;
         for (DLoanSection section : getSections()) {
-            amount = amount.add(section.getInterest(amount));
+            BigDecimal sectionInterest = section.getInterest(start, end, balance);
+            balance = balance.add(sectionInterest);
 
+            if (!includePayments) continue;
             while (paymentIndex < payments.size()) {
                 DLoanPayment payment = payments.get(paymentIndex);
-                BigDecimal paymentAmount = calcPayment(section, payment, amount);
+                BigDecimal paymentAmount = calcPayment(section, payment, balance);
                 if (paymentAmount == null) break;
-                amount = amount.subtract(paymentAmount);
+                balance = balance.subtract(paymentAmount);
                 paymentIndex++;
             }
         }
-        return Emeralds.of(amount.longValue());
+        return Emeralds.of(balance.subtract(accountBalanceAtStart));
     }
 
     public DClient getClient() {

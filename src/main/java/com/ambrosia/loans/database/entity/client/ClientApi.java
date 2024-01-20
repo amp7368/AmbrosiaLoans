@@ -33,13 +33,12 @@ public interface ClientApi {
 
     interface ClientCreateApi {
 
-
         static DClient createClient(String clientName, Member discord) throws CreateEntityException {
             DClient client = new DClient(clientName);
-            client.minecraft = ClientMinecraftDetails.fromUsername(clientName);
-            if (client.minecraft == null)
+            client.setMinecraft(ClientMinecraftDetails.fromUsername(clientName));
+            if (client.getMinecraft() == null)
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(clientName));
-            client.discord = ClientDiscordDetails.fromMember(discord);
+            client.setDiscord(ClientDiscordDetails.fromMember(discord));
             client.save();
 
             return client;

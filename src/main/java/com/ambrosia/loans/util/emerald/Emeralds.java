@@ -1,5 +1,7 @@
 package com.ambrosia.loans.util.emerald;
 
+import java.math.BigDecimal;
+
 public final class Emeralds {
 
     public static final int STACK = (int) Math.pow(64, 3);
@@ -19,6 +21,10 @@ public final class Emeralds {
         return of((long) (LIQUID * le));
     }
 
+    public static Emeralds of(BigDecimal amount) {
+        return of(amount.longValue());
+    }
+
     public long amount() {
         return amount;
     }
@@ -31,7 +37,18 @@ public final class Emeralds {
     }
 
     public Emeralds negative() {
-        return new Emeralds(-this.amount);
+        return of(-this.amount);
     }
 
+    public Emeralds add(long addedAmount) {
+        return of(this.amount + addedAmount);
+    }
+
+    public Emeralds add(Emeralds addedAmount) {
+        return of(this.amount + addedAmount.amount());
+    }
+
+    public BigDecimal toBigDecimal() {
+        return BigDecimal.valueOf(this.amount);
+    }
 }
