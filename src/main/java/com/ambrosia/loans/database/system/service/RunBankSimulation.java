@@ -57,7 +57,7 @@ public class RunBankSimulation {
 
             // investors
             List<DClient> investors = findAllInvestors();
-            BigDecimal totalInvested = calcInvestorsAmount(investors, currentDate);
+            BigDecimal totalInvested = calcTotalInvested(investors, currentDate);
 
             // divide payment to investors
             BigDecimal amountToInvestors = BigDecimal.valueOf(loanPayment.getAmount())
@@ -88,19 +88,17 @@ public class RunBankSimulation {
     }
 
     @NotNull
-    private static BigDecimal calcInvestorsAmount(List<DClient> investors, Instant currentTime) {
+    private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
         return BigDecimal.valueOf(investors.stream()
             .map(c -> c.getBalanceWithInterest(currentTime))
             .mapToLong(BalanceWithInterest::total)
             .sum());
     }
 
-    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {
+    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant currentDate) {
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
-            accountChange.getClient().getInterest(loanDate);
-
-            if (accountChange.getDate().isAfter(loanDate))
+            if (accountChange.getDate().isAfter(currentDate))
                 break;
             accountChange.updateSimulation();
         }

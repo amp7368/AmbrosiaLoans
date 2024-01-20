@@ -3,10 +3,13 @@ package com.ambrosia.loans.database.account.event.invest;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
+import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.Instant;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,4 +41,19 @@ public class InvestApi {
         return investment;
     }
 
+    public interface InvestQueryApi {
+
+        static BigDecimal getInvestorStake(DClient investor) {
+            long balance = investor.getBalanceWithInterest(Instant.now()).total();
+            if (balance < 0) return BigDecimal.ZERO;
+            long totalInvested = new QDClient().where()
+                .where().balance.amount.gt(0)
+                .findStream()
+                .mapToLong(c -> c.getBalanceWithInterest(Instant.now()).total())
+                .sum();
+            BigDecimal investorBalance = BigDecimal.valueOf(balance);
+            BigDecimal bigTotalInvested = BigDecimal.valueOf(totalInvested);
+            return investorBalance.divide(bigTotalInvested, MathContext.DECIMAL128);
+        }
+    }
 }

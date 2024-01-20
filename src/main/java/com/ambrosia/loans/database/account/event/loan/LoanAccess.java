@@ -50,14 +50,19 @@ public interface LoanAccess {
 
     DLoan getEntity();
 
-    default void makePayment(Emeralds emeralds) {
+    default DLoanPayment makePayment(Emeralds emeralds) {
+        return makePayment(emeralds, Instant.now());
+    }
+
+    default DLoanPayment makePayment(Emeralds emeralds, Instant date) {
         DLoan loan = getEntity();
-        DLoanPayment payment = new DLoanPayment(loan, Instant.now(), emeralds.amount());
+        DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount());
         loan.makePayment(payment);
         try (Transaction transaction = DB.beginTransaction()) {
             payment.save(transaction);
             loan.save(transaction);
             transaction.commit();
         }
+        return payment;
     }
 }

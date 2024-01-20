@@ -203,7 +203,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
                 paymentIndex++;
             }
         }
-        return Emeralds.of(balance.subtract(accountBalanceAtStart));
+        return Emeralds.of(balance.subtract(accountBalanceAtStart.negate()));
     }
 
     public DClient getClient() {

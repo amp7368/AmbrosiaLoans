@@ -83,6 +83,7 @@ public class DClient extends Model implements ClientAccess {
         for (DLoan loan : getLoans()) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
             if (!loanDuration.isPositive()) continue; // consider 0 as well
+
             Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime, false);
             totalInterest = totalInterest.add(interest.toBigDecimal());
         }
@@ -126,6 +127,10 @@ public class DClient extends Model implements ClientAccess {
         return this;
     }
 
+    public List<DAccountSnapshot> getAccountSnapshots() {
+        return accountSnapshots;
+    }
+
     public ClientDiscordDetails getDiscord() {
         return this.discord;
     }
@@ -148,5 +153,9 @@ public class DClient extends Model implements ClientAccess {
 
     public void addLoan(DLoan loan) {
         this.loans.add(loan);
+    }
+
+    public List<DInvest> getInvestments() {
+        return this.investments;
     }
 }

@@ -9,9 +9,9 @@ import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.ClientLoanSummary;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileGui;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileInvestPage;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileLoanPage;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileOverviewPage;
+import com.ambrosia.loans.discord.commands.player.profile.page.ProfileInvestPage;
+import com.ambrosia.loans.discord.commands.player.profile.page.ProfileLoanPage;
+import com.ambrosia.loans.discord.commands.player.profile.page.ProfileOverviewPage;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -51,9 +51,9 @@ public interface ClientAccess {
         return apply.apply(discord);
     }
 
-    default DAccountSnapshot updateBalance(long amount, Instant timestamp, AccountEventType eventType) {
+    default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
         try (Transaction transaction = DB.beginTransaction()) {
-            DAccountSnapshot snapshot = updateBalance(amount, timestamp, eventType, transaction);
+            DAccountSnapshot snapshot = updateBalance(delta, timestamp, eventType, transaction);
             transaction.commit();
             return snapshot;
         }
@@ -81,10 +81,16 @@ public interface ClientAccess {
 
     default ProfileGui profile(GuiReplyFirstMessage createFirstMessage) {
         ProfileGui gui = new ProfileGui(this.getEntity(), DiscordBot.dcf, createFirstMessage);
-        gui.addPage(new ProfileOverviewPage(gui))
-            .addPage(new ProfileLoanPage(gui))
-            .addPage(new ProfileInvestPage(gui));
+        gui.addPage(new ProfileInvestPage(gui))
+            .addPage(new ProfileOverviewPage(gui))
+            .addPage(new ProfileLoanPage(gui));
         return gui;
     }
 
+    default List<DAccountSnapshot> getAccountSnapshots(AccountEventType eventType) {
+        return getEntity().getAccountSnapshots()
+            .stream()
+            .filter(snap -> snap.getEventType() == eventType)
+            .toList();
+    }
 }
