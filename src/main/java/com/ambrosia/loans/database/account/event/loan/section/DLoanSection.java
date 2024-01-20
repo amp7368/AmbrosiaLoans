@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.account.event.loan.section;
 
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.HasDateRange;
 import io.avaje.lang.Nullable;
 import io.ebean.Model;
 import java.math.BigDecimal;
@@ -14,10 +15,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "loan_section")
-public class DLoanSection extends Model {
+public class DLoanSection extends Model implements HasDateRange {
 
     @Id
     private UUID id;
@@ -41,6 +43,7 @@ public class DLoanSection extends Model {
         return endDate != null && endDate.isBefore(date);
     }
 
+    @NotNull
     public Instant getStartDate() {
         return this.startDate.toInstant();
     }
@@ -66,14 +69,11 @@ public class DLoanSection extends Model {
         this.rate = rate;
     }
 
-    public BigDecimal getInterest(BigDecimal amount) {
-        BigDecimal rate = BigDecimal.valueOf(getRate());
-        return Bank.interest(getDuration(), amount, rate);
-    }
+    public BigDecimal getInterest(Instant start, Instant end, BigDecimal balance) {
+        Duration duration = getDuration(start, end);
+        if (duration.isNegative()) return BigDecimal.ZERO;
 
-    private Duration getDuration() {
-        Instant end = getEndDate();
-        if (end == null) end = Instant.now();
-        return Duration.between(getStartDate(), end);
+        BigDecimal rate = BigDecimal.valueOf(getRate());
+        return Bank.interest(duration, balance, rate);
     }
 }

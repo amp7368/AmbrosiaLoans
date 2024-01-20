@@ -19,7 +19,7 @@ public class AccountEvent extends Model {
     protected UUID id;
     @Column(nullable = false)
     @ManyToOne(optional = false)
-    protected DClient account;
+    protected DClient client;
     @Column(nullable = false)
     protected DStaffConductor conductor;
     @Column(nullable = false)
@@ -28,10 +28,14 @@ public class AccountEvent extends Model {
     @Column(nullable = false)
     protected AccountEventType eventType;
 
-    public AccountEvent(DClient account, Instant date, DStaffConductor conductor, AccountEventType eventType) {
-        this.account = account;
+    public AccountEvent(DClient client, Instant date, DStaffConductor conductor, AccountEventType eventType) {
+        this.client = client;
         this.date = Timestamp.from(date);
         this.conductor = conductor;
         this.eventType = eventType;
+    }
+
+    public DClient getClient() {
+        return client;
     }
 }

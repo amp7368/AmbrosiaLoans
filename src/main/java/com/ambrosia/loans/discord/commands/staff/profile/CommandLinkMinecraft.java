@@ -9,7 +9,6 @@ import com.ambrosia.loans.discord.system.log.DiscordLog;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 public class CommandLinkMinecraft extends BaseSubCommand {
 
@@ -19,24 +18,21 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         if (client == null) return;
         String username = CommandOption.MINECRAFT.getRequired(event);
         if (username == null) return;
-        event.deferReply().queue((reply) -> {
 
-            ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(username);
-            if (minecraft == null) {
-                reply.editOriginalEmbeds(error(String.format("Could not find %s's minecraft account", username))).queue();
-                return;
-            }
-            client.setMinecraft(minecraft);
-            client.save();
-            if (true) {
-                final MessageEditData message = MessageEditData.fromCreateData(client.profile().makeMessage());
-                reply.editOriginal(message).queue();
-                DiscordLog.log().modifyMinecraft(client, event.getUser());
-            } else {
-                // todo unsuccessful save
-                reply.editOriginalEmbeds(this.error("Minecraft was already assigned")).queue();
-            }
-        });
+        ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(username);
+        if (minecraft == null) {
+            replyError(event, String.format("Could not find %s's minecraft account", username));
+            return;
+        }
+        client.setMinecraft(minecraft);
+        client.save();
+        if (true) {
+            client.profile(event::reply).send();
+            DiscordLog.log().modifyMinecraft(client, event.getUser());
+        } else {
+            // todo unsuccessful save
+            this.replyError(event, "Minecraft was already assigned");
+        }
     }
 
     @Override

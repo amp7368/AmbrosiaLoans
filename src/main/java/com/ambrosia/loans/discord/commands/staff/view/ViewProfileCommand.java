@@ -14,7 +14,7 @@ public class ViewProfileCommand extends BaseCommand {
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
-        client.profile().reply(event);
+        client.profile(event::reply).send();
     }
 
     @Override

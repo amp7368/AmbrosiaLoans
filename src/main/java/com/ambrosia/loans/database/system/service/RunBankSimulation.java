@@ -11,9 +11,10 @@ import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.bank.BankApi;
+import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
-import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.CallableSql;
 import io.ebean.DB;
 import java.math.BigDecimal;
@@ -30,64 +31,75 @@ public class RunBankSimulation {
 
     private static final CallableSql UPDATE_SIM_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
-        SET balance = COALESCE(q.account_balance, 0) -- account_balance might be null
+        SET balance_amount       = COALESCE(q.account_balance, 0),   -- account_balance might be null
+            balance_last_updated = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
         FROM (
              SELECT DISTINCT ON (c.id) c.id,
-                                       ss.account_balance
+                                       ss.account_balance,
+                                       ss.date
              FROM client c
                       LEFT JOIN account_sim_snapshot ss ON c.id = ss.client_id
              ORDER BY c.id,
                       ss.date DESC) AS q
-        WHERE c.id = q.id;""");
+        WHERE c.id = q.id;
+        """);
 
-    public static void simulateFromDate(Instant date) {
-        Timestamp fromDate = Timestamp.from(date);
-        resetSimulationFromDate(fromDate);
-        List<DLoanPayment> loans = findLoansSimulation(fromDate);
-        List<IAccountChange> accountChanges = findAccountChanges(fromDate);
+    public static void simulateFromDate(Instant simulateStartDate) {
+        resetSimulationFromDate(simulateStartDate);
+        List<DLoanPayment> loanPayments = findLoanPayments(simulateStartDate);
+        List<IAccountChange> accountChanges = findAccountChanges(simulateStartDate);
+
         int index = 0;
-        for (DLoanPayment loan : loans) {
-            loan.updateSimulation();
-            index = doRelevantAccountChange(accountChanges, index, loan.getDate());
-            List<DClient> investors = findAllInvestors();
-            BigDecimal totalInvested = reduceToSum(investors);
+        for (DLoanPayment loanPayment : loanPayments) {
+            Instant currentDate = loanPayment.getDate();
+            index = doRelevantAccountChange(accountChanges, index, currentDate);
+            loanPayment.updateSimulation();
 
-            long amountToInvestors = BigDecimal.valueOf(loan.getAmount())
-                .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL64)
-                .longValue();
-            long amountGiven = giveToInvestors(loan, investors, amountToInvestors, totalInvested);
-            for (int size = accountChanges.size(); index < size; index++) {
-                accountChanges.get(index).updateSimulation();
-            }
-            BankApi.updateBankBalance(loan.getAmount() - amountGiven, loan.getDate(), AccountEventType.PAYMENT);
+            // investors
+            List<DClient> investors = findAllInvestors();
+            BigDecimal totalInvested = calcInvestorsAmount(investors, currentDate);
+
+            // divide payment to investors
+            BigDecimal amountToInvestors = BigDecimal.valueOf(loanPayment.getAmount())
+                .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
+            long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
+
+            BankApi.updateBankBalance(loanPayment.getAmount() - amountGiven, currentDate, AccountEventType.PROFIT);
         }
-        System.out.println(findAllInvestors().stream().map(DClient::getBalance).toList());
+        for (int size = accountChanges.size(); index < size; index++) {
+            accountChanges.get(index).updateSimulation();
+        }
     }
 
-    private static long giveToInvestors(DLoanPayment loan, List<DClient> investors, long amountToInvestors, BigDecimal totalInvested) {
+    private static long giveToInvestors(DLoanPayment loanPayment, List<DClient> investors, BigDecimal amountToInvestors,
+        BigDecimal totalInvested) {
         long amountGiven = 0;
+        Instant currentTime = loanPayment.getDate();
         for (DClient investor : investors) {
-            long amountToInvestor = BigDecimal.valueOf(investor.getBalance().amount())
-                .multiply(BigDecimal.valueOf(amountToInvestors))
+            long investorBalance = investor.getBalanceWithInterest(currentTime).total();
+            long amountToInvestor = BigDecimal.valueOf(investorBalance)
+                .multiply(amountToInvestors)
                 .divide(totalInvested, RoundingMode.FLOOR)
                 .longValue();
             amountGiven += amountToInvestor;
-            investor.updateBalance(amountToInvestor, loan.getDate(), AccountEventType.PROFIT);
+            investor.updateBalance(amountToInvestor, currentTime, AccountEventType.PROFIT);
         }
         return amountGiven;
     }
 
     @NotNull
-    private static BigDecimal reduceToSum(List<DClient> investors) {
+    private static BigDecimal calcInvestorsAmount(List<DClient> investors, Instant currentTime) {
         return BigDecimal.valueOf(investors.stream()
-            .map(DClient::getBalance)
-            .mapToLong(Emeralds::amount)
+            .map(c -> c.getBalanceWithInterest(currentTime))
+            .mapToLong(BalanceWithInterest::total)
             .sum());
     }
 
     private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
+            accountChange.getClient().getInterest(loanDate);
+
             if (accountChange.getDate().isAfter(loanDate))
                 break;
             accountChange.updateSimulation();
@@ -97,29 +109,33 @@ public class RunBankSimulation {
 
     private static List<DClient> findAllInvestors() {
         return new QDClient().where()
-            .balance.gt(0)
+            .balance.amount.gt(0)
             .findList();
     }
 
 
-    private static void resetSimulationFromDate(Timestamp fromDate) {
+    private static void resetSimulationFromDate(Instant fromDateInstant) {
+        Timestamp fromDate = Timestamp.from(fromDateInstant);
         new QDAccountSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
+        new QDBankSnapshot().where()
+            .date.greaterOrEqualTo(fromDate)
+            .delete();
+
         DB.getDefault().execute(UPDATE_SIM_WITH_SNAPSHOT_QUERY);
     }
 
-    private static List<IAccountChange> findAccountChanges(Timestamp fromDate) {
+    private static List<IAccountChange> findAccountChanges(Instant fromDateInstant) {
+        Timestamp fromDate = Timestamp.from(fromDateInstant);
         List<DInvest> investments = findInvestmentsAfter(fromDate);
         List<DLoan> loans = findLoansAfter(fromDate);
 
-        int size = investments.size();
-        List<IAccountChange> changes = new ArrayList<>(size);
+        List<IAccountChange> changes = new ArrayList<>();
         changes.addAll(investments);
         changes.addAll(loans);
 
         changes.sort(Comparator.comparing(IAccountChange::getDate));
-
         return changes;
     }
 
@@ -142,7 +158,8 @@ public class RunBankSimulation {
             .findList();
     }
 
-    private static List<DLoanPayment> findLoansSimulation(Timestamp fromDate) {
+    private static List<DLoanPayment> findLoanPayments(Instant fromDateInstant) {
+        Timestamp fromDate = Timestamp.from(fromDateInstant);
         List<DLoanPayment> loans = new QDLoanPayment().where()
             .or()
             .date.greaterOrEqualTo(fromDate)
@@ -151,5 +168,14 @@ public class RunBankSimulation {
             .findList();
         loans.sort(Comparator.comparing(DLoanPayment::getDate));
         return loans;
+    }
+
+    private static class LoanInterest {
+
+        private final DLoan loan;
+
+        public LoanInterest(DLoan loan) {
+            this.loan = loan;
+        }
     }
 }

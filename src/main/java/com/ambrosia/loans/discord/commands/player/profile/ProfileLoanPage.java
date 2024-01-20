@@ -9,19 +9,20 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class ProfileMessage {
+public class ProfileLoanPage extends ProfilePage {
 
-    private final DClient client;
     private String titleExtra;
 
-    public ProfileMessage(DClient client) {
-        this.client = client;
+    public ProfileLoanPage(ProfileGui parent) {
+        super(parent);
     }
+
 
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
         String authorIcon;
         String authorName;
+        DClient client = getClient();
         if (client.getDiscord() != null) {
             authorName = client.getDiscord().getUsername();
             authorIcon = client.getDiscord().avatarUrl;
@@ -36,7 +37,7 @@ public class ProfileMessage {
             embed.setAuthor(authorName, null, authorIcon);
         }
         if (client.getMinecraft() != null) {
-            embed.setTitle(client.getMinecraft().name);
+            embed.setTitle(client.getEffectiveName());
             embed.setFooter(client.getDisplayName() + " | Created", DiscordModule.AMBROSIA_ICON);
             embed.setThumbnail(client.getMinecraft().skinUrl());
         } else {

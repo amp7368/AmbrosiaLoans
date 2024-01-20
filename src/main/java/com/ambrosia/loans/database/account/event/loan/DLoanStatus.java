@@ -4,7 +4,6 @@ import io.ebean.annotation.DbEnumValue;
 
 public enum DLoanStatus {
     ACTIVE,
-    FROZEN,
     PAID,
     DEFAULTED;
 

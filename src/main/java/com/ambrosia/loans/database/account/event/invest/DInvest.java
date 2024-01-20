@@ -1,10 +1,10 @@
 package com.ambrosia.loans.database.account.event.invest;
 
-import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +35,7 @@ public class DInvest extends AccountEvent implements IAccountChange {
 
     @Override
     public void updateSimulation() {
-        this.account.updateBalance(this.amount, this.getDate(), getEventType());
+        this.client.updateBalance(this.amount, this.getDate(), getEventType());
     }
 
     @Override

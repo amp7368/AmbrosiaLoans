@@ -62,7 +62,7 @@ public class CommandLinkDiscord extends BaseSubCommand {
         client.save();
 
         if (true) {
-            client.profile().reply(event);
+            client.profile(event::reply).send();
             sendRegistrationMessage(member);
             DiscordLog.log().modifyDiscord(client, event.getUser());
         } else {
