@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.account.balance;
 
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -12,6 +13,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "account_sim_snapshot")
@@ -37,5 +39,23 @@ public class DAccountSnapshot extends Model {
         this.accountBalance = accountBalance;
         this.accountDelta = accountDelta;
         this.event = event;
+    }
+
+    public Emeralds getAccountBalance() {
+        return Emeralds.of(this.accountBalance);
+    }
+
+    @NotNull
+    public Instant getDate() {
+        return date.toInstant();
+    }
+
+    @NotNull
+    public AccountEventType getEventType() {
+        return this.event;
+    }
+
+    public Emeralds getDelta() {
+        return Emeralds.of(this.accountDelta);
     }
 }

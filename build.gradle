@@ -61,7 +61,9 @@ dependencies {
     implementation 'net.dv8tion:JDA:5.0.0-beta.19'
     // fuzzy string matching
     implementation 'me.xdrop:fuzzywuzzy:1.4.0'
-    
+    // charts
+    implementation 'org.jfree:jfreechart:1.5.4'
+
     // apple
     implementation 'discord.util:discorddcf:1.0-SNAPSHOT'
     implementation 'apple.lib:applemodules:2.0-SNAPSHOT'

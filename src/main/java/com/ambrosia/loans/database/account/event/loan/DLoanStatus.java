@@ -9,7 +9,6 @@ public enum DLoanStatus {
 
     @DbEnumValue
     public String id() {
-        // todo change to integer
         return name();
     }
 }

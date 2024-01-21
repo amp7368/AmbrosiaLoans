@@ -11,4 +11,8 @@ public record BalanceWithInterest(Emeralds balance, Emeralds interestAsNegative)
     public long total() {
         return balance.amount() + interestAsNegative.amount();
     }
+
+    public Emeralds totalEmeralds() {
+        return Emeralds.of(total());
+    }
 }

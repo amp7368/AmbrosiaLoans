@@ -8,6 +8,11 @@ FROM account_sim_snapshot
          LEFT JOIN client ON client_id = client.id
 ORDER BY date;
 
+SELECT COUNT(*), client_id, display_name
+FROM account_sim_snapshot
+         LEFT JOIN client ON client_id = client.id
+GROUP BY client_id, display_name;
+
 SELECT client.display_name,
        event,
        account_balance / 64 / 64.0 balance_le,
@@ -15,5 +20,5 @@ SELECT client.display_name,
        date
 FROM account_sim_snapshot
          LEFT JOIN client ON client_id = client.id
-WHERE client.id = :client_id
+WHERE client.display_name = 'ClientLoanB'
 ORDER BY date;

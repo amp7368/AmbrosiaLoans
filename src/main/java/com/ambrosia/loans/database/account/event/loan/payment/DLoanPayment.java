@@ -3,6 +3,8 @@ package com.ambrosia.loans.database.account.event.loan.payment;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -34,8 +36,8 @@ public class DLoanPayment extends Model {
         this.amount = amount;
     }
 
-    public long getAmount() {
-        return this.amount;
+    public Emeralds getAmount() {
+        return Emeralds.of(this.amount);
     }
 
     public Instant getDate() {
@@ -48,6 +50,9 @@ public class DLoanPayment extends Model {
     }
 
     public void updateSimulation() {
-        this.loan.getClient().updateBalance(amount, getDate(), AccountEventType.PAYMENT);
+        DClient client = this.loan.getClient();
+        client.refresh();
+        client.updateBalance(amount, getDate(), AccountEventType.PAYMENT);
     }
+
 }

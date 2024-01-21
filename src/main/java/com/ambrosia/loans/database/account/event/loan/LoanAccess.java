@@ -44,20 +44,30 @@ public interface LoanAccess {
         entity.refresh();
     }
 
-    default void freeze() {
-        // todo
-    }
-
     DLoan getEntity();
 
-    default void makePayment(Emeralds emeralds) {
+    default DLoanPayment makePayment(Emeralds emeralds) {
+        return makePayment(emeralds, Instant.now());
+    }
+
+    default DLoanPayment makePayment(Emeralds emeralds, Instant date) {
+        if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
         DLoan loan = getEntity();
-        DLoanPayment payment = new DLoanPayment(loan, Instant.now(), emeralds.amount());
-        loan.makePayment(payment);
+        DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount());
         try (Transaction transaction = DB.beginTransaction()) {
             payment.save(transaction);
+            loan.makePayment(payment, transaction);
             loan.save(transaction);
             transaction.commit();
         }
+        return payment;
     }
+
+    default Emeralds getTotalPaid() {
+        return getPayments().stream()
+            .map(DLoanPayment::getAmount)
+            .reduce(Emeralds.of(0), Emeralds::add);
+    }
+
+    List<DLoanPayment> getPayments();
 }

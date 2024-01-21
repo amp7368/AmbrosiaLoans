@@ -57,8 +57,9 @@ public class DLoanSection extends Model implements HasDateRange {
         return this.endDate == null ? null : this.endDate.toInstant();
     }
 
-    public void setEndDate(Instant endDate) {
+    public DLoanSection setEndDate(Instant endDate) {
         this.endDate = Timestamp.from(endDate);
+        return this;
     }
 
     public double getRate() {
@@ -72,7 +73,6 @@ public class DLoanSection extends Model implements HasDateRange {
     public BigDecimal getInterest(Instant start, Instant end, BigDecimal balance) {
         Duration duration = getDuration(start, end);
         if (duration.isNegative()) return BigDecimal.ZERO;
-
         BigDecimal rate = BigDecimal.valueOf(getRate());
         return Bank.interest(duration, balance, rate);
     }

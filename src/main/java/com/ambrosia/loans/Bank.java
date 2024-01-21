@@ -20,7 +20,9 @@ public class Bank {
         BigDecimal interval = BigDecimal.valueOf(Bank.INTEREST_INTERVAL.toHours());
         BigDecimal time = durationHours.divide(interval, MathContext.DECIMAL128);
         BigDecimal exponent = time.multiply(rate);
-        BigDecimal multiplier = BigDecimalMath.pow(BigDecimal.valueOf(Math.E), exponent, MathContext.DECIMAL128);
+        BigDecimal E = BigDecimal.valueOf(Math.E);
+        BigDecimal multiplier = BigDecimalMath.pow(E, exponent, MathContext.DECIMAL128)
+            .subtract(BigDecimal.valueOf(1));
         return amount.multiply(multiplier);
     }
 }

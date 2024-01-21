@@ -9,6 +9,7 @@ import com.ambrosia.loans.discord.request.cash.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
+import java.time.Instant;
 import java.util.List;
 
 public interface LoanApi {
@@ -38,8 +39,8 @@ public interface LoanApi {
 
     interface LoanCreateApi {
 
-        static DLoan createLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor) {
-            DLoan loan = new DLoan(client, amount.amount(), rate, conductor);
+        static DLoan createLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor, Instant startDate) {
+            DLoan loan = new DLoan(client, amount.amount(), rate, conductor, startDate);
             client.addLoan(loan);
             try (Transaction transaction = DB.beginTransaction()) {
                 loan.save(transaction);

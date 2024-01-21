@@ -7,16 +7,18 @@ import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.invest.DInvest;
 import com.ambrosia.loans.database.account.event.invest.query.QDInvest;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.bank.BankApi;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.CallableSql;
 import io.ebean.DB;
+import io.ebean.SqlUpdate;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -29,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class RunBankSimulation {
 
-    private static final CallableSql UPDATE_SIM_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
+    private static final CallableSql UPDATE_BALANCE_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
         SET balance_amount       = COALESCE(q.account_balance, 0),   -- account_balance might be null
             balance_last_updated = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
@@ -43,6 +45,14 @@ public class RunBankSimulation {
                       ss.date DESC) AS q
         WHERE c.id = q.id;
         """);
+    private static final SqlUpdate RESET_PAID_MARKERS = DB.sqlUpdate("""
+        UPDATE loan l
+        SET end_date = NULL,
+            status   = '%s'
+        WHERE status = '%s'
+          AND end_date >= :from_date;""".formatted(
+        DLoanStatus.ACTIVE.toString(),
+        DLoanStatus.PAID.toString()));
 
     public static void simulateFromDate(Instant simulateStartDate) {
         resetSimulationFromDate(simulateStartDate);
@@ -57,17 +67,19 @@ public class RunBankSimulation {
 
             // investors
             List<DClient> investors = findAllInvestors();
-            BigDecimal totalInvested = calcInvestorsAmount(investors, currentDate);
+            BigDecimal totalInvested = calcTotalInvested(investors, currentDate);
 
             // divide payment to investors
-            BigDecimal amountToInvestors = BigDecimal.valueOf(loanPayment.getAmount())
+            BigDecimal amountToInvestors = loanPayment.getAmount().toBigDecimal()
                 .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
             long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
 
-            BankApi.updateBankBalance(loanPayment.getAmount() - amountGiven, currentDate, AccountEventType.PROFIT);
+            BankApi.updateBankBalance(loanPayment.getAmount().amount() - amountGiven, currentDate, AccountEventType.PROFIT);
         }
         for (int size = accountChanges.size(); index < size; index++) {
-            accountChanges.get(index).updateSimulation();
+            IAccountChange accountChange = accountChanges.get(index);
+            accountChange.getClient().refresh();
+            accountChange.updateSimulation();
         }
     }
 
@@ -76,8 +88,8 @@ public class RunBankSimulation {
         long amountGiven = 0;
         Instant currentTime = loanPayment.getDate();
         for (DClient investor : investors) {
-            long investorBalance = investor.getBalanceWithInterest(currentTime).total();
-            long amountToInvestor = BigDecimal.valueOf(investorBalance)
+            BigDecimal investorBalance = investor.getBalance(currentTime).toBigDecimal();
+            long amountToInvestor = investorBalance
                 .multiply(amountToInvestors)
                 .divide(totalInvested, RoundingMode.FLOOR)
                 .longValue();
@@ -88,20 +100,19 @@ public class RunBankSimulation {
     }
 
     @NotNull
-    private static BigDecimal calcInvestorsAmount(List<DClient> investors, Instant currentTime) {
-        return BigDecimal.valueOf(investors.stream()
-            .map(c -> c.getBalanceWithInterest(currentTime))
-            .mapToLong(BalanceWithInterest::total)
-            .sum());
+    private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
+        return investors.stream()
+            .map(c -> c.getBalance(currentTime))
+            .reduce(Emeralds.of(0), Emeralds::add)
+            .toBigDecimal();
     }
 
-    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant loanDate) {
+    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant currentDate) {
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
-            accountChange.getClient().getInterest(loanDate);
-
-            if (accountChange.getDate().isAfter(loanDate))
+            if (accountChange.getDate().isAfter(currentDate))
                 break;
+            accountChange.getClient().refresh();
             accountChange.updateSimulation();
         }
         return index;
@@ -122,8 +133,9 @@ public class RunBankSimulation {
         new QDBankSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
+        DB.getDefault().execute(RESET_PAID_MARKERS.setParameter("from_date", fromDate));
 
-        DB.getDefault().execute(UPDATE_SIM_WITH_SNAPSHOT_QUERY);
+        DB.getDefault().execute(UPDATE_BALANCE_WITH_SNAPSHOT_QUERY);
     }
 
     private static List<IAccountChange> findAccountChanges(Instant fromDateInstant) {
@@ -160,22 +172,12 @@ public class RunBankSimulation {
 
     private static List<DLoanPayment> findLoanPayments(Instant fromDateInstant) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
-        List<DLoanPayment> loans = new QDLoanPayment().where()
+        return new QDLoanPayment().where()
             .or()
             .date.greaterOrEqualTo(fromDate)
             .endOr()
             .orderBy("date")
             .findList();
-        loans.sort(Comparator.comparing(DLoanPayment::getDate));
-        return loans;
     }
 
-    private static class LoanInterest {
-
-        private final DLoan loan;
-
-        public LoanInterest(DLoan loan) {
-            this.loan = loan;
-        }
-    }
 }

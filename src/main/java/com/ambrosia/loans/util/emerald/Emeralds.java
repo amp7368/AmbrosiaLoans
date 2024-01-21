@@ -1,6 +1,7 @@
 package com.ambrosia.loans.util.emerald;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 
 public final class Emeralds {
 
@@ -32,7 +33,6 @@ public final class Emeralds {
     @Override
     public String toString() {
         return EmeraldsFormatter.of()
-            .setBold(false)
             .format(this);
     }
 
@@ -50,5 +50,33 @@ public final class Emeralds {
 
     public BigDecimal toBigDecimal() {
         return BigDecimal.valueOf(this.amount);
+    }
+
+    public double toStacks() {
+        BigDecimal stackAmount = BigDecimal.valueOf(Emeralds.STACK);
+        return toBigDecimal()
+            .divide(stackAmount, MathContext.DECIMAL128)
+            .doubleValue();
+    }
+
+    public double toLiquids() {
+        BigDecimal liquidAmount = BigDecimal.valueOf(Emeralds.LIQUID);
+        return toBigDecimal()
+            .divide(liquidAmount, MathContext.DECIMAL128)
+            .doubleValue();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Emeralds other && this.amount == other.amount;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (this.amount % Integer.MAX_VALUE);
+    }
+
+    public boolean isNegative() {
+        return this.amount < 0;
     }
 }

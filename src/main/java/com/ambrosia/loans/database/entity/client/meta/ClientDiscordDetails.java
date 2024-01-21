@@ -16,14 +16,22 @@ public class ClientDiscordDetails {
     @Column
     public String username;
 
+    public ClientDiscordDetails(Long discordId, String avatarUrl, String username) {
+        this.discordId = discordId;
+        this.avatarUrl = avatarUrl;
+        this.username = username;
+    }
+
     public ClientDiscordDetails(Member member) {
-        this.discordId = member.getIdLong();
-        this.avatarUrl = member.getEffectiveAvatarUrl();
-        this.username = member.getEffectiveName();
+        this(member.getIdLong(), member.getEffectiveAvatarUrl(), member.getEffectiveName());
     }
 
     public static ClientDiscordDetails fromMember(Member member) {
         return new ClientDiscordDetails(member);
+    }
+
+    public static ClientDiscordDetails fromManual(Long discordId, String avatarUrl, String username) {
+        return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
 
     public String getUsername() {

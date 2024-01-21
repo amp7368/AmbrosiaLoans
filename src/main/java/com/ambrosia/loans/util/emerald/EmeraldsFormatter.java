@@ -9,7 +9,7 @@ import apple.utilities.util.Pretty;
 public class EmeraldsFormatter {
 
 
-    private boolean isBold = true;
+    private boolean isBold = false;
     private int truncate = Integer.MAX_VALUE;
     private boolean includeTotal = false;
     private boolean inline = false;
@@ -52,7 +52,8 @@ public class EmeraldsFormatter {
     }
 
     public String format(Emeralds credits) {
-        long creditsLeft = credits.amount();
+        boolean isNegative = credits.isNegative();
+        long creditsLeft = Math.abs(credits.amount());
         long stx = creditsLeft / STACK;
         creditsLeft -= stx * STACK;
         long le = creditsLeft / LIQUID;
@@ -74,7 +75,7 @@ public class EmeraldsFormatter {
             String total = Pretty.commas(credits.amount());
             message.append(String.format("(**%s** total)", total));
         }
-
+        if (isNegative) return "-" + message;
         return message.toString();
     }
 
