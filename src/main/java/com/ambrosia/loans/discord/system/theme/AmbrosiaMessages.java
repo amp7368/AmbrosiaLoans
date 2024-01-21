@@ -2,13 +2,27 @@ package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class AmbrosiaMessages {
+
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLLL dd yyyy")
+        .withZone(DiscordModule.TIME_ZONE);
+
+    public static String formatDate(Instant date) {
+        return DATE_FORMATTER.format(date);
+    }
+
+    public static String formatPercentage(double perc) {
+        return "%.2f%%".formatted(perc * 100);
+    }
 
     public static class ErrorMessages {
 

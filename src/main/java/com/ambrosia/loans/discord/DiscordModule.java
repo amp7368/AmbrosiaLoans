@@ -6,6 +6,7 @@ import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
+import com.ambrosia.loans.discord.commands.player.hisotry.HistoryCommand;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
@@ -78,7 +79,9 @@ public class DiscordModule extends AppleModule {
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
-        commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest(), new CommandModifyRequest());
+        commands.addCommand(new CommandHelp(),
+            new ProfileCommand(), new HistoryCommand(),
+            new CommandRequest(), new CommandModifyRequest());
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));

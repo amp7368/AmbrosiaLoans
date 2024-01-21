@@ -3,7 +3,7 @@ package com.ambrosia.loans.discord.commands.player.profile.page;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.invest.InvestApi.InvestQueryApi;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,7 +16,7 @@ public class ProfileInvestPage extends ProfilePage {
 
     private static final int MAX_PROFITS_DISPLAY = 5;
 
-    public ProfileInvestPage(ProfileGui gui) {
+    public ProfileInvestPage(ClientGui gui) {
         super(gui);
     }
 

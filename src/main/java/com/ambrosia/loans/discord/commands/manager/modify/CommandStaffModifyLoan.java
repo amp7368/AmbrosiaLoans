@@ -1,5 +1,7 @@
 package com.ambrosia.loans.discord.commands.manager.modify;
 
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
+
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.modify.BaseModifyLoanRequest;
@@ -57,7 +59,7 @@ public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModify
             return ModifyRequestMsg.error("Rate must be positive!");
         loan.getData().setRate(rate / 100);
         if (rate < 1) {
-            String msg = "Set rate as %.2f%%. Are you sure you want to set it less than 1%%".formatted(rate);
+            String msg = "Set rate as %s. Are you sure you want to set it less than 1%%?".formatted(formatPercentage(rate / 100));
             return ModifyRequestMsg.warning(msg);
         }
         return ModifyRequestMsg.info("Set rate as %f%%.".formatted(rate));

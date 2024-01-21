@@ -1,10 +1,13 @@
 package com.ambrosia.loans.discord.commands.player.profile.page;
 
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
+
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +20,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 public class ProfileLoanPage extends ProfilePage {
 
 
-    public ProfileLoanPage(ProfileGui parent) {
+    public ProfileLoanPage(ClientGui parent) {
         super(parent);
     }
 
@@ -43,8 +46,8 @@ public class ProfileLoanPage extends ProfilePage {
         }
         DLoan loan = activeLoan.get();
         embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
-        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getDate())), true);
-        String rateMsg = "%.2f%%".formatted(loan.getLastSection().getRate() * 100);
+        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate())), true);
+        String rateMsg = formatPercentage(loan.getLastSection().getRate());
         embed.addField("Rate", rateMsg, true);
         List<String> collateral = loan.getCollateral().stream()
             .map(c -> c.link)

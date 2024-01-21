@@ -1,5 +1,7 @@
 package com.ambrosia.loans.discord.request.cash;
 
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
+
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
@@ -17,7 +19,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     @Override
     protected List<Field> fields() {
         Double ratePerc = data.getRate();
-        String rateMsg = ratePerc == null ? "Not set" : "%.2f%%".formatted(ratePerc * 100);
+        String rateMsg = ratePerc == null ? "Not set" : formatPercentage(ratePerc);
         Field amount = new Field("Rate", rateMsg, true);
         Field reason = new Field("Reason for Loan", data.getReason(), true);
         Field repayment = new Field("Repayment Plan", data.getRepayment(), true);
