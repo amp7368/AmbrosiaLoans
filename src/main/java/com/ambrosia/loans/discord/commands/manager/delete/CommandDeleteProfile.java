@@ -20,7 +20,7 @@ public class CommandDeleteProfile extends BaseSubCommand {
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
-        if (client.hasAnyTransactions()) {
+        if (!client.getAccountSnapshots().isEmpty()) {
             ErrorMessages.cannotDeleteProfile(client.getEntity())
                 .replyError(event);
             return;

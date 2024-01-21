@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.invest.DInvest;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
@@ -58,21 +59,31 @@ public class DClient extends Model implements ClientAccess {
         this.displayName = displayName;
     }
 
+    public long getId() {
+        return id;
+    }
 
-    public BalanceWithInterest getBalanceWithInterest(Instant currentTime) {
+    public Emeralds getBalance(Instant currentTime) {
+        return getBalanceWithRecentInterest(currentTime)
+            .totalEmeralds();
+    }
+
+    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) {
         Emeralds balance = this.balance.getAmount();
         Emeralds interestAsNegative = getInterest(currentTime).negative();
         return new BalanceWithInterest(balance, interestAsNegative);
     }
 
-    public DClient setBalance(long balance, Instant date) {
+    DClient setBalance(long balance, Instant date) {
         this.balance.setBalance(balance, date);
         return this;
     }
 
     @NotNull
-    public Emeralds getInterest(Instant currentTime) {
+    private Emeralds getInterest(Instant currentTime) {
+        this.refresh();
         Instant lastUpdated = this.balance.getLastUpdated();
+
         if (lastUpdated.isAfter(currentTime)) {
             String error = "Client{%s}'s balance was last updated at %s, which is later than the current timestamp of %s"
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
@@ -95,9 +106,6 @@ public class DClient extends Model implements ClientAccess {
         return this;
     }
 
-    public long getId() {
-        return id;
-    }
 
     public List<DLoan> getLoans() {
         return loans.stream()
@@ -105,14 +113,6 @@ public class DClient extends Model implements ClientAccess {
             .toList();
     }
 
-    public String getEffectiveName() {
-        if (this.displayName != null) return this.displayName;
-        String minecraft = getMinecraft(ClientMinecraftDetails::getName);
-        if (minecraft != null) return minecraft;
-        String discord = getDiscord(ClientDiscordDetails::getUsername);
-        if (discord != null) return discord;
-        return "error";
-    }
 
     public ClientMinecraftDetails getMinecraft() {
         return minecraft;
@@ -128,7 +128,18 @@ public class DClient extends Model implements ClientAccess {
     }
 
     public List<DAccountSnapshot> getAccountSnapshots() {
-        return accountSnapshots;
+        Comparator<DAccountSnapshot> comparator = Comparator.comparing(DAccountSnapshot::getDate)
+            .thenComparing(DAccountSnapshot::getEventType,
+                (a, b) -> {
+                    boolean isInterestA = a == AccountEventType.INTEREST;
+                    boolean isInterestB = b == AccountEventType.INTEREST;
+                    if (isInterestA) return isInterestB ? 0 : -1;
+                    else return isInterestB ? 1 : 0;
+                })
+            .thenComparing(snap -> snap.getEventType().toString());
+        return accountSnapshots.stream()
+            .sorted(comparator)
+            .toList();
     }
 
     public ClientDiscordDetails getDiscord() {
@@ -139,6 +150,7 @@ public class DClient extends Model implements ClientAccess {
         this.discord = discord;
     }
 
+    @Override
     public String getDisplayName() {
         return this.displayName;
     }

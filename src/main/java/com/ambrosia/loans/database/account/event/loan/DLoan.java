@@ -71,13 +71,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @OneToMany
     private List<DLoanComment> comments;
 
-    public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor) {
+    public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor, Instant startDate) {
         this.client = client;
         this.initialAmount = initialAmount;
         this.conductor = conductor;
-        Instant now = Instant.now();
-        this.startDate = Timestamp.from(now);
-        this.sections = List.of(new DLoanSection(this, rate, now));
+        this.startDate = Timestamp.from(startDate);
+        this.sections = List.of(new DLoanSection(this, rate, startDate));
         this.status = DLoanStatus.ACTIVE;
     }
 
@@ -113,6 +112,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
         Duration duration = Duration.between(paymentDate, sectionEndDateOrNow);
         return payment.getEffectiveAmount(duration, sectionRate);
+    }
+
+    public static boolean isWithinPaidBounds(long loanBalance) {
+        return loanBalance < Emeralds.BLOCK;
     }
 
     @Override
@@ -177,13 +180,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        Emeralds interest = getInterest(BigDecimal.valueOf(-initialAmount), getStartDate(), Instant.now(), true);
+        BigDecimal negativeInitialAmount = BigDecimal.valueOf(-initialAmount);
+        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), Instant.now(), true);
         return interest.add(this.initialAmount);
     }
 
     public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end, boolean includePayments) {
         BigDecimal balance = accountBalanceAtStart.negate();
-        // todo what happens if a loan becomes inactive and you re-simulate. Redo how loans work
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
             String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
             DatabaseModule.get().logger().warn(msg);
@@ -210,19 +213,33 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.client;
     }
 
-    public void makePayment(DLoanPayment payment) {
+    public void makePayment(DLoanPayment payment, Transaction transaction) {
         this.payments.add(payment);
-        if (getTotalOwed().amount() < Emeralds.BLOCK) {
-            this.status = DLoanStatus.PAID;
+        if (isWithinPaidBounds(getTotalOwed().amount())) {
+            markPaid(payment.getDate(), transaction);
         }
+    }
+
+    public DLoan markPaid(Instant endDate, Transaction transaction) {
+        this.status = DLoanStatus.PAID;
+        this.endDate = Timestamp.from(endDate);
+        List<DLoanSection> sections = getSections();
+        DLoanSection lastSection = sections.get(sections.size() - 1);
+        lastSection.setEndDate(endDate)
+            .save(transaction);
+        this.save(transaction);
+        return this;
     }
 
     public long getId() {
         return this.id;
     }
 
+    @Override
     public List<DLoanPayment> getPayments() {
-        return this.payments;
+        return this.payments.stream()
+            .sorted(Comparator.comparing(DLoanPayment::getDate))
+            .toList();
     }
 
     @Override
@@ -242,5 +259,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public DLoanStatus getStatus() {
         return this.status;
+    }
+
+    public List<DCollateral> getCollateral() {
+        return collateral;
+    }
+
+    public Emeralds getInitialAmount() {
+        return Emeralds.of(this.initialAmount);
     }
 }

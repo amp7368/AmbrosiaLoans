@@ -21,8 +21,8 @@ public class DInvest extends AccountEvent implements IAccountChange {
         super(account, date, conductor, eventType);
         if (eventType != AccountEventType.INVEST && eventType != AccountEventType.WITHDRAWAL) {
             String msg = "Investment must be %s or %s"
-                .formatted(AccountEventType.INVEST.displayName(),
-                    AccountEventType.WITHDRAWAL.displayName());
+                .formatted(AccountEventType.INVEST.toString(),
+                    AccountEventType.WITHDRAWAL.toString());
             throw new IllegalStateException(msg);
         }
         this.amount = amount;

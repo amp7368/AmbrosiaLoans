@@ -80,8 +80,6 @@ public class DiscordModule extends AppleModule {
         // client commands
         commands.addCommand(new CommandHelp(), new ProfileCommand(), new CommandRequest(), new CommandModifyRequest());
 
-        commands.updateCommands();
-
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));
     }

@@ -33,7 +33,6 @@ public final class Emeralds {
     @Override
     public String toString() {
         return EmeraldsFormatter.of()
-            .setBold(false)
             .format(this);
     }
 
@@ -65,5 +64,19 @@ public final class Emeralds {
         return toBigDecimal()
             .divide(liquidAmount, MathContext.DECIMAL128)
             .doubleValue();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Emeralds other && this.amount == other.amount;
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (this.amount % Integer.MAX_VALUE);
+    }
+
+    public boolean isNegative() {
+        return this.amount < 0;
     }
 }

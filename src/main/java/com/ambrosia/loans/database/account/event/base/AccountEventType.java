@@ -23,12 +23,8 @@ public enum AccountEventType {
         return name();
     }
 
-    public String displayName() {
-        return Pretty.spaceEnumWords(this.name());
-    }
-
     @Override
     public String toString() {
-        return displayName();
+        return Pretty.spaceEnumWords(this.name());
     }
 }

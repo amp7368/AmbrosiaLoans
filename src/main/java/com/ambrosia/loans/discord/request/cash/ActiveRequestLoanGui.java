@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.request.cash;
 
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
 import java.util.List;
@@ -63,7 +64,8 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @Override
     protected String title() {
-        return data.transactionType().displayName() + " " + data.getAmount();
+        AccountEventType accountEventType = data.transactionType();
+        return accountEventType.toString() + " " + data.getAmount();
     }
 
     public ActiveRequestLoan getData() {

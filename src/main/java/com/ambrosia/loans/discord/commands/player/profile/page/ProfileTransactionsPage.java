@@ -62,12 +62,10 @@ public class ProfileTransactionsPage extends ProfilePage {
                 .sorted(Entry.comparingByKey()).toList();
             for (Entry<Long, Double> snapshot : list) {
                 series.add(snapshot.getKey(), snapshot.getValue());
-                if (client.getEffectiveName().equals("ClientLoanA"))
-                    System.out.println(snapshot.getKey());
             }
             Instant now = Instant.now();
-            long balanceNow = client.getBalanceWithInterest(now).total();
-            series.add(now.toEpochMilli(), Emeralds.of(balanceNow).toStacks());
+            Emeralds balanceNow = client.getBalance(now);
+            series.add(now.toEpochMilli(), balanceNow.toStacks());
             dataset.addSeries(series);
         }
 
@@ -119,12 +117,12 @@ public class ProfileTransactionsPage extends ProfilePage {
 
     @Override
     public MessageCreateData makeMessage() {
-        EmbedBuilder eb = new EmbedBuilder();
+        EmbedBuilder embed = new EmbedBuilder();
         DClient client = getClient();
-        author(eb, client);
-        eb.setTitle(client.getBalanceWithInterest(Instant.now()).toString());
+        author(embed, client);
+        balance(embed);
         return new MessageCreateBuilder()
-            .setEmbeds(eb.build())
+            .setEmbeds(embed.build())
             .setComponents(ActionRow.of(pageBtns()))
             .build();
     }

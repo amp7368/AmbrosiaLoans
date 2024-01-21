@@ -1,65 +1,82 @@
 package com.ambrosia.loans.discord.commands.player.profile.page;
 
+import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
+import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.query.ClientLoanSummary;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileGui;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
+import com.ambrosia.loans.util.emerald.Emeralds;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class ProfileLoanPage extends ProfilePage {
 
-    private String titleExtra;
 
     public ProfileLoanPage(ProfileGui parent) {
         super(parent);
     }
 
+    private void activeLoan(EmbedBuilder embed) {
+        Optional<DLoan> activeLoan = getClient().getActiveLoan();
+        if (activeLoan.isEmpty()) {
+            embed.appendDescription("### No Active Loans\n");
+            return;
+        }
+        DLoan loan = activeLoan.get();
+        embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
+        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getDate())), true);
+        embed.addField("Collateral", loan.getStatus().toString(), true);
+        embed.addField("Initial Amount", "%s\n".formatted(loan.getInitialAmount()), true);
+        embed.addField("Current Balance", loan.getTotalOwed().toString(), true);
+
+        List<DLoanPayment> payments = loan.getPayments();
+        if (payments.isEmpty()) {
+            embed.setFooter("No Payments made");
+            return;
+        }
+        StringBuilder footer = new StringBuilder("Payments\n");
+        for (DLoanPayment payment : payments) {
+            footer.append("%s + %s\n".formatted(formatDate(payment.getDate()), payment.getAmount()));
+        }
+        embed.setFooter(footer.toString());
+    }
+
+    private void pastLoansSummary(EmbedBuilder embed) {
+        DClient client = getClient();
+        if (client.getLoans().isEmpty()) {
+            embed.appendDescription("No past loans");
+            return;
+        }
+        List<String> summaries = new ArrayList<>();
+        for (DLoan loan : client.getLoans()) {
+            if (loan.getStatus() == DLoanStatus.ACTIVE) continue;
+            Emeralds initialAmount = loan.getInitialAmount();
+            String endDate = formatDate(loan.getEndDate());
+            String startDate = formatDate(loan.getStartDate());
+            Emeralds totalPaid = loan.getTotalPaid();
+            String loanSummary = """
+                %s to %s
+                Amount: %s
+                Total Paid: %s
+                """.formatted(startDate, endDate, initialAmount, totalPaid);
+            summaries.add(loanSummary);
+        }
+        embed.appendDescription("## Past Loans\n");
+
+        embed.appendDescription(String.join("\n", summaries));
+    }
 
     public MessageCreateData makeMessage() {
-        EmbedBuilder embed = new EmbedBuilder();
-        String authorIcon;
-        String authorName;
-        DClient client = getClient();
-        if (client.getDiscord() != null) {
-            authorName = client.getDiscord().getUsername();
-            authorIcon = client.getDiscord().avatarUrl;
-        } else {
-            authorName = null;
-            authorIcon = DiscordModule.AMBROSIA_ICON;
-        }
-        if (titleExtra != null) {
-            embed.setAuthor(titleExtra, null, authorIcon);
-            embed.setDescription(authorName);
-        } else {
-            embed.setAuthor(authorName, null, authorIcon);
-        }
-        if (client.getMinecraft() != null) {
-            embed.setTitle(client.getEffectiveName());
-            embed.setFooter(client.getDisplayName() + " | Created", DiscordModule.AMBROSIA_ICON);
-            embed.setThumbnail(client.getMinecraft().skinUrl());
-        } else {
-            embed.setTitle(client.getDisplayName());
-            embed.setFooter(" - | Created", DiscordModule.AMBROSIA_ICON);
-        }
-        embed.setTimestamp(client.getDateCreated());
+        EmbedBuilder embed = embed("Loans");
+        balance(embed);
+        pastLoansSummary(embed);
 
-        embed.addBlankField(false);
-        ClientLoanSummary loanSummary = client.getLoanSummary();
-
-        embed.addField("Total Owed", EmeraldsFormatter.of()
-            .setIncludeTotal()
-            .setInline()
-            .format(loanSummary.getTotalOwed()), true);
-
-        embed.setColor(AmbrosiaColor.LOANS_COLOR);
+        activeLoan(embed);
         return MessageCreateData.fromEmbeds(embed.build());
     }
 
-    public void reply(SlashCommandInteractionEvent event) {
-        event.reply(this.makeMessage()).queue();
-    }
+
 }

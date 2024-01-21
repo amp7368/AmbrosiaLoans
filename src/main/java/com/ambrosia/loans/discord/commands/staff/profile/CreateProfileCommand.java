@@ -38,7 +38,7 @@ public class CreateProfileCommand extends BaseCommand {
 
 
     public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("create", "Create a profile for a customer");
+        SlashCommandData command = Commands.slash("create_profile", "Create a profile for a client");
         CommandOptionList options = CommandOptionList.of(List.of(CommandOption.PROFILE_NAME, CommandOption.DISCORD));
         return options.addToCommand(command)
             .setDefaultPermissions(DefaultMemberPermissions.DISABLED)

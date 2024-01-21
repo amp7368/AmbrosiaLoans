@@ -10,5 +10,13 @@ FROM (
               LEFT JOIN account_sim_snapshot ss ON c.id = ss.client_id
      ORDER BY c.id,
               ss.date DESC) AS q
+
 WHERE c.id = q.id;
 
+UPDATE loan l
+SET end_date = NULL,
+    status   = 'ACTIVE'
+WHERE status = 'PAID'
+  AND end_date >= :from_date;
+SELECT *
+FROM loan;
