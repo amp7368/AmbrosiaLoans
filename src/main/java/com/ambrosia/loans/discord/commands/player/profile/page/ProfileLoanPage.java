@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class ProfileLoanPage extends ProfilePage {
@@ -17,6 +19,20 @@ public class ProfileLoanPage extends ProfilePage {
 
     public ProfileLoanPage(ProfileGui parent) {
         super(parent);
+    }
+
+    @Override
+    public MessageCreateData makeMessage() {
+        EmbedBuilder embed = embed("Loans");
+        balance(embed);
+        pastLoansSummary(embed);
+
+        activeLoan(embed);
+
+        return new MessageCreateBuilder()
+            .setEmbeds(embed.build())
+            .setComponents(ActionRow.of(pageBtns()))
+            .build();
     }
 
     private void activeLoan(EmbedBuilder embed) {
@@ -28,8 +44,13 @@ public class ProfileLoanPage extends ProfilePage {
         DLoan loan = activeLoan.get();
         embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
         embed.addField("Start date", "%s\n".formatted(formatDate(loan.getDate())), true);
-        embed.addField("Collateral", loan.getStatus().toString(), true);
-        embed.addField("Initial Amount", "%s\n".formatted(loan.getInitialAmount()), true);
+        String rateMsg = "%.2f%%".formatted(loan.getLastSection().getRate() * 100);
+        embed.addField("Rate", rateMsg, true);
+        List<String> collateral = loan.getCollateral().stream()
+            .map(c -> c.link)
+            .toList();
+        embed.addField("Collateral", String.join(", ", collateral), true);
+        embed.addField("Initial Amount", loan.getInitialAmount().toString(), true);
         embed.addField("Current Balance", loan.getTotalOwed().toString(), true);
 
         List<DLoanPayment> payments = loan.getPayments();
@@ -67,15 +88,6 @@ public class ProfileLoanPage extends ProfilePage {
         embed.appendDescription("## Past Loans\n");
 
         embed.appendDescription(String.join("\n", summaries));
-    }
-
-    public MessageCreateData makeMessage() {
-        EmbedBuilder embed = embed("Loans");
-        balance(embed);
-        pastLoansSummary(embed);
-
-        activeLoan(embed);
-        return MessageCreateData.fromEmbeds(embed.build());
     }
 
 

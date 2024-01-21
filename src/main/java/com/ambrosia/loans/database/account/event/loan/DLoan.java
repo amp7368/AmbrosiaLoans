@@ -223,12 +223,14 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     public DLoan markPaid(Instant endDate, Transaction transaction) {
         this.status = DLoanStatus.PAID;
         this.endDate = Timestamp.from(endDate);
-        List<DLoanSection> sections = getSections();
-        DLoanSection lastSection = sections.get(sections.size() - 1);
-        lastSection.setEndDate(endDate)
-            .save(transaction);
+        getLastSection().setEndDate(endDate).save(transaction);
         this.save(transaction);
         return this;
+    }
+
+    public DLoanSection getLastSection() {
+        List<DLoanSection> sections = getSections();
+        return sections.get(sections.size() - 1);
     }
 
     public long getId() {

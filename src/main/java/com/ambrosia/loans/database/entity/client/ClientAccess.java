@@ -95,8 +95,8 @@ public interface ClientAccess {
 
     default ProfileGui profile(GuiReplyFirstMessage createFirstMessage) {
         ProfileGui gui = new ProfileGui(this.getEntity(), DiscordBot.dcf, createFirstMessage);
-        gui.addPage(new ProfileLoanPage(gui))
-            .addPage(new ProfileOverviewPage(gui))
+        gui.addPage(new ProfileOverviewPage(gui))
+            .addPage(new ProfileLoanPage(gui))
             .addPage(new ProfileInvestPage(gui));
 
         return gui;
