@@ -4,11 +4,12 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.modify.BaseModifyLoanRequest;
 import com.ambrosia.loans.discord.base.command.modify.ModifyRequestMsg;
-import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.base.command.option.CommandOption;
+import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import java.util.ArrayList;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class CommandModifyLoan extends BaseSubCommand implements BaseModifyLoanRequest {
@@ -29,7 +30,7 @@ public class CommandModifyLoan extends BaseSubCommand implements BaseModifyLoanR
     }
 
     private ModifyRequestMsg setDiscount(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
-        String discount = findOption(event, "discount", OptionMapping::getAsString);
+        String discount = CommandOption.DISCOUNT.getOptional(event);
         if (discount == null) return null;
         loan.getData().setDiscount(discount);
         return ModifyRequestMsg.info("%s set as discount".formatted(discount));
@@ -37,7 +38,11 @@ public class CommandModifyLoan extends BaseSubCommand implements BaseModifyLoanR
 
     @Override
     public SubcommandData getData() {
-        return new SubcommandData("loan", "Modify loan request")
-            .addOptions(optionRequestId(), optionVouch(), optionDiscount());
+        SubcommandData command = new SubcommandData("loan", "Modify loan request");
+        CommandOptionList.of(
+            List.of(CommandOption.REQUEST),
+            List.of(CommandOption.VOUCH, CommandOption.DISCOUNT)
+        ).addToCommand(command);
+        return command;
     }
 }

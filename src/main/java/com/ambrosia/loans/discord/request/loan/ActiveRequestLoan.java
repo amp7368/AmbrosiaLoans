@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.request.cash;
+package com.ambrosia.loans.discord.request.loan;
 
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
@@ -26,7 +26,6 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
     protected String reason;
     protected String repayment;
     protected List<String> collateral;
-    protected String vouch;
     protected String discount;
     @Nullable
     protected Long vouchClientId;
@@ -43,9 +42,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         long amount,
         String reason,
         String repayment,
-        List<String> collateral,
-        String vouch,
-        String discount) {
+        List<String> collateral) {
         super(ActiveRequestType.LOAN.getTypeId(), new ActiveRequestSender(client));
         setRequestId();
         this.amount = amount;
@@ -54,8 +51,6 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         this.reason = reason;
         this.repayment = repayment;
         this.collateral = collateral;
-        this.vouch = vouch;
-        this.discount = discount;
     }
 
     @Override
@@ -63,12 +58,9 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return new ActiveRequestLoanGui(messageId, this);
     }
 
-    public void onApprove() throws CreateEntityException {
-        LoanCreateApi.createLoan(this);
-    }
-
     @Override
-    public void onComplete() {
+    public void onComplete() throws CreateEntityException {
+        LoanCreateApi.createLoan(this);
     }
 
     public AccountEventType transactionType() {
@@ -104,10 +96,6 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
     public String getRepayment() {
         return repayment;
-    }
-
-    public String getVouch() {
-        return vouch;
     }
 
     public String getDiscount() {

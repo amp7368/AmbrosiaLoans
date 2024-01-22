@@ -79,7 +79,7 @@ public class CommandLinkDiscord extends BaseSubCommand {
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("discord", "Link a client's profile with their discord account");
-        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.PROFILE_NAME, CommandOption.DISCORD));
+        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command);
     }
 }

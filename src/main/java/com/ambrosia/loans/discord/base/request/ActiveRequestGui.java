@@ -131,21 +131,26 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
         this.fields().forEach(embed::addField);
         message.setEmbeds(embed.build());
-        List<Button> components = switch (data.stage) {
+        List<Button> components = getComponents();
+        if (components.isEmpty()) message.setComponents();
+        else message.setComponents(ActionRow.of(components));
+        return message.build();
+    }
+
+    @NotNull
+    protected List<Button> getComponents() {
+        return switch (data.stage) {
             case ERROR -> List.of(BUTTON_RESET_STAGE);
             case DENIED, COMPLETED -> List.of();
             case APPROVED -> List.of(BUTTON_COMPLETE);
             case CLAIMED -> this.getClaimedComponents();
             case CREATED, UNCLAIMED -> this.getInitialComponents();
         };
-        if (components.isEmpty()) message.setComponents();
-        else message.setComponents(ActionRow.of(components));
-        return message.build();
     }
 
 
     private String generateDescription(String[] extra) {
-        StringBuilder description = new StringBuilder(clientDescription());
+        StringBuilder description = new StringBuilder();
         if (this.error != null) description.append(error);
         for (String next : extra) {
             if (next == null || next.isBlank()) continue;
@@ -161,15 +166,12 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     }
 
     private List<Button> getClaimedComponents() {
-        if (this.hasApproveButton())
-            return List.of(BUTTON_BACK, BUTTON_APPROVE);
-        return List.of(BUTTON_BACK, BUTTON_COMPLETE);
+        return List.of(BUTTON_BACK, BUTTON_APPROVE.withDisabled(!hasApproveButton()));
     }
 
 
     private List<Button> getInitialComponents() {
-        if (this.hasClaimButton()) return List.of(BUTTON_DENY, BUTTON_CLAIM);
-        return List.of(BUTTON_DENY, BUTTON_COMPLETE);
+        return List.of(BUTTON_DENY, BUTTON_CLAIM.withDisabled(!hasClaimButton()));
     }
 
     protected boolean hasApproveButton() {

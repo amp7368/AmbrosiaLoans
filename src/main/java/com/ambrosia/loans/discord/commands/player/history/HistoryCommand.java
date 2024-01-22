@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.commands.player.history;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.commands.player.history.loan.LoanHistoryCommand;
-import com.ambrosia.loans.discord.commands.player.history.transaction.InvestHistoryCommand;
+import com.ambrosia.loans.discord.commands.player.history.transaction.TransactionHistoryCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,7 +17,7 @@ public class HistoryCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new LoanHistoryCommand(), new InvestHistoryCommand());
+        return List.of(new LoanHistoryCommand(), new TransactionHistoryCommand());
     }
 
     @Override

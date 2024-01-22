@@ -4,8 +4,9 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.database.util.CreateEntityException;
-import com.ambrosia.loans.discord.request.cash.ActiveRequestLoan;
+import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -39,7 +40,7 @@ public interface LoanApi {
 
     interface LoanCreateApi {
 
-        static DLoan createLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor, Instant startDate) {
+        static DLoan createExampleLoan(DClient client, Emeralds amount, double rate, DStaffConductor conductor, Instant startDate) {
             DLoan loan = new DLoan(client, amount.amount(), rate, conductor, startDate);
             client.addLoan(loan);
             try (Transaction transaction = DB.beginTransaction()) {
@@ -64,6 +65,7 @@ public interface LoanApi {
             }
             loan.refresh();
             client.refresh();
+            RunBankSimulation.simulateFromDate(request.getStartDate());
             return loan;
         }
 

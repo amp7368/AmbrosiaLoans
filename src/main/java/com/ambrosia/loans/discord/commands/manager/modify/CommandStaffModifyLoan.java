@@ -6,7 +6,9 @@ import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.modify.BaseModifyLoanRequest;
 import com.ambrosia.loans.discord.base.command.modify.ModifyRequestMsg;
-import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.base.command.option.CommandOption;
+import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -53,7 +55,7 @@ public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModify
     }
 
     private ModifyRequestMsg setRate(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
-        @Nullable Double rate = findOption(event, "rate", OptionMapping::getAsDouble);
+        @Nullable Double rate = CommandOption.RATE.getOptional(event);
         if (rate == null) return null;
         if (rate < 0)
             return ModifyRequestMsg.error("Rate must be positive!");
@@ -62,17 +64,19 @@ public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModify
             String msg = "Set rate as %s. Are you sure you want to set it less than 1%%?".formatted(formatPercentage(rate / 100));
             return ModifyRequestMsg.warning(msg);
         }
-        return ModifyRequestMsg.info("Set rate as %f%%.".formatted(rate));
+        return ModifyRequestMsg.info("Set rate as %s.".formatted(formatPercentage(rate / 100)));
     }
 
 
     @Override
     public SubcommandData getData() {
-        return new SubcommandData("loan", "Modify loan request")
-            .addOptions(optionRequestId())
+        SubcommandData command = new SubcommandData("loan", "Modify loan request")
             .addOption(OptionType.STRING, "start_date",
-                "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)")
-            .addOption(OptionType.NUMBER, "rate", "The interest rate expressed as a percent. (Enter 5.2 for 5.2%)")
-            .addOptions(optionVouch());
+                "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
+        CommandOptionList.of(
+            List.of(CommandOption.REQUEST),
+            List.of(CommandOption.RATE, CommandOption.VOUCH)
+        ).addToCommand(command);
+        return command;
     }
 }

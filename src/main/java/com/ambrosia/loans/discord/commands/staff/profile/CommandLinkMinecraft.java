@@ -43,7 +43,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("minecraft", "Link a client's profile with their minecraft account");
-        CommandOptionList.of(List.of(CommandOption.MINECRAFT, CommandOption.PROFILE_NAME))
+        CommandOptionList.of(List.of(CommandOption.MINECRAFT, CommandOption.CLIENT))
             .addToCommand(command);
         return command;
     }

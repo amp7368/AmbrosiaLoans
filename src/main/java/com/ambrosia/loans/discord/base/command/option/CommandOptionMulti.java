@@ -25,7 +25,7 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
         });
     }
 
-    public V getOptionalMap1(SlashCommandInteractionEvent event) {
+    public V getMap1(SlashCommandInteractionEvent event) {
         return event.getOption(this.name, this.mapping1);
     }
 }

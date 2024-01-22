@@ -19,7 +19,7 @@ public class CreateProfileCommand extends BaseCommand {
 
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
-        @Nullable String clientName = CommandOption.PROFILE_NAME.getRequired(event);
+        @Nullable String clientName = CommandOption.CLIENT.getMap1(event);
         if (clientName == null) return;
         Member discord = CommandOption.DISCORD.getRequired(event);
 
@@ -39,7 +39,7 @@ public class CreateProfileCommand extends BaseCommand {
 
     public SlashCommandData getData() {
         SlashCommandData command = Commands.slash("create_profile", "Create a profile for a client");
-        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.PROFILE_NAME, CommandOption.DISCORD));
+        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command)
             .setDefaultPermissions(DefaultMemberPermissions.DISABLED)
             .setGuildOnly(true);

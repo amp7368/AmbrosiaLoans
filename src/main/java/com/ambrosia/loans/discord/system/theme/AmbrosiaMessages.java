@@ -65,6 +65,16 @@ public class AmbrosiaMessages {
                 client.getDisplayName());
             return error(msg);
         }
+
+        public static AmbrosiaMessage noRequestWithId(Long requestId) {
+            String msg = "There is no request with id '%d'!".formatted(requestId);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage badRequestType(String type, Long requestId) {
+            String msg = "Request #%d is not a %s request".formatted(requestId, type);
+            return error(msg);
+        }
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {

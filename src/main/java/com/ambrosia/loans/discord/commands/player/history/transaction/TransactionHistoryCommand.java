@@ -6,7 +6,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class InvestHistoryCommand extends BaseClientSubCommand {
+public class TransactionHistoryCommand extends BaseClientSubCommand {
 
     @Override
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
