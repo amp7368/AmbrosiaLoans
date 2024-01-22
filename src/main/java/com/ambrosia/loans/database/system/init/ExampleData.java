@@ -20,6 +20,7 @@ import com.ambrosia.loans.database.entity.client.messages.checkin.query.QDCheckI
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -49,7 +50,9 @@ public class ExampleData {
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
+        new QDStaffConductor().delete();
         new QDClient().delete();
+        InitDatabase.init();
 
         try {
             insertClients();
@@ -70,17 +73,17 @@ public class ExampleData {
         Instant loan3Date = Instant.now().minus(10, DAYS);
         Instant loan4Date = Instant.now().minus(1, DAYS);
         Emeralds amount = Emeralds.leToEmeralds(128);
-        DLoan loan1 = LoanCreateApi.createLoan(clientManyLoans, amount, .05, DStaffConductor.SYSTEM, loan1Date);
+        DLoan loan1 = LoanCreateApi.createExampleLoan(clientManyLoans, amount, .05, DStaffConductor.SYSTEM, loan1Date);
         clientManyLoansMakePayment(loan1, loan1Date.plus(5, DAYS), false);
         clientManyLoansMakePayment(loan1, loan1Date.plus(6, DAYS), false);
         clientManyLoansMakePayment(loan1, loan1Date.plus(7, DAYS), true);
-        DLoan loan2 = LoanCreateApi.createLoan(clientManyLoans, amount, .06, DStaffConductor.SYSTEM, loan2Date);
+        DLoan loan2 = LoanCreateApi.createExampleLoan(clientManyLoans, amount, .06, DStaffConductor.SYSTEM, loan2Date);
         clientManyLoansMakePayment(loan2, loan2Date.plus(5, DAYS), false);
         clientManyLoansMakePayment(loan2, loan2Date.plus(8, DAYS), true);
-        DLoan loan3 = LoanCreateApi.createLoan(clientManyLoans, amount, .02, DStaffConductor.SYSTEM, loan3Date);
+        DLoan loan3 = LoanCreateApi.createExampleLoan(clientManyLoans, amount, .02, DStaffConductor.SYSTEM, loan3Date);
         clientManyLoansMakePayment(loan3, loan3Date.plus(3, DAYS), false);
         clientManyLoansMakePayment(loan3, loan3Date.plus(4, DAYS), true);
-        DLoan loan4 = LoanCreateApi.createLoan(clientManyLoans, amount, .03, DStaffConductor.SYSTEM, loan4Date);
+        DLoan loan4 = LoanCreateApi.createExampleLoan(clientManyLoans, amount, .03, DStaffConductor.SYSTEM, loan4Date);
         loan4.makePayment(Emeralds.leToEmeralds(16), loan4Date.plus(1, SECONDS));
     }
 
@@ -115,16 +118,18 @@ public class ExampleData {
 
 
     private static void insertLoans() throws CreateEntityException {
-        DLoan loanA = LoanCreateApi.createLoan(clientLoanA, Emeralds.leToEmeralds(64), .01, DStaffConductor.SYSTEM, Instant.now());
+        DLoan loanA = LoanCreateApi.createExampleLoan(clientLoanA, Emeralds.leToEmeralds(64), .01, DStaffConductor.SYSTEM,
+            Instant.now());
         Instant monthAgo = Instant.now().minus(Duration.ofDays(30));
         loanA.setStartDate(monthAgo.minus(Duration.ofDays(30)));
         loanA.save();
         loanA.changeToNewRate(.01, monthAgo);
 
-        DLoan loanB = LoanCreateApi.createLoan(clientLoanB, Emeralds.leToEmeralds(256), .00, DStaffConductor.SYSTEM, Instant.now());
+        DLoan loanB = LoanCreateApi.createExampleLoan(clientLoanB, Emeralds.leToEmeralds(256), .00, DStaffConductor.SYSTEM,
+            Instant.now());
         loanB.setStartDate(monthAgo.plus(1, DAYS));
         loanA.save();
-        LoanCreateApi.createLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, DStaffConductor.SYSTEM, monthAgo);
+        LoanCreateApi.createExampleLoan(clientLoanC, Emeralds.leToEmeralds(128), .01, DStaffConductor.SYSTEM, monthAgo);
     }
 
     private static void insertClients() {
@@ -137,14 +142,19 @@ public class ExampleData {
         clientInvestC = new DClient("ClientInvestC");
         clientNothingD = new DClient("ClientNothingD");
         clientWithdrawalA = new DClient("ClientWithdrawal");
-        clientManyLoans.setDiscord(ClientDiscordDetails.fromManual(253646208084475904L,
-            "https://cdn.discordapp.com/avatars/253646208084475904/65b6d3079a00a363788e031f92e41f18.png",
-            "appleptr16"));
-        clientInvestA.setDiscord(ClientDiscordDetails.fromManual(
+//        clientLoanB.setDiscord(ClientDiscordDetails.fromManual(253646208084475904L,
+//            "https://cdn.discordapp.com/avatars/253646208084475904/65b6d3079a00a363788e031f92e41f18.png",
+//            "appleptr16"));
+        clientLoanA.setDiscord(ClientDiscordDetails.fromManual(
             283000305380229121L,
             null,
             "Tealy"
         ));
+//        clientLoanA.setDiscord(ClientDiscordDetails.fromManual(
+//            584052499078709269L,
+//            null,
+//            "Sheena"
+//        ));
         clients().forEach(Model::save);
     }
 

@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.commands.player.profile.page;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileGui;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -36,7 +36,7 @@ import org.jfree.data.xy.XYSeries;
 
 public class ProfileTransactionsPage extends ProfilePage {
 
-    public ProfileTransactionsPage(ProfileGui gui) {
+    public ProfileTransactionsPage(ClientGui gui) {
         super(gui);
     }
 
@@ -118,8 +118,7 @@ public class ProfileTransactionsPage extends ProfilePage {
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        DClient client = getClient();
-        author(embed, client);
+        author(embed);
         balance(embed);
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())

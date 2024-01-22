@@ -6,8 +6,8 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
-import com.ambrosia.loans.discord.request.cash.ActiveRequestLoan;
-import com.ambrosia.loans.discord.request.cash.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
+import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.modal.DCFModal;
 import java.util.ArrayList;
@@ -30,14 +30,12 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         URL_CHARACTERS.addAll("0123456789".chars().mapToObj(c -> (char) c).toList());
     }
 
-    private String discount;
     private long emeralds;
     private String repayment;
     private List<String> collateral;
     private String error = null;
     private String minecraft;
     private String reason;
-    private String vouch;
 
     public void setMinecraft(ModalMapping modalMapping) {
         this.minecraft = modalMapping.getAsString();
@@ -84,14 +82,6 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         if (!url.isEmpty()) collateral.add(url.toString());
     }
 
-    public void setVouch(ModalMapping modalMapping) {
-        this.vouch = modalMapping.getAsString();
-    }
-
-    public void setDiscount(ModalMapping modalMapping) {
-        this.discount = modalMapping.getAsString();
-    }
-
     @Override
     public void onEvent(ModalInteractionEvent event) {
         if (this.error != null) {
@@ -112,9 +102,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             this.emeralds,
             this.reason,
             this.repayment,
-            this.collateral,
-            this.vouch,
-            this.discount
+            this.collateral
         );
 
         ActiveRequestLoanGui gui = request.create();
