@@ -8,7 +8,7 @@ import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.base.gui.ClientGui;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.commands.player.profile.page.ProfileInvestPage;
 import com.ambrosia.loans.discord.commands.player.profile.page.ProfileLoanPage;
 import com.ambrosia.loans.discord.commands.player.profile.page.ProfileOverviewPage;

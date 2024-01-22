@@ -6,7 +6,7 @@ import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
-import com.ambrosia.loans.discord.commands.player.hisotry.HistoryCommand;
+import com.ambrosia.loans.discord.commands.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;

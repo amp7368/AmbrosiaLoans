@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.commands.player.hisotry.loan;
+package com.ambrosia.loans.discord.commands.player.history.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
@@ -7,9 +7,9 @@ import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.gui.ClientGui;
-import com.ambrosia.loans.discord.base.gui.ClientPage;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.client.ClientPage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.time.Instant;
@@ -119,7 +119,6 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
             .setEmbeds(embed)
             .setComponents(ActionRow.of(btnFirst(), btnNext(), btnPrev()))
             .build();
-
     }
 
     private record LoanEventMsg(String msg, Instant date) {

@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base.gui;
+package com.ambrosia.loans.discord.base.gui.client;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;

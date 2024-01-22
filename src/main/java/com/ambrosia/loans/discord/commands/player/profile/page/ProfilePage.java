@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.commands.player.profile.page;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.gui.ClientGui;
-import com.ambrosia.loans.discord.base.gui.ClientPage;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.client.ClientPage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.base.page.DCFGuiPage;

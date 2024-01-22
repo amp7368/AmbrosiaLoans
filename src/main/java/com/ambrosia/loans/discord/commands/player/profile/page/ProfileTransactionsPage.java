@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.commands.player.profile.page;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.gui.ClientGui;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.awt.BasicStroke;
 import java.awt.Color;
