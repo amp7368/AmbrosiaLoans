@@ -1,34 +1,28 @@
 package com.ambrosia.loans.discord.request.payment;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
-import com.ambrosia.loans.discord.base.request.ActiveRequest;
-import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
+import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.Optional;
 
-public class ActiveRequestPayment extends ActiveRequest<ActiveRequestPaymentGui> {
+public class ActiveRequestPayment extends ActiveClientRequest<ActiveRequestPaymentGui> {
 
     protected long paymentAmount;
     protected Instant timestamp;
-    protected long clientId;
-    protected transient DClient client;
 
     public ActiveRequestPayment() {
-        super(ActiveRequestType.PAYMENT, null);
+        super(ActiveRequestType.PAYMENT);
     }
 
     public ActiveRequestPayment(DClient client, Emeralds payment, Instant timestamp) {
-        super(ActiveRequestType.PAYMENT, new ActiveRequestSender(client));
+        super(ActiveRequestType.PAYMENT, client);
         setRequestId();
         this.paymentAmount = payment.amount();
         this.timestamp = timestamp;
-        this.clientId = client.getId();
-        this.client = client;
     }
 
     @Override
@@ -62,15 +56,7 @@ public class ActiveRequestPayment extends ActiveRequest<ActiveRequestPaymentGui>
         return this;
     }
 
-    public DClient getClient() {
-        if (client != null) return client;
-        return this.client = ClientQueryApi.findById(clientId);
-    }
-
     public Emeralds getBalance() throws BadDateAccessException {
-        DClient client = getClient();
-        if (!client.shouldGetAtTimestamp(timestamp))
-            throw new BadDateAccessException(timestamp);
-        return client.getBalance(timestamp);
+        return super.getBalance(timestamp);
     }
 }

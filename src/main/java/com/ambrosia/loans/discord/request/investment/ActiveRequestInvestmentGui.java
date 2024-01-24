@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.request.payment;
+package com.ambrosia.loans.discord.request.investment;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
@@ -7,39 +7,39 @@ import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import java.util.List;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 
-public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayment> {
+public class ActiveRequestInvestmentGui extends ActiveRequestGui<ActiveRequestInvestment> {
 
-    public ActiveRequestPaymentGui(long message, ActiveRequestPayment activeRequest) {
-        super(message, activeRequest);
+    public ActiveRequestInvestmentGui(long message, ActiveRequestInvestment activeRequestInvestment) {
+        super(message, activeRequestInvestment);
     }
 
     @Override
     protected List<Field> fields() {
         String balance;
         try {
-            balance = data.getBalance().negative().toString();
+            balance = data.getBalance().toString();
         } catch (BadDateAccessException e) {
-            balance = "Cannot check balance at %s".formatted(formatDate(e.getDate()));
+            balance = "Error! Cannot check balance!";
         }
         return List.of(
-            new Field("Payment", data.getPayment().toString(), true),
+            new Field("Investment", data.getInvestment().toString(), true),
             new Field("Timestamp", formatDate(data.getTimestamp()), true),
-            new Field("Loan Balance", balance, true)
+            new Field("Investment Balance", balance, true)
         );
     }
 
     @Override
     protected String clientCommandName() {
-        return null;
+        return "investment";
     }
 
     @Override
     protected String staffCommandName() {
-        return "payment";
+        return "investment";
     }
 
     @Override
     protected String title() {
-        return "Payment %s".formatted(data.getPayment());
+        return "Investment";
     }
 }

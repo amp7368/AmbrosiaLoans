@@ -1,10 +1,10 @@
 package com.ambrosia.loans.discord.base.request;
 
-import apple.utilities.util.ArrayUtils;
 import apple.utilities.util.Pretty;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredGui;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -112,13 +112,20 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     protected MessageCreateData makeMessage() {
-        return makeMessage(staffDescription());
+        return makeMessage(staffModifyMessage(), staffDescription());
     }
 
     public MessageCreateData makeClientMessage(String... extraDescription) {
-        String[] description = ArrayUtils.combine(extraDescription, clientDescription(), String[]::new);
-        return MessageCreateBuilder.from(this.makeMessage(description)).setComponents().build();
+        List<String> description = new ArrayList<>(List.of(extraDescription));
+        description.add(clientModifyMessage());
+        description.add(clientDescription());
+
+        MessageCreateData message = this.makeMessage(description.toArray(String[]::new));
+        return MessageCreateBuilder.from(message)
+            .setComponents()
+            .build();
     }
+
 
     protected MessageCreateData makeMessage(String... extraDescription) {
         MessageCreateBuilder message = new MessageCreateBuilder();
@@ -136,6 +143,27 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         else message.setComponents(ActionRow.of(components));
         return message.build();
     }
+
+    protected abstract String staffCommandName();
+
+    protected abstract String clientCommandName();
+
+    private String staffModifyMessage() {
+        if (staffCommandName() == null) return null;
+        return """
+            `/amodify_request %s request_id:%d`
+            Staff, use the above command to modify the request.
+            """.formatted(staffCommandName(), data.getRequestId());
+    }
+
+    private String clientModifyMessage() {
+        if (clientCommandName() == null) return null;
+        return """
+            `/modify_request %s request_id:%d`
+            Use the above command to modify your request.
+            """.formatted(staffCommandName(), data.getRequestId());
+    }
+
 
     @NotNull
     protected List<Button> getComponents() {
@@ -184,9 +212,13 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     protected abstract List<Field> fields();
 
-    protected abstract String clientDescription();
+    protected String clientDescription() {
+        return null;
+    }
 
-    protected abstract String staffDescription();
+    protected String staffDescription() {
+        return null;
+    }
 
     protected abstract String title();
 

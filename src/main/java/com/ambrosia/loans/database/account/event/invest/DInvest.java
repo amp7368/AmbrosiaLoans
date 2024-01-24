@@ -5,6 +5,9 @@ import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +20,7 @@ public class DInvest extends AccountEvent implements IAccountChange {
     @Column(nullable = false)
     private long amount;
 
-    public DInvest(DClient account, Instant date, DStaffConductor conductor, long amount, AccountEventType eventType) {
+    public DInvest(DClient account, Instant date, DStaffConductor conductor, Emeralds amount, AccountEventType eventType) {
         super(account, date, conductor, eventType);
         if (eventType != AccountEventType.INVEST && eventType != AccountEventType.WITHDRAWAL) {
             String msg = "Investment must be %s or %s"
@@ -25,7 +28,12 @@ public class DInvest extends AccountEvent implements IAccountChange {
                     AccountEventType.WITHDRAWAL.toString());
             throw new IllegalStateException(msg);
         }
-        this.amount = amount;
+        this.amount = amount.amount();
+    }
+
+    public DInvest(ActiveRequestInvestment request) throws InvalidStaffConductorException {
+        super(request.getClient(), request.getTimestamp(), request.getConductor(), AccountEventType.INVEST);
+        this.amount = request.getInvestment().amount();
     }
 
     @Override
@@ -41,5 +49,9 @@ public class DInvest extends AccountEvent implements IAccountChange {
     @Override
     public AccountEventType getEventType() {
         return this.eventType;
+    }
+
+    public Emeralds getDeltaAmount() {
+        return Emeralds.of(this.amount);
     }
 }

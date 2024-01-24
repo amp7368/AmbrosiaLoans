@@ -37,24 +37,24 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @Override
     protected String clientDescription() {
-        return """
-            `/modify_request loan request_id:%d`
-            Use the above command to add any additional details to your loan request.
-            You can optionally add **Discount Codes** and a **Reputable Vouch** to verify your trustworthiness.
-            """.formatted(data.getRequestId());
+        return "You can optionally add **Discount Codes** and a **Reputable Vouch** to verify your trustworthiness.";
+    }
+
+    @Override
+    protected String clientCommandName() {
+        return "loan";
+    }
+
+    @Override
+    protected String staffCommandName() {
+        return "loan";
     }
 
     @Override
     protected String staffDescription() {
-        String description = """
-            `/amodify_request loan request_id:%d`
-            Staff, use the above command to modify the loan request and set the rate.
-            """.formatted(data.getRequestId());
-        if (!this.hasApproveButton()) {
-            description += "\n\n%sSet the interest rate of the loan before approving this loan!"
-                .formatted(DiscordEmojis.WARNING);
-        }
-        return description;
+        if (this.hasApproveButton()) return null;
+        return "\n\n%sSet the interest rate of the loan before approving this loan!"
+            .formatted(DiscordEmojis.WARNING);
     }
 
     @Override

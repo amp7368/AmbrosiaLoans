@@ -32,10 +32,18 @@ public interface CommandOption<R> {
     CommandOption<String> DISPLAY_NAME = basic("display_name", "The name to display on the profile", OptionType.STRING,
         OptionMapping::getAsString);
 
+    // common
+    CommandOptionMulti<String, Instant> DATE = multi("date", "Date (MM/DD/YY)", OptionType.STRING, OptionMapping::getAsString,
+        CommandOption::parseDate);
+
+
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = multi("amount", "The payment amount. Expressed in STX. (Enter 0.5 for 32LE)",
+        OptionType.NUMBER, OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
+    CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = multi("amount",
+        "The amount to invest. Expressed in STX. (Enter 0.5 for 32LE)",
         OptionType.NUMBER, OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
 
     // loans
@@ -45,8 +53,6 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
-    CommandOptionMulti<String, Instant> DATE = multi("date", "Date (MM/DD/YY)", OptionType.STRING, OptionMapping::getAsString,
-        CommandOption::parseDate);
 
     private static Instant parseDate(String dateString) {
         try {

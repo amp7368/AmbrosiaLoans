@@ -24,7 +24,7 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
         Emeralds payment = CommandOption.PAYMENT_AMOUNT.getRequired(event);
         if (payment == null) return;
         if (payment.lte(0)) {
-            ErrorMessages.amountNotPositive(payment.amount())
+            ErrorMessages.amountNotPositive(payment)
                 .replyError(event);
             return;
         }
@@ -33,7 +33,6 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
                 .replyError(event);
             return;
         }
-        System.out.println(loanAmount);
         if (loanAmount.lt(payment.amount())) {
             ErrorMessages.paymentTooMuch(loanAmount, payment)
                 .replyError(event);

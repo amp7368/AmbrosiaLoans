@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
@@ -58,6 +59,11 @@ public interface ClientAccess {
         ClientDiscordDetails discord = getEntity().getDiscord();
         if (discord == null) return null;
         return apply.apply(discord);
+    }
+
+    default boolean isUser(User user) {
+        Long discord = getDiscord(ClientDiscordDetails::getDiscordId);
+        return discord != null && discord == user.getIdLong();
     }
 
     default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType) {

@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
@@ -77,8 +78,8 @@ public class AmbrosiaMessages {
             return error(msg);
         }
 
-        public static AmbrosiaMessage amountNotPositive(long amount) {
-            String msg = "Provided amount: %d is not positive!".formatted(amount);
+        public static AmbrosiaMessage amountNotPositive(Emeralds amount) {
+            String msg = "Provided amount: %s is not positive!".formatted(amount);
             return error(msg);
         }
 
@@ -89,6 +90,21 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage onlyLoans(Emeralds balance) {
             String msg = "You do not have any loans since your balance is %s!".formatted(balance);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage notClient(DClient client) {
+            String msg = "This is %s's!".formatted(client.getEffectiveName());
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage hasActiveLoan(DLoan loan) {
+            String msg = "Cannot make an investment! You have an active loan of %s.".formatted(loan.getTotalOwed());
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage onlyInvestments(Emeralds balance) {
+            String msg = "You cannot make an investment since you owe %s!".formatted(balance.negative());
             return error(msg);
         }
     }

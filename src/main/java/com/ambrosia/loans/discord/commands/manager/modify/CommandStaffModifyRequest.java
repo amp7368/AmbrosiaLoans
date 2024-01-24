@@ -16,7 +16,11 @@ public class CommandStaffModifyRequest extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CommandStaffModifyLoan(), new StaffModifyPaymentCommand());
+        return List.of(
+            new CommandStaffModifyLoan(),
+            new StaffModifyPaymentCommand(),
+            new StaffModifyInvestmentCommand()
+        );
     }
 
     @Override
@@ -26,6 +30,6 @@ public class CommandStaffModifyRequest extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("amodify_request", "[Ambrosia Staff] Modify a request");
+        return Commands.slash("amodify_request", "[Staff] Modify a request");
     }
 }

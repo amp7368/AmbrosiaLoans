@@ -150,8 +150,9 @@ public class DClient extends Model implements ClientAccess {
         return this.discord;
     }
 
-    public void setDiscord(ClientDiscordDetails discord) {
+    public DClient setDiscord(ClientDiscordDetails discord) {
         this.discord = discord;
+        return this;
     }
 
     @Override

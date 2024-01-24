@@ -40,6 +40,7 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
                 throw new UpdateAccountException(e.getMessage());
             }
         }
+        setRequestId();
         sender.setClient(original);
         this.updated = ClientQueryApi.findById(original.getId());
         if (updated == null) throw new IllegalStateException("Client " + original.getId() + " does not exist!");
