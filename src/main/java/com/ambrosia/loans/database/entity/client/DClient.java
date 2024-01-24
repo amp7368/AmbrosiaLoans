@@ -63,12 +63,12 @@ public class DClient extends Model implements ClientAccess {
         return id;
     }
 
-    public Emeralds getBalance(Instant currentTime) {
+    public Emeralds getBalance(Instant currentTime) throws IllegalArgumentException {
         return getBalanceWithRecentInterest(currentTime)
             .totalEmeralds();
     }
 
-    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) {
+    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
         Emeralds balance = this.balance.getAmount();
         Emeralds interestAsNegative = getInterest(currentTime).negative();
         return new BalanceWithInterest(balance, interestAsNegative);
@@ -80,11 +80,10 @@ public class DClient extends Model implements ClientAccess {
     }
 
     @NotNull
-    private Emeralds getInterest(Instant currentTime) {
+    private Emeralds getInterest(Instant currentTime) throws IllegalArgumentException {
         this.refresh();
         Instant lastUpdated = this.balance.getLastUpdated();
-
-        if (lastUpdated.isAfter(currentTime)) {
+        if (!shouldGetAtTimestamp(currentTime)) {
             String error = "Client{%s}'s balance was last updated at %s, which is later than the current timestamp of %s"
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
             throw new IllegalArgumentException(error);
@@ -99,6 +98,11 @@ public class DClient extends Model implements ClientAccess {
             totalInterest = totalInterest.add(interest.toBigDecimal());
         }
         return Emeralds.of(totalInterest);
+    }
+
+    public boolean shouldGetAtTimestamp(Instant currentTime) {
+        Instant lastUpdated = this.balance.getLastUpdated();
+        return !lastUpdated.isAfter(currentTime);
     }
 
     @Override

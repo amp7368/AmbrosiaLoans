@@ -1,11 +1,17 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
+
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -29,6 +35,8 @@ public interface CommandOption<R> {
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
+    CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = multi("amount", "The payment amount. Expressed in STX. (Enter 0.5 for 32LE)",
+        OptionType.NUMBER, OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
 
     // loans
     CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
@@ -37,6 +45,17 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
+    CommandOptionMulti<String, Instant> DATE = multi("date", "Date (MM/DD/YY)", OptionType.STRING, OptionMapping::getAsString,
+        CommandOption::parseDate);
+
+    private static Instant parseDate(String dateString) {
+        try {
+            TemporalAccessor date = SIMPLE_DATE_FORMATTER.parse(dateString);
+            return Instant.from(date);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
+    }
 
 
     static <V, R> CommandOptionMulti<V, R> multi(String name, String description, OptionType type,

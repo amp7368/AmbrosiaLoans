@@ -16,7 +16,12 @@ public class CommandStaffModifyRequest extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CommandStaffModifyLoan());
+        return List.of(new CommandStaffModifyLoan(), new StaffModifyPaymentCommand());
+    }
+
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
     }
 
     @Override

@@ -21,13 +21,13 @@ public interface CommandCheckPermission extends SendMessage {
                 .replyError(event);
             return true;
         }
-        boolean isEmployee = perms.isEmployee(sender.getRoles()) || perms.isManager(sender.getRoles());
+        boolean isManager = perms.isManager(sender.getRoles());
+        boolean isEmployee = perms.isEmployee(sender.getRoles()) || isManager;
         if (!isEmployee && isOnlyEmployee()) {
             ErrorMessages.badRole("Employee", event)
                 .replyError(event);
             return true;
         }
-        boolean isManager = perms.isManager(sender.getRoles());
         if (!isManager && isOnlyManager()) {
             ErrorMessages.badRole("Manager", event)
                 .replyError(event);

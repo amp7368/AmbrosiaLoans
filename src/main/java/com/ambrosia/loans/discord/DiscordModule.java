@@ -18,6 +18,9 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -29,6 +32,12 @@ public class DiscordModule extends AppleModule {
         "https://cdn.discordapp.com/icons/923749890104885271/a_52da37c184005a14d15538cb62271b9b.webp";
     public static final int MAX_CHOICES = 25;
     public static final ZoneId TIME_ZONE = ZoneId.of("America/Los_Angeles");
+    public static final DateTimeFormatter SIMPLE_DATE_FORMATTER = new DateTimeFormatterBuilder()
+        .appendPattern("MM/dd/yy")
+        .parseDefaulting(ChronoField.SECOND_OF_DAY, 0)
+        .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
+        .toFormatter()
+        .withZone(DiscordModule.TIME_ZONE);
     private static DiscordModule instance;
 
     public DiscordModule() {

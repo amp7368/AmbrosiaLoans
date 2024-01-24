@@ -212,4 +212,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     public void remove() {
         ActiveRequestDatabase.remove(this.serialize());
     }
+
+    public Data getData() {
+        return this.data;
+    }
 }

@@ -142,9 +142,9 @@ public class ExampleData {
         clientInvestC = new DClient("ClientInvestC");
         clientNothingD = new DClient("ClientNothingD");
         clientWithdrawalA = new DClient("ClientWithdrawal");
-//        clientLoanB.setDiscord(ClientDiscordDetails.fromManual(253646208084475904L,
-//            "https://cdn.discordapp.com/avatars/253646208084475904/65b6d3079a00a363788e031f92e41f18.png",
-//            "appleptr16"));
+        clientLoanC.setDiscord(ClientDiscordDetails.fromManual(253646208084475904L,
+            "https://cdn.discordapp.com/avatars/253646208084475904/65b6d3079a00a363788e031f92e41f18.png",
+            "appleptr16"));
         clientLoanA.setDiscord(ClientDiscordDetails.fromManual(
             283000305380229121L,
             null,

@@ -67,8 +67,4 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         AccountEventType accountEventType = data.transactionType();
         return accountEventType.toString() + " " + data.getAmount();
     }
-
-    public ActiveRequestLoan getData() {
-        return this.data;
-    }
 }

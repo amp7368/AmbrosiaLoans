@@ -4,6 +4,7 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -73,6 +74,21 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage badRequestType(String type, Long requestId) {
             String msg = "Request #%d is not a %s request".formatted(requestId, type);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage amountNotPositive(long amount) {
+            String msg = "Provided amount: %d is not positive!".formatted(amount);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage paymentTooMuch(Emeralds balance, Emeralds payment) {
+            String msg = "Cannot pay back %s. You only owe %s!".formatted(payment, balance);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage onlyLoans(Emeralds balance) {
+            String msg = "You do not have any loans since your balance is %s!".formatted(balance);
             return error(msg);
         }
     }

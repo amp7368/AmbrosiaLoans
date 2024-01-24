@@ -23,11 +23,11 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
     public DClient updated;
 
     public ActiveRequestAccount() {
-        super(ActiveRequestType.ACCOUNT.getTypeId(), null);
+        super(ActiveRequestType.ACCOUNT, null);
     }
 
     public ActiveRequestAccount(Member discord, String minecraft, String displayName) throws UpdateAccountException {
-        super(ActiveRequestType.ACCOUNT.getTypeId(), new ActiveRequestSender(null));
+        super(ActiveRequestType.ACCOUNT, new ActiveRequestSender(null));
         ClientMinecraftDetails minecraftDetails = ClientMinecraftDetails.fromUsername(minecraft);
         if (minecraftDetails == null)
             throw new UpdateAccountException(String.format("Minecraft account: '%s' not found", minecraft));

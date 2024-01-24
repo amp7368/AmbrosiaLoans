@@ -2,6 +2,10 @@ package com.ambrosia.loans.database.account.event.loan;
 
 import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -53,13 +57,31 @@ public interface LoanAccess {
     default DLoanPayment makePayment(Emeralds emeralds, Instant date) {
         if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
         DLoan loan = getEntity();
-        DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount());
+        DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount(), DStaffConductor.SYSTEM);
         try (Transaction transaction = DB.beginTransaction()) {
-            payment.save(transaction);
             loan.makePayment(payment, transaction);
+            payment.save(transaction);
             loan.save(transaction);
             transaction.commit();
         }
+        return payment;
+    }
+
+    default DLoanPayment makePayment(ActiveRequestPayment request) throws InvalidStaffConductorException {
+        Emeralds emeralds = request.getPayment();
+        if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
+        DLoan loan = getEntity();
+        DLoanPayment payment = new DLoanPayment(loan, request.getTimestamp(), emeralds.amount(), request.getConductor());
+        try (Transaction transaction = DB.beginTransaction()) {
+            loan.makePayment(payment, transaction);
+            payment.save(transaction);
+            loan.save(transaction);
+            transaction.commit();
+        }
+        loan.refresh();
+        loan.getClient().refresh();
+        payment.refresh();
+        RunBankSimulation.simulateFromDate(payment.getDate());
         return payment;
     }
 

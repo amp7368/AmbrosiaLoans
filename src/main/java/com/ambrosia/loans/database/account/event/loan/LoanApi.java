@@ -6,6 +6,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -51,7 +52,7 @@ public interface LoanApi {
             return loan;
         }
 
-        static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException {
+        static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
             DLoan loan = new DLoan(request);
             DClient client = loan.getClient();
 

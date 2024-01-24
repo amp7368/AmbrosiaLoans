@@ -53,7 +53,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
                 this.error = "'Amount in STX' must be positive";
                 return;
             }
-            this.emeralds = Emeralds.leToEmeralds(stx * 64).amount();
+            this.emeralds = Emeralds.stxToEmeralds(stx).amount();
         } catch (NumberFormatException e) {
             this.error = "'Amount in STX' must be a decimal number";
         }

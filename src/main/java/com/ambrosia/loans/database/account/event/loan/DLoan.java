@@ -10,6 +10,7 @@ import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -80,7 +81,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.ACTIVE;
     }
 
-    public DLoan(ActiveRequestLoan request) throws CreateEntityException {
+    public DLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
         this.client = request.getClient();
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();

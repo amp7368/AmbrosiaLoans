@@ -5,8 +5,10 @@ import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 
 public class StaffConductorApi {
 
-    public static DStaffConductor findByDiscord(long conductorId) {
-        return new QDStaffConductor().where().client.discord.discordId.eq(conductorId).findOne();
+    public static DStaffConductor findByDiscord(long discordId) {
+        return new QDStaffConductor().where()
+            .client.discord.discordId.eq(discordId)
+            .findOne();
     }
 
     public static DStaffConductor create(DClient client) {

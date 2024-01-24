@@ -4,9 +4,8 @@ import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -35,7 +34,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
     protected transient DClient vouchClient;
 
     public ActiveRequestLoan() {
-        super(ActiveRequestType.LOAN.getTypeId(), null);
+        super(ActiveRequestType.LOAN, null);
     }
 
     public ActiveRequestLoan(DClient client,
@@ -43,7 +42,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         String reason,
         String repayment,
         List<String> collateral) {
-        super(ActiveRequestType.LOAN.getTypeId(), new ActiveRequestSender(client));
+        super(ActiveRequestType.LOAN, new ActiveRequestSender(client));
         setRequestId();
         this.amount = amount;
         this.clientId = client.getId();
@@ -59,7 +58,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
     }
 
     @Override
-    public void onComplete() throws CreateEntityException {
+    public void onComplete() throws CreateEntityException, InvalidStaffConductorException {
         LoanCreateApi.createLoan(this);
     }
 
@@ -131,12 +130,5 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
 
     private void save() {
         ActiveRequestDatabase.save(this);
-    }
-
-    public DStaffConductor getConductor() {
-        DStaffConductor conductor = StaffConductorApi.findByDiscord(getEndorserId());
-        if (conductor != null) return conductor;
-        DClient client = ClientQueryApi.findByDiscord(getEndorserId());
-        return StaffConductorApi.create(client);
     }
 }

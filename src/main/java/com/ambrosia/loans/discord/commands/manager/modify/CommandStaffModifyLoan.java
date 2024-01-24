@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.commands.manager.modify;
 
+import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.modify.BaseModifyLoanRequest;
 import com.ambrosia.loans.discord.base.command.modify.ModifyRequestMsg;
@@ -10,10 +10,7 @@ import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,15 +37,9 @@ public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModify
         String startDate = findOption(event, "start_date", OptionMapping::getAsString);
         if (startDate == null) return null;
         try {
-            DateTimeFormatter format = new DateTimeFormatterBuilder()
-                .appendPattern("MM/dd/yy")
-                .parseDefaulting(ChronoField.SECOND_OF_DAY, 0)
-                .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
-                .toFormatter()
-                .withZone(DiscordModule.TIME_ZONE);
-            TemporalAccessor parsed = format.parse(startDate);
+            TemporalAccessor parsed = SIMPLE_DATE_FORMATTER.parse(startDate);
             loan.getData().setStartDate(Instant.from(parsed));
-            return ModifyRequestMsg.info("Set the start date to %s".formatted(format.format(parsed)));
+            return ModifyRequestMsg.info("Set the start date to %s".formatted(SIMPLE_DATE_FORMATTER.format(parsed)));
         } catch (DateTimeParseException e) {
             return ModifyRequestMsg.error("Failed to parse date. Please use format MM/dd/yy");
         }
@@ -67,16 +58,21 @@ public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModify
         return ModifyRequestMsg.info("Set rate as %s.".formatted(formatPercentage(rate / 100)));
     }
 
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("loan", "Modify loan request")
-            .addOption(OptionType.STRING, "start_date",
-                "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
+        SubcommandData command = new SubcommandData("loan", "[Staff] Modify a loan request");
         CommandOptionList.of(
             List.of(CommandOption.REQUEST),
             List.of(CommandOption.RATE, CommandOption.VOUCH)
         ).addToCommand(command);
+        command.addOption(OptionType.STRING, "start_date",
+            "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
+
         return command;
     }
 }
