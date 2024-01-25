@@ -24,7 +24,10 @@ public abstract class ActiveClientRequest<Gui extends ActiveRequestGui<?>> exten
     }
 
     public DClient getClient() {
-        if (client != null) return client;
+        if (client != null) {
+            client.refresh();
+            return client;
+        }
         return this.client = ClientQueryApi.findById(clientId);
     }
 

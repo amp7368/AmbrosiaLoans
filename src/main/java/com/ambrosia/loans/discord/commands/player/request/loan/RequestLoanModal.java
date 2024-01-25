@@ -91,7 +91,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
         if (client == null) {
             try {
-                client = ClientCreateApi.createClient(minecraft, event.getMember());
+                client = ClientCreateApi.createClient(minecraft, minecraft, event.getMember());
             } catch (CreateEntityException e) {
                 event.replyEmbeds(error(e.getMessage())).setEphemeral(true).queue();
                 return;

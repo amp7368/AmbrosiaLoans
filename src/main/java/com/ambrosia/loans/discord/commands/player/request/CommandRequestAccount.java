@@ -1,5 +1,9 @@
 package com.ambrosia.loans.discord.commands.player.request;
 
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -22,20 +26,27 @@ public class CommandRequestAccount extends BaseSubCommand {
         Member member = event.getMember();
         if (member == null) return;
         String minecraft = CommandOption.MINECRAFT.getRequired(event);
-        String displayName = CommandOption.DISPLAY_NAME.getOptional(event);
+        String displayNameOption = CommandOption.DISPLAY_NAME.getOptional(event);
         event.deferReply().queue((reply) -> {
-            ActiveRequestAccount request;
             try {
-                request = new ActiveRequestAccount(member, minecraft, displayName);
-            } catch (UpdateAccountException e) {
-                event.replyEmbeds(error(e.getMessage())).queue();
-                return;
-            }
+                DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
 
-            ActiveRequestAccountGui gui = request.create();
-            final MessageEditData message = MessageEditData.fromCreateData(gui.makeClientMessage());
-            reply.editOriginal(message).queue();
-            gui.send(ActiveRequestDatabase::sendRequest);
+                if (client == null) {
+                    String displayName = displayNameOption;
+                    if (displayName == null) displayName = minecraft;
+                    if (displayName == null) displayName = event.getMember().getEffectiveName();
+                    client = ClientCreateApi.createClient(displayName, minecraft, event.getMember());
+                    reply.editOriginalEmbeds(success("Successfully registered as %s".formatted(client.getEffectiveName()))).queue();
+                    return;
+                }
+                ActiveRequestAccount request = new ActiveRequestAccount(client, minecraft, displayNameOption);
+                ActiveRequestAccountGui gui = request.create();
+                final MessageEditData message = MessageEditData.fromCreateData(gui.makeClientMessage());
+                reply.editOriginal(message).queue();
+                gui.send(ActiveRequestDatabase::sendRequest);
+            } catch (UpdateAccountException | CreateEntityException e) {
+                reply.editOriginalEmbeds(error(e.getMessage())).queue();
+            }
         });
     }
 

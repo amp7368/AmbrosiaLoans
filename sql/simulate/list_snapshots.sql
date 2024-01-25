@@ -20,5 +20,8 @@ SELECT client.display_name,
        date
 FROM account_sim_snapshot
          LEFT JOIN client ON client_id = client.id
-WHERE client.display_name = 'ClientManyLoans'
+WHERE client.display_name = 'NothingA'
 ORDER BY date;
+
+SELECT *
+FROM client;

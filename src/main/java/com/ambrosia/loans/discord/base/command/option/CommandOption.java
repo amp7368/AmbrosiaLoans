@@ -24,7 +24,7 @@ public interface CommandOption<R> {
 
     // client
     CommandOptionMulti<String, DClient> CLIENT = multi("client", "Client associated with this action", OptionType.STRING,
-        OptionMapping::getAsString, ClientQueryApi::findByName);
+        OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
     CommandOption<Member> DISCORD = basic("discord", "The discord of the client", OptionType.MENTIONABLE,
         OptionMapping::getAsMember);
     CommandOption<String> MINECRAFT = basic("minecraft", "Your minecraft username", OptionType.STRING,
@@ -48,7 +48,7 @@ public interface CommandOption<R> {
 
     // loans
     CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
-        OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName);
+        OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
     CommandOption<Double> RATE = basic("rate", "The interest rate expressed as a percent. (Enter 5.2 for 5.2%)", OptionType.NUMBER,
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,

@@ -26,6 +26,7 @@ public class ActiveRequestInvestment extends ActiveClientRequest<ActiveRequestIn
 
     @Override
     public void onComplete() throws Exception {
+        setTimestamp(Instant.now().minusSeconds(1));
         InvestApi.createInvestment(this);
     }
 
@@ -33,7 +34,7 @@ public class ActiveRequestInvestment extends ActiveClientRequest<ActiveRequestIn
         return timestamp;
     }
 
-    public ActiveRequestInvestment setTimestamp(Instant timestamp) {
+    private ActiveRequestInvestment setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
         return this;
     }

@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.commands.player.request;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.commands.player.request.invest.RequestModifyInvestmentCommand;
-import com.ambrosia.loans.discord.commands.player.request.loan.CommandModifyLoan;
+import com.ambrosia.loans.discord.commands.player.request.loan.ModifyLoanCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -19,7 +19,7 @@ public class CommandModifyRequest extends BaseCommand {
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
         return List.of(
-            new CommandModifyLoan(),
+            new ModifyLoanCommand(),
             new RequestModifyInvestmentCommand()
         );
     }

@@ -20,7 +20,7 @@ public class ClientMinecraftDetails {
     public String name;
     @EmbeddedId
     @Column(unique = true)
-    public String uuid;
+    public String id;
 
     @Nullable
     public static ClientMinecraftDetails fromUsername(String username) {
@@ -38,7 +38,7 @@ public class ClientMinecraftDetails {
     }
 
     public String skinUrl() {
-        return "https://mc-heads.net/head/" + this.uuid;
+        return "https://mc-heads.net/head/" + this.id;
     }
 
     public String getName() {

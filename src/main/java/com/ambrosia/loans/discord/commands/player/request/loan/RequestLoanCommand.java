@@ -5,7 +5,7 @@ import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class CommandRequestLoan extends BaseClientSubCommand {
+public class RequestLoanCommand extends BaseClientSubCommand {
 
     @Override
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {

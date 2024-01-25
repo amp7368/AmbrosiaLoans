@@ -20,7 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandStaffModifyLoan extends BaseSubCommand implements BaseModifyLoanRequest {
+public class StaffModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {

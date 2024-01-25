@@ -17,7 +17,6 @@ import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSectio
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.messages.checkin.query.QDCheckInMessage;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
@@ -142,22 +141,6 @@ public class ExampleData {
         clientInvestC = new DClient("ClientInvestC");
         clientNothingD = new DClient("ClientNothingD");
         clientWithdrawalA = new DClient("ClientWithdrawal");
-        DClient clientNothingA = new DClient("NothingA");
-        DClient clientNothingB = new DClient("NothingB");
-        clientNothingA.setDiscord(ClientDiscordDetails.fromManual(253646208084475904L,
-            "https://cdn.discordapp.com/avatars/253646208084475904/65b6d3079a00a363788e031f92e41f18.png",
-            "appleptr16"
-        )).save();
-        clientNothingB.setDiscord(ClientDiscordDetails.fromManual(
-            283000305380229121L,
-            null,
-            "Tealy"
-        )).save();
-//        clientLoanA.setDiscord(ClientDiscordDetails.fromManual(
-//            584052499078709269L,
-//            null,
-//            "Sheena"
-//        ));
         clients().forEach(Model::save);
     }
 

@@ -13,6 +13,7 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
     protected final String name;
     protected final OptionType type;
     protected final Function<OptionMapping, R> getOption;
+    private boolean autoComplete = false;
 
     CommandOptionBasic(String name, String description, OptionType type, Function<OptionMapping, R> getOption) {
         this.name = name;
@@ -34,12 +35,16 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
 
     @Override
     public void addOption(SubcommandData command, boolean required) {
-        command.addOption(type, name, description, required);
+        command.addOption(type, name, description, required, autoComplete);
     }
 
     @Override
     public void addOption(SlashCommandData command, boolean required) {
-        command.addOption(type, name, description, required);
+        command.addOption(type, name, description, required, autoComplete);
     }
 
+    public CommandOptionBasic<R> setAutocomplete() {
+        this.autoComplete = true;
+        return this;
+    }
 }

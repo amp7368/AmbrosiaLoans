@@ -78,9 +78,9 @@ public interface LoanAccess {
             loan.save(transaction);
             transaction.commit();
         }
+        payment.refresh();
         loan.refresh();
         loan.getClient().refresh();
-        payment.refresh();
         RunBankSimulation.simulateFromDate(payment.getDate());
         return payment;
     }

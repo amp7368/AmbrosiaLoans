@@ -25,7 +25,7 @@ public class CreateProfileCommand extends BaseCommand {
 
         DClient client;
         try {
-            client = ClientCreateApi.createClient(clientName, discord);
+            client = ClientCreateApi.createClient(clientName, clientName, discord);
         } catch (CreateEntityException e) {
             event.replyEmbeds(this.error(String.format("'%s' is already a user", clientName))).queue();
             return;

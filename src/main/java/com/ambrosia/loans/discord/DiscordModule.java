@@ -4,7 +4,7 @@ import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
-import com.ambrosia.loans.discord.commands.manager.modify.CommandStaffModifyRequest;
+import com.ambrosia.loans.discord.commands.manager.modify.StaffModifyRequestCommand;
 import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
 import com.ambrosia.loans.discord.commands.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
@@ -84,7 +84,7 @@ public class DiscordModule extends AppleModule {
 
         DCFCommandManager commands = dcf.commands();
         // employee commands
-        commands.addCommand(new CommandStaffModifyRequest(), new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
+        commands.addCommand(new StaffModifyRequestCommand(), new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
