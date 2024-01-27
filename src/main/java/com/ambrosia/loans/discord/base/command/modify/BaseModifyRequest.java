@@ -3,6 +3,7 @@ package com.ambrosia.loans.discord.base.command.modify;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
+import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.List;
@@ -14,13 +15,21 @@ import org.jetbrains.annotations.Nullable;
 public interface BaseModifyRequest extends SendMessage {
 
     @Nullable
-    default <T> T findRequest(SlashCommandInteractionEvent event, Class<T> requestType) {
+    default <T extends ActiveRequestGui<?>> T findRequest(SlashCommandInteractionEvent event, Class<T> requestType, String type,
+        boolean isStaff) {
         Long requestId = CommandOption.REQUEST.getMap1(event);
         DCFStoredGui<?> request = CommandOption.REQUEST.getRequired(event, ErrorMessages.noRequestWithId(requestId));
-        if (requestType.isInstance(request))
-            return requestType.cast(request);
+        if (requestType.isInstance(request)) {
+            T activeRequest = requestType.cast(request);
+            ActiveRequestStage stage = activeRequest.getData().stage;
+            if (!isStaff && stage != ActiveRequestStage.CREATED) {
+                ErrorMessages.cannotModifyRequestAtStage(stage).replyError(event);
+                return null;
+            }
+            return activeRequest;
+        }
         if (request != null)
-            ErrorMessages.badRequestType("loan", requestId).replyError(event);
+            ErrorMessages.badRequestType(type, requestId).replyError(event);
         return null;
     }
 

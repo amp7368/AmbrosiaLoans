@@ -24,7 +24,7 @@ public class StaffModifyLoanCommand extends BaseSubCommand implements BaseModify
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui loan = findLoanRequest(event);
+        ActiveRequestLoanGui loan = findLoanRequest(event, true);
         if (loan == null) return;
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setVouch(loan, event));

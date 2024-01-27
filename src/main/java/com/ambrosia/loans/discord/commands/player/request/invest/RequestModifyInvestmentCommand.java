@@ -17,7 +17,7 @@ public class RequestModifyInvestmentCommand extends BaseSubCommand implements Ba
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestInvestmentGui investment = findInvestmentRequest(event);
+        ActiveRequestInvestmentGui investment = findInvestmentRequest(event, false);
         if (investment == null) return;
         DClient client = investment.getData().getClient();
         boolean isUser = client.isUser(event.getUser());

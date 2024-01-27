@@ -51,7 +51,7 @@ public interface BaseModifyWithdrawalRequest extends BaseModifyRequest {
     }
 
     @Nullable
-    default ActiveRequestWithdrawalGui findWithdrawalRequest(SlashCommandInteractionEvent event) {
-        return findRequest(event, ActiveRequestWithdrawalGui.class);
+    default ActiveRequestWithdrawalGui findWithdrawalRequest(SlashCommandInteractionEvent event, boolean isStaff) {
+        return findRequest(event, ActiveRequestWithdrawalGui.class, "withdrawal", isStaff);
     }
 }

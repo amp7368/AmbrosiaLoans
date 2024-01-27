@@ -21,7 +21,7 @@ public class StaffModifyPaymentCommand extends BaseSubCommand implements BaseMod
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        @Nullable ActiveRequestPaymentGui request = findPaymentRequest(event);
+        @Nullable ActiveRequestPaymentGui request = findPaymentRequest(event, true);
         if (request == null) return;
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setPaymentAmount(request, event));

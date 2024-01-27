@@ -15,7 +15,7 @@ public class StaffModifyInvestmentCommand extends BaseSubCommand implements Base
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestInvestmentGui loan = findInvestmentRequest(event);
+        ActiveRequestInvestmentGui loan = findInvestmentRequest(event, true);
         if (loan == null) return;
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setAmount(loan, event));

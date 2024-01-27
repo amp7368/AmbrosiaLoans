@@ -19,7 +19,7 @@ public class RequestModifyWithdrawalCommand extends BaseSubCommand implements Ba
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        @Nullable ActiveRequestWithdrawalGui withdrawal = findWithdrawalRequest(event);
+        @Nullable ActiveRequestWithdrawalGui withdrawal = findWithdrawalRequest(event, false);
         if (withdrawal == null) return;
         DClient client = withdrawal.getData().getClient();
         boolean isUser = client.isUser(event.getUser());

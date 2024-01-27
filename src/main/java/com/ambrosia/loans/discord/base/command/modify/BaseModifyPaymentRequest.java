@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 public interface BaseModifyPaymentRequest extends BaseModifyRequest {
 
     @Nullable
-    default ActiveRequestPaymentGui findPaymentRequest(SlashCommandInteractionEvent event) {
-        return findRequest(event, ActiveRequestPaymentGui.class);
+    default ActiveRequestPaymentGui findPaymentRequest(SlashCommandInteractionEvent event, boolean isStaff) {
+        return findRequest(event, ActiveRequestPaymentGui.class, "payment", isStaff);
     }
 }

@@ -152,6 +152,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     private String staffModifyMessage() {
         if (staffCommandName() == null) return null;
+        if (data.stage.isComplete()) return null;
         return """
             `/amodify_request %s request_id:%d`
             Staff, use the above command to modify the request.
@@ -160,6 +161,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     private String clientModifyMessage() {
         if (clientCommandName() == null) return null;
+        if (data.stage.isComplete()) return null;
         return """
             `/modify_request %s request_id:%d`
             Use the above command to modify your request.

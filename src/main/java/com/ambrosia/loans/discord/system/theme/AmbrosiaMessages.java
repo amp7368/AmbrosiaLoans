@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
+import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -110,6 +111,11 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage withdrawalTooMuch(Emeralds withdrawal, Emeralds balance) {
             String msg = "Cannot withdrawal back %s. You only have %s!".formatted(withdrawal, balance);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage cannotModifyRequestAtStage(ActiveRequestStage stage) {
+            String msg = "Client's cannot modify a request that is in the '%s' stage".formatted(stage);
             return error(msg);
         }
     }

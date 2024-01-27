@@ -16,7 +16,7 @@ public class ModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanR
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui loan = findLoanRequest(event);
+        ActiveRequestLoanGui loan = findLoanRequest(event, false);
         if (loan == null) return;
         Long loanDiscord = loan.getData().getClient().getDiscord(ClientDiscordDetails::getDiscordId);
         if (loanDiscord != event.getUser().getIdLong()) {

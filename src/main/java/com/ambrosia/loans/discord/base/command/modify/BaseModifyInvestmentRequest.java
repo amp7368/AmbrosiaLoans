@@ -7,8 +7,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 public interface BaseModifyInvestmentRequest extends BaseModifyRequest {
 
-    default ActiveRequestInvestmentGui findInvestmentRequest(SlashCommandInteractionEvent event) {
-        return findRequest(event, ActiveRequestInvestmentGui.class);
+    default ActiveRequestInvestmentGui findInvestmentRequest(SlashCommandInteractionEvent event, boolean isStaff) {
+        return findRequest(event, ActiveRequestInvestmentGui.class, "investment", isStaff);
     }
 
     default ModifyRequestMsg setAmount(ActiveRequestInvestmentGui investment, SlashCommandInteractionEvent event) {

@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 public interface BaseModifyLoanRequest extends BaseModifyRequest {
 
     @Nullable
-    default ActiveRequestLoanGui findLoanRequest(SlashCommandInteractionEvent event) {
-        return findRequest(event, ActiveRequestLoanGui.class);
+    default ActiveRequestLoanGui findLoanRequest(SlashCommandInteractionEvent event, boolean isStaff) {
+        return findRequest(event, ActiveRequestLoanGui.class, "loan", isStaff);
     }
 
     default ModifyRequestMsg setVouch(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
