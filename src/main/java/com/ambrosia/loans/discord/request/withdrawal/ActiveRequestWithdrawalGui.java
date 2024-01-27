@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.request.investment;
+package com.ambrosia.loans.discord.request.withdrawal;
 
 import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
@@ -6,9 +6,9 @@ import java.time.Instant;
 import java.util.List;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 
-public class ActiveRequestInvestmentGui extends ActiveRequestGui<ActiveRequestInvestment> {
+public class ActiveRequestWithdrawalGui extends ActiveRequestGui<ActiveRequestWithdrawal> {
 
-    public ActiveRequestInvestmentGui(long message, ActiveRequestInvestment activeRequestInvestment) {
+    public ActiveRequestWithdrawalGui(long message, ActiveRequestWithdrawal activeRequestInvestment) {
         super(message, activeRequestInvestment);
     }
 
@@ -21,19 +21,19 @@ public class ActiveRequestInvestmentGui extends ActiveRequestGui<ActiveRequestIn
             balance = "Error! Cannot check balance!";
         }
         return List.of(
-            new Field("Investment", data.getAmount().toString(), true),
+            new Field("Withdrawal", data.getAmount().negative().toString(), true),
             new Field("Investment Balance", balance, true)
         );
     }
 
     @Override
     protected String clientCommandName() {
-        return "investment";
+        return "withdrawal";
     }
 
     @Override
     protected String staffCommandName() {
-        return "investment";
+        return "withdrawal";
     }
 
     @Override

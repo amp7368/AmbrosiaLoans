@@ -99,12 +99,17 @@ public class AmbrosiaMessages {
         }
 
         public static AmbrosiaMessage hasActiveLoan(DLoan loan) {
-            String msg = "Cannot make an investment! You have an active loan of %s.".formatted(loan.getTotalOwed());
+            String msg = "You have an active loan of %s!".formatted(loan.getTotalOwed());
             return error(msg);
         }
 
         public static AmbrosiaMessage onlyInvestments(Emeralds balance) {
             String msg = "You cannot make an investment since you owe %s!".formatted(balance.negative());
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage withdrawalTooMuch(Emeralds withdrawal, Emeralds balance) {
+            String msg = "Cannot withdrawal back %s. You only have %s!".formatted(withdrawal, balance);
             return error(msg);
         }
     }

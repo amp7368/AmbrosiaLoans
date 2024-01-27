@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredGui;
@@ -99,6 +100,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         } catch (Exception e) {
             this.data.stage = ActiveRequestStage.ERROR;
             this.error = e.getMessage();
+            DiscordModule.get().logger().error("", e);
         }
         this.remove();
         this.updateSender();

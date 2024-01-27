@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
+import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -44,15 +44,14 @@ public class InvestApi {
         return investment;
     }
 
-    public static DInvest createInvestment(ActiveRequestInvestment request) throws InvalidStaffConductorException {
-        DInvest investment = new DInvest(request);
-
+    public static DInvest createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {
+        DInvest investment = new DInvest(request, Instant.now());
         investment.save();
 
         investment.refresh();
         investment.getClient().refresh();
 
-        RunBankSimulation.simulateFromDate(request.getTimestamp());
+        RunBankSimulation.simulateFromDate(investment.getDate());
         return investment;
     }
 

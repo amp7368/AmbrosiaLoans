@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
+import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import javax.persistence.Column;
@@ -31,9 +31,9 @@ public class DInvest extends AccountEvent implements IAccountChange {
         this.amount = amount.amount();
     }
 
-    public DInvest(ActiveRequestInvestment request) throws InvalidStaffConductorException {
-        super(request.getClient(), request.getTimestamp(), request.getConductor(), AccountEventType.INVEST);
-        this.amount = request.getInvestment().amount();
+    public DInvest(BaseActiveRequestInvest<?> request, Instant timestamp) throws InvalidStaffConductorException {
+        super(request.getClient(), timestamp, request.getConductor(), request.getEventType());
+        this.amount = request.getAmount().amount();
     }
 
     @Override

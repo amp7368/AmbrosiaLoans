@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import org.jetbrains.annotations.NotNull;
 
 public interface CommandOption<R> {
 
@@ -40,12 +41,9 @@ public interface CommandOption<R> {
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
-    CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = multi("amount", "The payment amount. Expressed in STX. (Enter 0.5 for 32LE)",
-        OptionType.NUMBER, OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
-    CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = multi("amount",
-        "The amount to invest. Expressed in STX. (Enter 0.5 for 32LE)",
-        OptionType.NUMBER, OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
-
+    CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
+    CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     // loans
     CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
         OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
@@ -53,6 +51,13 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
+
+    @NotNull
+    static CommandOptionMulti<Double, Emeralds> emeraldsAmount(String type) {
+        String desc = "The amount to %s. Expressed in STX. (Enter 0.5 for 32LE)".formatted(type);
+        return multi("amount", desc, OptionType.NUMBER,
+            OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
+    }
 
     private static Instant parseDate(String dateString) {
         try {

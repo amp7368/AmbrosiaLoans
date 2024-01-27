@@ -31,7 +31,7 @@ public abstract class ActiveClientRequest<Gui extends ActiveRequestGui<?>> exten
         return this.client = ClientQueryApi.findById(clientId);
     }
 
-    protected Emeralds getBalance(Instant timestamp) throws BadDateAccessException {
+    public Emeralds getBalance(Instant timestamp) throws BadDateAccessException {
         DClient client = getClient();
         if (!client.shouldGetAtTimestamp(timestamp))
             throw new BadDateAccessException(timestamp);

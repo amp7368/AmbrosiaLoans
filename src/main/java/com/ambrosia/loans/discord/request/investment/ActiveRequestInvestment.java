@@ -1,42 +1,19 @@
 package com.ambrosia.loans.discord.request.investment;
 
-import com.ambrosia.loans.database.account.event.invest.InvestApi;
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
-import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
+import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
-import java.time.Instant;
 
-public class ActiveRequestInvestment extends ActiveClientRequest<ActiveRequestInvestmentGui> {
-
-    protected long investmentAmount;
-    protected Instant timestamp;
+public class ActiveRequestInvestment extends BaseActiveRequestInvest<ActiveRequestInvestmentGui> {
 
     public ActiveRequestInvestment() {
         super(ActiveRequestType.INVESTMENT);
     }
 
-    public ActiveRequestInvestment(DClient client, Emeralds amount, Instant timestamp) {
-        super(ActiveRequestType.INVESTMENT, client);
-        setRequestId();
-        this.investmentAmount = amount.amount();
-        this.timestamp = timestamp;
-    }
-
-    @Override
-    public void onComplete() throws Exception {
-        setTimestamp(Instant.now().minusSeconds(1));
-        InvestApi.createInvestment(this);
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    private ActiveRequestInvestment setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
-        return this;
+    public ActiveRequestInvestment(DClient client, Emeralds amount) {
+        super(ActiveRequestType.INVESTMENT, client, amount);
     }
 
     @Override
@@ -44,16 +21,8 @@ public class ActiveRequestInvestment extends ActiveClientRequest<ActiveRequestIn
         return new ActiveRequestInvestmentGui(messageId, this);
     }
 
-    public Emeralds getInvestment() {
-        return Emeralds.of(this.investmentAmount);
-    }
-
-    public ActiveRequestInvestment setInvestment(Emeralds investment) {
-        this.investmentAmount = investment.amount();
-        return this;
-    }
-
-    public Emeralds getBalance() throws BadDateAccessException {
-        return super.getBalance(timestamp);
+    @Override
+    public AccountEventType getEventType() {
+        return AccountEventType.INVEST;
     }
 }

@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class RequestInvestmentCommand extends BaseClientSubCommand {
 
-    public static boolean checkErrors(SlashCommandInteractionEvent event, DClient client, Emeralds amount) {
+    private boolean checkErrors(SlashCommandInteractionEvent event, DClient client, Emeralds amount) {
         if (amount == null) return true;
         if (amount.lte(0)) {
             ErrorMessages.amountNotPositive(amount).replyError(event);
@@ -42,7 +42,7 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         Emeralds amount = CommandOption.INVESTMENT_AMOUNT.getRequired(event);
         if (checkErrors(event, client, amount)) return;
 
-        ActiveRequestInvestment request = new ActiveRequestInvestment(client, amount, Instant.now());
+        ActiveRequestInvestment request = new ActiveRequestInvestment(client, amount);
 
         ActiveRequestInvestmentGui gui = request.create();
         event.reply(gui.makeClientMessage()).queue();

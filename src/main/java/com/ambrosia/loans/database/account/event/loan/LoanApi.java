@@ -66,7 +66,7 @@ public interface LoanApi {
             }
             loan.refresh();
             client.refresh();
-            RunBankSimulation.simulateFromDate(request.getStartDate());
+            RunBankSimulation.simulateFromDate(loan.getStartDate());
             return loan;
         }
 

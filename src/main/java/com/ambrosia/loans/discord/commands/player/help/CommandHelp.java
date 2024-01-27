@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.commands.player.help;
 
+import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -14,7 +15,13 @@ public class CommandHelp extends BaseCommand {
     }
 
     @Override
+    public boolean isOnlyManager() {
+        return true;
+    }
+
+    @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
+        ExampleData.resetData();
         DCFGui gui = new DCFGui(dcf, event::reply);
         gui.addPage(new HelpHomePage(gui));
         gui.addPage(new HelpCommandsPage(gui));

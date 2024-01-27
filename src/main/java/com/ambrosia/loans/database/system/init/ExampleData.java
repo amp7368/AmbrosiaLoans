@@ -41,17 +41,7 @@ public class ExampleData {
     private static DClient clientManyLoans;
 
     public static void loadExample() {
-        new QDLoanSection().delete();
-        new QDLoanPayment().delete();
-        new QDLoan().delete();
-        new QDInvest().delete();
-        new QDAccountSnapshot().delete();
-        new QDBankSnapshot().delete();
-        new QDCollateral().delete();
-        new QDCheckInMessage().delete();
-        new QDStaffConductor().delete();
-        new QDClient().delete();
-        InitDatabase.init();
+        resetData();
 
         try {
             insertClients();
@@ -64,6 +54,20 @@ public class ExampleData {
         } catch (CreateEntityException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void resetData() {
+        new QDLoanSection().delete();
+        new QDLoanPayment().delete();
+        new QDLoan().delete();
+        new QDInvest().delete();
+        new QDAccountSnapshot().delete();
+        new QDBankSnapshot().delete();
+        new QDCollateral().delete();
+        new QDCheckInMessage().delete();
+        new QDStaffConductor().delete();
+        new QDClient().delete();
+        InitDatabase.init();
     }
 
     private static void clientManyLoans() {
@@ -163,4 +167,5 @@ public class ExampleData {
         DInvest investmentC = InvestApi.createInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(128));
     }
+
 }

@@ -14,7 +14,8 @@ public interface BaseModifyInvestmentRequest extends BaseModifyRequest {
     default ModifyRequestMsg setAmount(ActiveRequestInvestmentGui investment, SlashCommandInteractionEvent event) {
         Emeralds amount = CommandOption.INVESTMENT_AMOUNT.getRequired(event);
         if (amount == null) return null;
-        investment.getData().setInvestment(amount);
+
+        investment.getData().setAmount(amount);
         return ModifyRequestMsg.info("%s set as investment amount".formatted(amount));
     }
 }
