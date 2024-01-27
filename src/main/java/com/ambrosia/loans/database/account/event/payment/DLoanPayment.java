@@ -1,21 +1,25 @@
-package com.ambrosia.loans.database.account.event.loan.payment;
+package com.ambrosia.loans.database.account.event.payment;
 
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -32,6 +36,9 @@ public class DLoanPayment extends Model {
     private long amount;
     @ManyToOne(optional = false)
     private DStaffConductor conductor;
+    @OneToMany
+    private final List<DComment> comments = new ArrayList<>();
+
 
     public DLoanPayment(DLoan loan, Instant date, long amount, DStaffConductor conductor) {
         this.loan = loan;

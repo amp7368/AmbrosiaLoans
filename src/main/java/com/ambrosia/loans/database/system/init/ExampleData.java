@@ -5,21 +5,23 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
-import com.ambrosia.loans.database.account.event.invest.DInvest;
-import com.ambrosia.loans.database.account.event.invest.InvestApi;
-import com.ambrosia.loans.database.account.event.invest.query.QDInvest;
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.event.investment.InvestApi;
+import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
 import com.ambrosia.loans.database.account.event.loan.collateral.query.QDCollateral;
-import com.ambrosia.loans.database.account.event.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSection;
+import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.messages.checkin.query.QDCheckInMessage;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
+import com.ambrosia.loans.database.message.query.QDCheckInMessage;
+import com.ambrosia.loans.database.message.query.QDComment;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -60,11 +62,13 @@ public class ExampleData {
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
         new QDLoan().delete();
-        new QDInvest().delete();
+        new QDInvestment().delete();
+        new QDWithdrawal().delete();
         new QDAccountSnapshot().delete();
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
+        new QDComment().delete();
         new QDStaffConductor().delete();
         new QDClient().delete();
         InitDatabase.init();
@@ -156,15 +160,15 @@ public class ExampleData {
 
     private static void insertInvestments() {
         Instant longAgo = Instant.now().minus(60, DAYS);
-        DInvest investmentA = InvestApi.createInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
+        DInvestment investmentA = InvestApi.createInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(100));
-        DInvest withdrawalA = InvestApi.createInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
+        DInvestment withdrawalA = InvestApi.createInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(19));
         for (int i = 0; i < 3; i++) {
-            DInvest investmentB = InvestApi.createInvestment(clientInvestB, longAgo.plus(i, MINUTES), DStaffConductor.SYSTEM,
+            DInvestment investmentB = InvestApi.createInvestment(clientInvestB, longAgo.plus(i, MINUTES), DStaffConductor.SYSTEM,
                 Emeralds.leToEmeralds(128));
         }
-        DInvest investmentC = InvestApi.createInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
+        DInvestment investmentC = InvestApi.createInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(128));
     }
 

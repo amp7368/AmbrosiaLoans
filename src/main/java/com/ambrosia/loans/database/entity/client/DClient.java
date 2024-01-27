@@ -1,13 +1,16 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.invest.DInvest;
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.balance.ClientBalance;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Identity;
@@ -18,6 +21,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -45,15 +49,21 @@ public class DClient extends Model implements ClientAccess {
     @Column(nullable = false)
     private final Timestamp dateCreated = Timestamp.from(Instant.now());
 
+    @OneToMany
+    private final List<DComment> comments = new ArrayList<>();
+
     @Column
     @Embedded(prefix = "balance_")
     private final ClientBalance balance = new ClientBalance();
     @OneToMany
     private final List<DAccountSnapshot> accountSnapshots = new ArrayList<>();
+
     @OneToMany(mappedBy = "client")
     private final List<DLoan> loans = new ArrayList<>();
     @OneToMany
-    private final List<DInvest> investments = new ArrayList<>();
+    private final List<DInvestment> investments = new ArrayList<>();
+    @OneToMany
+    private final List<DWithdrawal> withdrawals = new ArrayList<>();
 
     public DClient(String displayName) {
         this.displayName = displayName;
@@ -172,7 +182,16 @@ public class DClient extends Model implements ClientAccess {
         this.loans.add(loan);
     }
 
-    public List<DInvest> getInvestments() {
-        return this.investments;
+    public void addWithdrawal(DWithdrawal withdrawal) {
+        this.withdrawals.add(withdrawal);
     }
+
+    public void addInvestment(DInvestment investment) {
+        this.investments.add(investment);
+    }
+
+    public List<AccountEventInvest> getInvestmentLike() {
+        return Stream.concat(this.investments.stream(), this.withdrawals.stream()).toList();
+    }
+
 }

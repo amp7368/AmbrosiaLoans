@@ -7,7 +7,7 @@ FROM (
                                ss.account_balance,
                                ss.date
      FROM client c
-              LEFT JOIN account_sim_snapshot ss ON c.id = ss.client_id
+              LEFT JOIN client_snapshot ss ON c.id = ss.client_id
      ORDER BY c.id,
               ss.date DESC) AS q
 

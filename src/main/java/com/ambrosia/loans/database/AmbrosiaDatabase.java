@@ -5,16 +5,18 @@ import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
 import apple.lib.ebean.database.config.AppleEbeanPostgresConfig;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
-import com.ambrosia.loans.database.account.event.invest.DInvest;
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.messages.checkin.DCheckInMessage;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.DCheckInMessage;
+import com.ambrosia.loans.database.message.DComment;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected void addEntities(List<Class<?>> entities) {
         // client
-        entities.addAll(List.of(ClientDiscordDetails.class, ClientMinecraftDetails.class, DCheckInMessage.class));
+        entities.addAll(List.of(ClientDiscordDetails.class, ClientMinecraftDetails.class));
         entities.add(DClient.class);
         // staff
         entities.add(DStaffConductor.class);
@@ -31,7 +33,12 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         // log
         entities.add(AccountEvent.class);
         entities.addAll(List.of(DLoan.class, DLoanSection.class, DLoanPayment.class, DCollateral.class));
-        entities.add(DInvest.class);
+        entities.add(DInvestment.class);
+        entities.add(DWithdrawal.class);
+
+        // message
+        entities.add(DCheckInMessage.class);
+        entities.add(DComment.class);
 
         // simulation
         entities.add(DAccountSnapshot.class);

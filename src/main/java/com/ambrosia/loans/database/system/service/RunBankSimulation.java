@@ -4,13 +4,15 @@ import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
-import com.ambrosia.loans.database.account.event.invest.DInvest;
-import com.ambrosia.loans.database.account.event.invest.query.QDInvest;
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
-import com.ambrosia.loans.database.account.event.loan.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.bank.BankApi;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -40,7 +42,7 @@ public class RunBankSimulation {
                                        ss.account_balance,
                                        ss.date
              FROM client c
-                      LEFT JOIN account_sim_snapshot ss ON c.id = ss.client_id
+                      LEFT JOIN client_snapshot ss ON c.id = ss.client_id
              ORDER BY c.id,
                       ss.date DESC) AS q
         WHERE c.id = q.id;
@@ -140,11 +142,13 @@ public class RunBankSimulation {
 
     private static List<IAccountChange> findAccountChanges(Instant fromDateInstant) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
-        List<DInvest> investments = findInvestmentsAfter(fromDate);
+        List<DInvestment> investments = findInvestmentsAfter(fromDate);
+        List<DWithdrawal> withdrawals = findWithdrawalsAfter(fromDate);
         List<DLoan> loans = findLoansAfter(fromDate);
 
         List<IAccountChange> changes = new ArrayList<>();
         changes.addAll(investments);
+        changes.addAll(withdrawals);
         changes.addAll(loans);
 
         changes.sort(Comparator.comparing(IAccountChange::getDate));
@@ -152,8 +156,17 @@ public class RunBankSimulation {
     }
 
 
-    private static List<DInvest> findInvestmentsAfter(Timestamp fromDate) {
-        return new QDInvest().where()
+    private static List<DInvestment> findInvestmentsAfter(Timestamp fromDate) {
+        return new QDInvestment().where()
+            .or()
+            .date.greaterOrEqualTo(fromDate)
+            .endOr()
+            .orderBy("date")
+            .findList();
+    }
+
+    private static List<DWithdrawal> findWithdrawalsAfter(Timestamp fromDate) {
+        return new QDWithdrawal().where()
             .or()
             .date.greaterOrEqualTo(fromDate)
             .endOr()

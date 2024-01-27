@@ -46,7 +46,7 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
         btns.add(OVERVIEW);
         if (!getClient().getLoans().isEmpty())
             btns.add(LOANS);
-        if (!getClient().getInvestments().isEmpty())
+        if (!getClient().getInvestmentLike().isEmpty())
             btns.add(INVESTMENTS);
         return btns;
     }

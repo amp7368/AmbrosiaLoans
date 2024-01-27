@@ -4,11 +4,11 @@ import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.event.loan.comment.DLoanComment;
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
@@ -70,7 +70,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @Column
     private String repayment;
     @OneToMany
-    private List<DLoanComment> comments;
+    private List<DComment> comments;
 
     public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor, Instant startDate) {
         this.client = client;
