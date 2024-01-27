@@ -11,13 +11,13 @@ public class ActiveRequestAccountGui extends ActiveRequestGui<ActiveRequestAccou
     }
 
     @Override
-    protected String clientDescription() {
-        return "";
+    protected String staffCommandName() {
+        return null;
     }
 
     @Override
-    protected String staffDescription() {
-        return "";
+    protected String clientCommandName() {
+        return null;
     }
 
     @Override

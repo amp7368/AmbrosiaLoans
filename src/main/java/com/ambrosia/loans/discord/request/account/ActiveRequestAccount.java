@@ -1,50 +1,42 @@
 package com.ambrosia.loans.discord.request.account;
 
-import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.util.CreateEntityException;
-import com.ambrosia.loans.discord.base.request.ActiveRequest;
-import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
+import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import org.jetbrains.annotations.Nullable;
 
-public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui> {
+public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccountGui> {
 
-    public DClient original;
-    public DClient updated;
+    private ClientMinecraftDetails minecraft;
+    private String displayName;
 
     public ActiveRequestAccount() {
-        super(ActiveRequestType.ACCOUNT.getTypeId(), null);
+        super(ActiveRequestType.ACCOUNT);
     }
 
-    public ActiveRequestAccount(Member discord, String minecraft, String displayName) throws UpdateAccountException {
-        super(ActiveRequestType.ACCOUNT.getTypeId(), new ActiveRequestSender(null));
-        ClientMinecraftDetails minecraftDetails = ClientMinecraftDetails.fromUsername(minecraft);
-        if (minecraftDetails == null)
-            throw new UpdateAccountException(String.format("Minecraft account: '%s' not found", minecraft));
-        this.original = ClientQueryApi.findByDiscord(discord.getIdLong());
-        if (displayName == null) displayName = minecraft;
-        if (this.original == null) {
-            try {
-                this.original = ClientCreateApi.createClient(discord.getEffectiveName(), discord);
-            } catch (CreateEntityException e) {
-                throw new UpdateAccountException(e.getMessage());
+    public ActiveRequestAccount(DClient client, String minecraft, String displayName)
+        throws CreateEntityException, UpdateAccountException {
+        super(ActiveRequestType.ACCOUNT, client);
+        setRequestId();
+
+        this.displayName = displayName;
+        if (minecraft == null) {
+            this.minecraft = null;
+        } else {
+            this.minecraft = ClientMinecraftDetails.fromUsername(minecraft);
+            if (this.minecraft == null) {
+                throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             }
         }
-        sender.setClient(original);
-        this.updated = ClientQueryApi.findById(original.getId());
-        if (updated == null) throw new IllegalStateException("Client " + original.getId() + " does not exist!");
-        this.updated.setMinecraft(minecraftDetails);
-        if (displayName != null) this.updated.setDisplayName(displayName);
         if (displayFields().isEmpty())
             throw new UpdateAccountException("No updates were specified so no changes were made");
     }
@@ -56,10 +48,10 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
     }
 
     public void onComplete() throws UpdateAccountException {
-        DClient newVersion = ClientQueryApi.findById(updated.getId());
+        DClient newVersion = ClientQueryApi.findById(clientId);
         if (newVersion == null) throw new UpdateAccountException("Client no longer exists");
-        updateField(DClient::getMinecraft, newVersion::setMinecraft);
-        updateField(DClient::getDisplayName, newVersion::setDisplayName);
+        updateField(DClient::getMinecraft, minecraft, newVersion::setMinecraft);
+        updateField(DClient::getDisplayName, displayName, newVersion::setDisplayName);
         try {
             newVersion.save();
         } catch (Exception e) {
@@ -68,27 +60,28 @@ public class ActiveRequestAccount extends ActiveRequest<ActiveRequestAccountGui>
         }
     }
 
-    public <T> void updateField(Function<DClient, T> extract, Consumer<T> setter) {
-        T newValue = extract.apply(updated);
-        boolean isAnUpdate = !Objects.equals(extract.apply(original), newValue);
-        if (isAnUpdate) setter.accept(newValue);
+    public <T> void updateField(Function<DClient, T> extract, T updated, Consumer<T> setter) {
+        T oldValue = extract.apply(getClient());
+        if (updated == null) return;
+        boolean isAnUpdate = !Objects.equals(oldValue, updated);
+        if (isAnUpdate) setter.accept(oldValue);
     }
 
     public List<Field> displayFields() {
         List<Field> fields = new ArrayList<>();
-        fields.add(checkEqual(DClient::getDisplayName, Function.identity(), "Profile DisplayName"));
-        fields.add(checkEqual(DClient::getMinecraft, mc -> mc.name, "Minecraft"));
+        fields.add(checkEqual(DClient::getDisplayName, this.displayName, "Profile DisplayName"));
+        fields.add(checkEqual(c -> c.getMinecraft(ClientMinecraftDetails::getName), minecraft.getName(), "Minecraft"));
         fields.removeIf(Objects::isNull);
         return fields;
     }
 
     @Nullable
-    private <T> Field checkEqual(Function<DClient, T> extractKey, Function<T, String> toString, String title) {
-        T original = extractKey.apply(this.original);
-        T updated = extractKey.apply(this.updated);
+    private Field checkEqual(Function<DClient, String> extractKey, String updated, String title) {
+        String original = extractKey.apply(this.getClient());
+        if (updated == null) return null;
         if (Objects.equals(original, updated)) return null;
-        String originalMsg = original == null ? "None" : toString.apply(original);
-        String updatedMsg = updated == null ? "None" : toString.apply(updated);
-        return new Field(title, String.format("%s :arrow_right: %s", originalMsg, updatedMsg), false);
+        String originalMsg = Objects.requireNonNullElse(original, "None");
+        String msg = String.format("%s :arrow_right: %s", originalMsg, updated);
+        return new Field(title, msg, false);
     }
 }

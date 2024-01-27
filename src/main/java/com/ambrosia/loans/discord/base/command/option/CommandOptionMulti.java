@@ -25,6 +25,12 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
         });
     }
 
+    @Override
+    public CommandOptionMulti<V, R> setAutocomplete() {
+        super.setAutocomplete();
+        return this;
+    }
+
     public V getMap1(SlashCommandInteractionEvent event) {
         return event.getOption(this.name, this.mapping1);
     }

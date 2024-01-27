@@ -18,13 +18,21 @@ public final class Emeralds {
         return new Emeralds(amount);
     }
 
-    public static Emeralds leToEmeralds(double le) {
-        return of((long) (LIQUID * le));
-    }
 
     public static Emeralds of(BigDecimal amount) {
         return of(amount.longValue());
     }
+
+    public static Emeralds leToEmeralds(double le) {
+        return of((long) (LIQUID * le));
+    }
+
+    public static Emeralds stxToEmeralds(double stx) {
+        BigDecimal emeralds = BigDecimal.valueOf(stx)
+            .multiply(BigDecimal.valueOf(STACK));
+        return of(emeralds);
+    }
+
 
     public long amount() {
         return amount;
@@ -78,5 +86,21 @@ public final class Emeralds {
 
     public boolean isNegative() {
         return this.amount < 0;
+    }
+
+    public boolean lte(long compareAmount) {
+        return this.amount <= compareAmount;
+    }
+
+    public boolean lt(long compareAmount) {
+        return this.amount < compareAmount;
+    }
+
+    public boolean gte(long compareAmount) {
+        return this.amount >= compareAmount;
+    }
+
+    public boolean gt(long compareAmount) {
+        return this.amount > compareAmount;
     }
 }

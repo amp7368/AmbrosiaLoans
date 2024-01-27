@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class CommandStaffModifyRequest extends BaseCommand {
+public class StaffModifyRequestCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -16,11 +16,20 @@ public class CommandStaffModifyRequest extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CommandStaffModifyLoan());
+        return List.of(
+            new StaffModifyLoanCommand(),
+            new StaffModifyPaymentCommand(),
+            new StaffModifyInvestmentCommand()
+        );
+    }
+
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("amodify_request", "[Ambrosia Staff] Modify a request");
+        return Commands.slash("amodify_request", "[Staff] Modify a request");
     }
 }

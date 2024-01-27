@@ -12,11 +12,11 @@ import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class CommandModifyLoan extends BaseSubCommand implements BaseModifyLoanRequest {
+public class ModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui loan = findLoanRequest(event);
+        ActiveRequestLoanGui loan = findLoanRequest(event, false);
         if (loan == null) return;
         Long loanDiscord = loan.getData().getClient().getDiscord(ClientDiscordDetails::getDiscordId);
         if (loanDiscord != event.getUser().getIdLong()) {

@@ -19,7 +19,7 @@ public class ClientSearch {
             String displayName = client.getDisplayName();
             String minecraft = client.getMinecraft(ClientMinecraftDetails::getName);
             String discord = client.getDiscord(ClientDiscordDetails::getUsername);
-            if (minecraft != null) byName.add(new ClientName(client, displayName, discord, minecraft));
+            byName.add(new ClientName(client, displayName, discord, minecraft));
         }
 
         byName.forEach(c -> c.match(match));

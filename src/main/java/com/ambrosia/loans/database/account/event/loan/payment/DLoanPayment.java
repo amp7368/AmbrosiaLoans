@@ -4,6 +4,7 @@ import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import java.math.BigDecimal;
@@ -29,11 +30,14 @@ public class DLoanPayment extends Model {
     private Timestamp date;
     @Column
     private long amount;
+    @ManyToOne(optional = false)
+    private DStaffConductor conductor;
 
-    public DLoanPayment(DLoan loan, Instant date, long amount) {
+    public DLoanPayment(DLoan loan, Instant date, long amount, DStaffConductor conductor) {
         this.loan = loan;
         this.date = Timestamp.from(date);
         this.amount = amount;
+        this.conductor = conductor;
     }
 
     public Emeralds getAmount() {

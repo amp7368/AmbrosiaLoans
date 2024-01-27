@@ -18,7 +18,7 @@ public class AutoCompleteListener extends ListenerAdapter {
 
     @NotNull
     private List<AmbrosiaAutoComplete<?>> getAutoCompletes() {
-        return List.of(new VouchAutoComplete());
+        return List.of(new ClientAutoComplete("vouch"), new ClientAutoComplete("client"));
     }
 
     @Override

@@ -7,10 +7,10 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import org.jetbrains.annotations.NotNull;
 
-public class VouchAutoComplete extends AmbrosiaAutoComplete<DClient> {
+public class ClientAutoComplete extends AmbrosiaAutoComplete<DClient> {
 
-    public VouchAutoComplete() {
-        super("vouch");
+    public ClientAutoComplete(String optionName) {
+        super(optionName);
     }
 
     @Override

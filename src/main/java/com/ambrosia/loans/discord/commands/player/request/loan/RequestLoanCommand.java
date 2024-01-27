@@ -6,12 +6,11 @@ import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class CommandRequestLoan extends BaseSubCommand {
+public class RequestLoanCommand extends BaseSubCommand {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public void onCheckedCommand(SlashCommandInteractionEvent event) {
         DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
-
         RequestLoanModalType modalType = RequestLoanModalType.get(client == null);
         event.replyModal(modalType.buildModal()).queue();
     }
