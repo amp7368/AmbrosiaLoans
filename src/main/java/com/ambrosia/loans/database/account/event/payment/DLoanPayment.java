@@ -72,4 +72,7 @@ public class DLoanPayment extends Model implements Commentable {
         client.updateBalance(amount, getDate(), AccountEventType.PAYMENT);
     }
 
+    public DLoan getLoan() {
+        return this.loan;
+    }
 }

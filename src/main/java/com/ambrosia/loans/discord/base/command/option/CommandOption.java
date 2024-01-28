@@ -46,6 +46,8 @@ public interface CommandOption<R> {
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
+    CommandOption<Boolean> PAYMENT_FULL = full("paying");
+    CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
     // loan request
     CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
         OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
@@ -53,7 +55,6 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
-
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
@@ -61,10 +62,16 @@ public interface CommandOption<R> {
         OptionMapping::getAsLong, LoanQueryApi::findById);
     CommandOptionMulti<Long, DLoan> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
-
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
+
+    @NotNull
+    static CommandOption<Boolean> full(String verb) {
+        String desc = "True if %s the full amount".formatted(verb);
+        return basic("full", desc, OptionType.BOOLEAN, OptionMapping::getAsBoolean);
+
+    }
 
     @NotNull
     static CommandOptionMulti<Double, Emeralds> emeraldsAmount(String type) {

@@ -16,13 +16,13 @@ public interface BaseModifyWithdrawalRequest extends BaseModifyRequest {
 
     default boolean checkErrors(SlashCommandInteractionEvent event, DClient client, Emeralds amount) {
         if (amount == null) return true;
-        if (amount.lte(0)) {
-            ErrorMessages.amountNotPositive(amount).replyError(event);
-            return true;
-        }
         Optional<DLoan> activeLoan = client.getActiveLoan();
         if (activeLoan.isPresent()) {
             ErrorMessages.hasActiveLoan(activeLoan.get()).replyError(event);
+            return true;
+        }
+        if (amount.lte(0)) {
+            ErrorMessages.amountNotPositive(amount).replyError(event);
             return true;
         }
         Emeralds balance = client.getBalance(Instant.now());

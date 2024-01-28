@@ -37,7 +37,11 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
 
     protected void balance(EmbedBuilder embed) {
         Emeralds balance = getClient().getBalance(Instant.now());
-        String msg = "### Account Balance\n%s\n".formatted(balance);
+        String msg;
+        if (balance.isNegative())
+            msg = "### Loan balance\n%s\b".formatted(balance.negative());
+        else
+            msg = "### Investment Balance\n%s\n".formatted(balance);
         embed.appendDescription(msg);
     }
 

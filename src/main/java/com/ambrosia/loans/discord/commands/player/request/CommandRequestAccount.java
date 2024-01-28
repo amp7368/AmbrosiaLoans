@@ -30,7 +30,6 @@ public class CommandRequestAccount extends BaseSubCommand {
         event.deferReply().queue((reply) -> {
             try {
                 DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
-
                 if (client == null) {
                     String displayName = displayNameOption;
                     if (displayName == null) displayName = minecraft;

@@ -88,7 +88,7 @@ public interface LoanAccess {
     default Emeralds getTotalPaid() {
         return getPayments().stream()
             .map(DLoanPayment::getAmount)
-            .reduce(Emeralds.of(0), Emeralds::add);
+            .reduce(Emeralds.zero(), Emeralds::add);
     }
 
     List<DLoanPayment> getPayments();

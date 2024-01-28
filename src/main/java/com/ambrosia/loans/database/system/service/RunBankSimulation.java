@@ -72,7 +72,7 @@ public class RunBankSimulation {
             BigDecimal totalInvested = calcTotalInvested(investors, currentDate);
 
             // divide payment to investors
-            BigDecimal amountToInvestors = loanPayment.getAmount().toBigDecimal()
+            BigDecimal amountToInvestors = calcProfits(loanPayment).toBigDecimal()
                 .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
             long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
 
@@ -83,6 +83,22 @@ public class RunBankSimulation {
             accountChange.getClient().refresh();
             accountChange.updateSimulation();
         }
+    }
+
+    @NotNull
+    public static Emeralds calcProfits(DLoanPayment loanPayment) {
+        DLoan loan = loanPayment.getLoan();
+        Emeralds pastPayments = loan.getPayments().stream()
+            .filter(payment -> payment.getDate().isBefore(loanPayment.getDate()))
+            .map(DLoanPayment::getAmount)
+            .reduce(Emeralds.zero(), Emeralds::add);
+        Emeralds amountPastInitial = pastPayments.add(loan.getInitialAmount().negative());
+        if (amountPastInitial.gte(0)) {
+            return loanPayment.getAmount();
+        }
+        Emeralds profits = amountPastInitial.add(loanPayment.getAmount());
+        if (profits.isNegative()) return Emeralds.zero();
+        return profits;
     }
 
     private static long giveToInvestors(DLoanPayment loanPayment, List<DClient> investors, BigDecimal amountToInvestors,
@@ -105,7 +121,7 @@ public class RunBankSimulation {
     private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
         return investors.stream()
             .map(c -> c.getBalance(currentTime))
-            .reduce(Emeralds.of(0), Emeralds::add)
+            .reduce(Emeralds.zero(), Emeralds::add)
             .toBigDecimal();
     }
 

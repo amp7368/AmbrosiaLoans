@@ -61,7 +61,7 @@ public class ProfileInvestPage extends ProfilePage {
             .stream()
             .map(DAccountSnapshot::getDelta)
             .reduce(Emeralds::add)
-            .orElse(Emeralds.of(0));
+            .orElse(Emeralds.zero());
         String profitsMsg = "### Total Profits Earned\n%s\n".formatted(totalProfits);
         embed.appendDescription(profitsMsg);
     }

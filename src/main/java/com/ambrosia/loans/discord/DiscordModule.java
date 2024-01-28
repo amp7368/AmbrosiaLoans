@@ -11,6 +11,7 @@ import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
+import com.ambrosia.loans.discord.commands.staff.blacklist.BlacklistCommand;
 import com.ambrosia.loans.discord.commands.staff.comment.CommentCommand;
 import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
@@ -87,7 +88,8 @@ public class DiscordModule extends AppleModule {
         // employee commands
         commands.addCommand(new CommandLink(),
             new CreateProfileCommand(),
-            new ViewProfileCommand());
+            new ViewProfileCommand(),
+            new BlacklistCommand());
         commands.addCommand(new CommentCommand());
         commands.addCommand(new StaffModifyRequestCommand());
         // manager commands

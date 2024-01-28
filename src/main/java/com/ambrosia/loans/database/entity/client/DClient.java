@@ -49,6 +49,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private String displayName;
     @Column(nullable = false)
     private final Timestamp dateCreated = Timestamp.from(Instant.now());
+    @Column(nullable = false)
+    private boolean blacklisted = false;
 
     @OneToMany
     private final List<DComment> comments = new ArrayList<>();
@@ -94,7 +96,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private Emeralds getInterest(Instant currentTime) throws IllegalArgumentException {
         this.refresh();
         Instant lastUpdated = this.balance.getLastUpdated();
-        if (!shouldGetAtTimestamp(currentTime)) {
+        if (willBalanceFailAtTimestamp(currentTime)) {
             String error = "Client{%s}'s balance was last updated at %s, which is later than the current timestamp of %s"
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
             throw new IllegalArgumentException(error);
@@ -111,10 +113,22 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return Emeralds.of(totalInterest);
     }
 
-    public boolean shouldGetAtTimestamp(Instant currentTime) {
+    public boolean willBalanceFailAtTimestamp(Instant currentTime) {
         Instant lastUpdated = this.balance.getLastUpdated();
-        return !lastUpdated.isAfter(currentTime);
+        return lastUpdated.isAfter(currentTime);
     }
+
+    @Override
+    public boolean isBlacklisted() {
+        return blacklisted;
+    }
+
+    @Override
+    public DClient setBlacklisted(boolean blacklisted) {
+        this.blacklisted = blacklisted;
+        return this;
+    }
+
 
     @Override
     public DClient getEntity() {
@@ -127,7 +141,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .sorted(Comparator.comparing(DLoan::getStartDate))
             .toList();
     }
-
 
     public ClientMinecraftDetails getMinecraft() {
         return minecraft;

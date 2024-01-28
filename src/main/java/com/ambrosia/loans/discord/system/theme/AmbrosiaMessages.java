@@ -118,6 +118,11 @@ public class AmbrosiaMessages {
             String msg = "Client's cannot modify a request that is in the '%s' stage".formatted(stage);
             return error(msg);
         }
+
+        public static AmbrosiaMessage blacklisted() {
+            String msg = "You're blacklisted and can no longer interact with the bot";
+            return error(msg);
+        }
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {

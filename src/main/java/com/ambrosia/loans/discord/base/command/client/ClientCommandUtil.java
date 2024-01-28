@@ -14,6 +14,10 @@ interface ClientCommandUtil extends SendMessage {
             ErrorMessages.registerWithStaff().replyError(event);
             return;
         }
+        if (client.isBlacklisted()) {
+            ErrorMessages.blacklisted().replyError(event);
+            return;
+        }
         this.onClientCommand(event, client);
     }
 

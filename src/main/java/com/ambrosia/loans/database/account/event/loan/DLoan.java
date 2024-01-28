@@ -192,7 +192,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
             String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
             DatabaseModule.get().logger().warn(msg);
-            return Emeralds.of(0);
+            return Emeralds.zero();
         }
         int paymentIndex = 0;
         for (DLoanSection section : getSections()) {

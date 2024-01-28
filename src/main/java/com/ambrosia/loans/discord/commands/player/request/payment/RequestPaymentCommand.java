@@ -5,12 +5,14 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
+import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPaymentGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -21,8 +23,22 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
         Instant timestamp = Instant.now();
         Emeralds loanAmount = client.getBalance(timestamp).negative();
-        Emeralds payment = CommandOption.PAYMENT_AMOUNT.getRequired(event);
-        if (payment == null) return;
+        Emeralds payment;
+        Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
+        if (isFull != null && isFull) payment = loanAmount;
+        else payment = CommandOption.PAYMENT_AMOUNT.getOptional(event);
+        if (payment == null) {
+            replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
+            return;
+        }
+        Optional<DLoan> loan = client.getActiveLoan();
+        if (loan.isEmpty()) {
+            replyError(event, "You have no active loans!");
+            String error = "Client %s has a balance of %s, and wants to make a payment of %s, but has no active loans!"
+                .formatted(client.getEffectiveName(), loanAmount, payment);
+            DiscordModule.get().logger().error(error);
+            return;
+        }
         if (payment.lte(0)) {
             ErrorMessages.amountNotPositive(payment)
                 .replyError(event);
@@ -38,14 +54,6 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
                 .replyError(event);
             return;
         }
-        Optional<DLoan> loan = client.getActiveLoan();
-        if (loan.isEmpty()) {
-            replyError(event, "You have no active loans!");
-            String error = "Client %s has a balance of %s, and wants to make a payment of %s, but has no active loans!"
-                .formatted(client.getEffectiveName(), loanAmount, payment);
-            DiscordModule.get().logger().error(error);
-            return;
-        }
 
         ActiveRequestPayment request = new ActiveRequestPayment(client, payment, timestamp);
 
@@ -58,7 +66,10 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("payment", "Request to submit a payment");
-        CommandOption.PAYMENT_AMOUNT.addOption(command, true);
+        CommandOptionList.of(
+            List.of(),
+            List.of(CommandOption.PAYMENT_AMOUNT, CommandOption.PAYMENT_FULL)
+        ).addToCommand(command);
         return command;
     }
 }
