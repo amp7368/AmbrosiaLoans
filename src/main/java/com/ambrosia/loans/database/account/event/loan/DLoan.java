@@ -4,11 +4,12 @@ import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.event.loan.comment.DLoanComment;
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.Commentable;
+import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
@@ -38,10 +39,10 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange {
+public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange, Commentable {
 
     @Id
-    @Identity
+    @Identity(start = 100)
     private long id;
     @ManyToOne
     private DClient client;
@@ -70,7 +71,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @Column
     private String repayment;
     @OneToMany
-    private List<DLoanComment> comments;
+    private List<DComment> comments;
 
     public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor, Instant startDate) {
         this.client = client;
@@ -191,7 +192,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
             String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
             DatabaseModule.get().logger().warn(msg);
-            return Emeralds.of(0);
+            return Emeralds.zero();
         }
         int paymentIndex = 0;
         for (DLoanSection section : getSections()) {
@@ -270,5 +271,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public Emeralds getInitialAmount() {
         return Emeralds.of(this.initialAmount);
+    }
+
+    @Override
+    public List<DComment> getComments() {
+        return this.comments;
     }
 }

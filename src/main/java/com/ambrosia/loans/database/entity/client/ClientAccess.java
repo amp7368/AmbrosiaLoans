@@ -33,6 +33,10 @@ public interface ClientAccess {
         return snapshot;
     }
 
+    boolean isBlacklisted();
+
+    DClient setBlacklisted(boolean blacklisted);
+
     DClient getEntity();
 
     List<DLoan> getLoans();

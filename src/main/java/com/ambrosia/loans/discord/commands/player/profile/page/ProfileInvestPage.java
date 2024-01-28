@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.commands.player.profile.page;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.invest.InvestApi.InvestQueryApi;
+import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.math.BigDecimal;
@@ -61,7 +61,7 @@ public class ProfileInvestPage extends ProfilePage {
             .stream()
             .map(DAccountSnapshot::getDelta)
             .reduce(Emeralds::add)
-            .orElse(Emeralds.of(0));
+            .orElse(Emeralds.zero());
         String profitsMsg = "### Total Profits Earned\n%s\n".formatted(totalProfits);
         embed.appendDescription(profitsMsg);
     }

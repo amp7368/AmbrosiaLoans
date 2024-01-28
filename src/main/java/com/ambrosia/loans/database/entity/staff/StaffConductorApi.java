@@ -1,7 +1,9 @@
 package com.ambrosia.loans.database.entity.staff;
 
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
+import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 
 public class StaffConductorApi {
 
@@ -15,5 +17,13 @@ public class StaffConductorApi {
         DStaffConductor conductor = new DStaffConductor(client);
         conductor.save();
         return conductor;
+    }
+
+    public static DStaffConductor findByDiscordOrConvert(String staffUsername, long staffId) throws InvalidStaffConductorException {
+        DStaffConductor conductor = StaffConductorApi.findByDiscord(staffId);
+        if (conductor != null) return conductor;
+        DClient client = ClientQueryApi.findByDiscord(staffId);
+        if (client == null) throw new InvalidStaffConductorException(staffUsername, staffId);
+        return create(client);
     }
 }

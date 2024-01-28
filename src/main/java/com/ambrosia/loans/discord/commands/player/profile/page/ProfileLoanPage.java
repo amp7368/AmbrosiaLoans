@@ -5,7 +5,7 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPer
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;

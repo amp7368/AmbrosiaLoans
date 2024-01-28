@@ -1,7 +1,5 @@
 package com.ambrosia.loans.discord.base.request;
 
-import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
-import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -46,17 +44,21 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
         return endorser;
     }
 
-    public void setEndorser(User endorser) {
+    public boolean setEndorser(User endorser) {
         this.endorser = endorser.getEffectiveName();
         this.endorserId = endorser.getIdLong();
+        try {
+            getConductor();
+            return true;
+        } catch (InvalidStaffConductorException e) {
+            this.endorser = null;
+            this.endorserId = 0;
+            return false;
+        }
     }
 
     public DStaffConductor getConductor() throws InvalidStaffConductorException {
-        DStaffConductor conductor = StaffConductorApi.findByDiscord(endorserId);
-        if (conductor != null) return conductor;
-        DClient client = ClientQueryApi.findByDiscord(endorserId);
-        if (client == null) throw new InvalidStaffConductorException(endorser, endorserId);
-        return StaffConductorApi.create(client);
+        return StaffConductorApi.findByDiscordOrConvert(endorser, endorserId);
     }
 
     public abstract void onComplete() throws Exception;

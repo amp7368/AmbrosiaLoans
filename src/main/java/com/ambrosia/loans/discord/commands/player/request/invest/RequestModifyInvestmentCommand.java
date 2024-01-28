@@ -22,7 +22,7 @@ public class RequestModifyInvestmentCommand extends BaseSubCommand implements Ba
         DClient client = investment.getData().getClient();
         boolean isUser = client.isUser(event.getUser());
         if (!isUser) {
-            ErrorMessages.notClient(client).replyError(event);
+            ErrorMessages.notCorrectClient(client).replyError(event);
             return;
         }
         List<ModifyRequestMsg> changes = new ArrayList<>();

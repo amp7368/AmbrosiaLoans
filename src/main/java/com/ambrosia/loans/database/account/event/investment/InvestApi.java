@@ -1,6 +1,8 @@
-package com.ambrosia.loans.database.account.event.invest;
+package com.ambrosia.loans.database.account.event.investment;
 
+import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -14,28 +16,30 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
 import java.util.Optional;
-import org.jetbrains.annotations.NotNull;
 
 public class InvestApi {
 
-    public static DInvest createInvestment(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
-        return createInvestEvent(client, date, conductor, emeralds, AccountEventType.INVEST);
+    public static DInvestment createInvestment(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+        return (DInvestment) createInvestEvent(client, date, conductor, emeralds, AccountEventType.INVEST);
     }
 
-    public static DInvest createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+    public static DWithdrawal createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
         Emeralds balance = client.getBalance(date);
         if (balance.amount() < emeralds.amount()) {
             String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance);
             throw new IllegalStateException(msg);
         }
-        return createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
+        return (DWithdrawal) createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
     }
 
-    @NotNull
-    private static DInvest createInvestEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds,
+    private static AccountEventInvest createInvestEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds,
         AccountEventType type) {
+        AccountEventInvest investment;
+        if (type == AccountEventType.INVEST)
+            investment = new DInvestment(client, date, conductor, emeralds, type);
+        else
+            investment = new DWithdrawal(client, date, conductor, emeralds, type);
 
-        DInvest investment = new DInvest(client, date, conductor, emeralds, type);
         try (Transaction transaction = DB.beginTransaction()) {
             client.updateBalance(emeralds.amount(), date, type, transaction);
             investment.save(transaction);
@@ -44,15 +48,24 @@ public class InvestApi {
         return investment;
     }
 
-    public static DInvest createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {
-        DInvest investment = new DInvest(request, Instant.now());
-        investment.save();
+    public static AccountEventInvest createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {
+        AccountEventInvest event;
+        if (request.getEventType() == AccountEventType.INVEST) {
+            DInvestment investment = new DInvestment(request, Instant.now());
+            event = investment;
+            event.getClient().addInvestment(investment);
+        } else {
+            DWithdrawal withdrawal = new DWithdrawal(request, Instant.now());
+            event = withdrawal;
+            event.getClient().addWithdrawal(withdrawal);
+        }
+        event.save();
 
-        investment.refresh();
-        investment.getClient().refresh();
+        event.refresh();
+        event.getClient().refresh();
 
-        RunBankSimulation.simulateFromDate(investment.getDate());
-        return investment;
+        RunBankSimulation.simulateFromDate(event.getDate());
+        return event;
     }
 
     public interface InvestQueryApi {

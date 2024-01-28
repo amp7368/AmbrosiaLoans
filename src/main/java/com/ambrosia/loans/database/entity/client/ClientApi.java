@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.util.CreateEntityException;
+import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
 public interface ClientApi {
@@ -29,6 +30,11 @@ public interface ClientApi {
                 .findOne();
         }
 
+        static List<DClient> listBlacklisted() {
+            return new QDClient().where()
+                .blacklisted.isTrue()
+                .findList();
+        }
     }
 
     interface ClientCreateApi {

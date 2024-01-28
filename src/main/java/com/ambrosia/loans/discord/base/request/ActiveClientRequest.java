@@ -33,7 +33,7 @@ public abstract class ActiveClientRequest<Gui extends ActiveRequestGui<?>> exten
 
     public Emeralds getBalance(Instant timestamp) throws BadDateAccessException {
         DClient client = getClient();
-        if (!client.shouldGetAtTimestamp(timestamp))
+        if (client.willBalanceFailAtTimestamp(timestamp))
             throw new BadDateAccessException(timestamp);
         return client.getBalance(timestamp);
     }

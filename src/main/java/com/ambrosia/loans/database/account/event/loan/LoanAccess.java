@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.account.event.loan;
 
-import com.ambrosia.loans.database.account.event.loan.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
+import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -88,7 +88,7 @@ public interface LoanAccess {
     default Emeralds getTotalPaid() {
         return getPayments().stream()
             .map(DLoanPayment::getAmount)
-            .reduce(Emeralds.of(0), Emeralds::add);
+            .reduce(Emeralds.zero(), Emeralds::add);
     }
 
     List<DLoanPayment> getPayments();

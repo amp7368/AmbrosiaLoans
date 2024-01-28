@@ -1,8 +1,5 @@
-package com.ambrosia.loans.database.account.event.invest;
+package com.ambrosia.loans.database.account.event.base;
 
-import com.ambrosia.loans.database.account.event.base.AccountEvent;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -10,17 +7,15 @@ import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 
-@Entity
-@Table(name = "invest")
-public class DInvest extends AccountEvent implements IAccountChange {
+@MappedSuperclass
+public abstract class AccountEventInvest extends AccountEvent implements IAccountChange {
 
     @Column(nullable = false)
     private long amount;
 
-    public DInvest(DClient account, Instant date, DStaffConductor conductor, Emeralds amount, AccountEventType eventType) {
+    public AccountEventInvest(DClient account, Instant date, DStaffConductor conductor, Emeralds amount, AccountEventType eventType) {
         super(account, date, conductor, eventType);
         if (eventType != AccountEventType.INVEST && eventType != AccountEventType.WITHDRAWAL) {
             String msg = "Investment must be %s or %s"
@@ -31,7 +26,7 @@ public class DInvest extends AccountEvent implements IAccountChange {
         this.amount = amount.amount();
     }
 
-    public DInvest(BaseActiveRequestInvest<?> request, Instant timestamp) throws InvalidStaffConductorException {
+    public AccountEventInvest(BaseActiveRequestInvest<?> request, Instant timestamp) throws InvalidStaffConductorException {
         super(request.getClient(), timestamp, request.getConductor(), request.getEventType());
         this.amount = request.getAmount().amount();
     }
@@ -54,4 +49,6 @@ public class DInvest extends AccountEvent implements IAccountChange {
     public Emeralds getDeltaAmount() {
         return Emeralds.of(this.amount);
     }
+
+
 }

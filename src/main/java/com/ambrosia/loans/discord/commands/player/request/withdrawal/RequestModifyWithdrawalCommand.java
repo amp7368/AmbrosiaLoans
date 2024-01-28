@@ -24,7 +24,7 @@ public class RequestModifyWithdrawalCommand extends BaseSubCommand implements Ba
         DClient client = withdrawal.getData().getClient();
         boolean isUser = client.isUser(event.getUser());
         if (!isUser) {
-            ErrorMessages.notClient(client).replyError(event);
+            ErrorMessages.notCorrectClient(client).replyError(event);
             return;
         }
 

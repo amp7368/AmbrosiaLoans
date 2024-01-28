@@ -16,7 +16,7 @@ import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 
 @Entity
-@Table(name = "account_sim_snapshot")
+@Table(name = "client_snapshot")
 public class DAccountSnapshot extends Model {
 
     @Id

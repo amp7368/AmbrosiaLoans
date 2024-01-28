@@ -20,10 +20,6 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
 
     private boolean checkErrors(SlashCommandInteractionEvent event, DClient client, Emeralds amount) {
         if (amount == null) return true;
-        if (amount.lte(0)) {
-            ErrorMessages.amountNotPositive(amount).replyError(event);
-            return true;
-        }
         Optional<DLoan> activeLoan = client.getActiveLoan();
         if (activeLoan.isPresent()) {
             ErrorMessages.hasActiveLoan(activeLoan.get()).replyError(event);
@@ -32,6 +28,10 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         Emeralds balance = client.getBalance(Instant.now());
         if (balance.isNegative()) {
             ErrorMessages.onlyInvestments(balance).replyError(event);
+            return true;
+        }
+        if (amount.lte(0)) {
+            ErrorMessages.amountNotPositive(amount).replyError(event);
             return true;
         }
         return false;

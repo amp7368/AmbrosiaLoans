@@ -94,7 +94,7 @@ public class AmbrosiaMessages {
             return error(msg);
         }
 
-        public static AmbrosiaMessage notClient(DClient client) {
+        public static AmbrosiaMessage notCorrectClient(DClient client) {
             String msg = "This is %s's!".formatted(client.getEffectiveName());
             return error(msg);
         }
@@ -116,6 +116,11 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage cannotModifyRequestAtStage(ActiveRequestStage stage) {
             String msg = "Client's cannot modify a request that is in the '%s' stage".formatted(stage);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage blacklisted() {
+            String msg = "You're blacklisted and can no longer interact with the bot";
             return error(msg);
         }
     }

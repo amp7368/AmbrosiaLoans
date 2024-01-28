@@ -23,6 +23,10 @@ public final class Emeralds {
         return of(amount.longValue());
     }
 
+    public static Emeralds zero() {
+        return of(0);
+    }
+
     public static Emeralds leToEmeralds(double le) {
         return of((long) (LIQUID * le));
     }

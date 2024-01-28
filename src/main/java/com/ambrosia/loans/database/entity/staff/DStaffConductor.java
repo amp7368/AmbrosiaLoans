@@ -17,8 +17,9 @@ import javax.persistence.Table;
 public class DStaffConductor extends Model {
 
     public static DStaffConductor SYSTEM;
+    public static DStaffConductor MIGRATION;
     @Id
-    @Identity
+    @Identity(start = 100)
     private long id;
     @Column(nullable = false)
     private String username;
@@ -41,17 +42,24 @@ public class DStaffConductor extends Model {
     }
 
     public static void insertDefaultConductors() {
-        String systemUsername = "System";
-        int systemId = 1; // id of 0 will make it autoassign an id
-
-        DStaffConductor.SYSTEM = new QDStaffConductor().where().id.eq(systemId).findOne();
-        if (DStaffConductor.SYSTEM != null) return;
-        DStaffConductor.SYSTEM = new DStaffConductor(systemId, systemUsername, null);
-        DStaffConductor.SYSTEM.save();
+        // id of 0 will make it autoassign an id
+        DStaffConductor.SYSTEM = insertSystemConductor("System", 1);
+        DStaffConductor.MIGRATION = insertSystemConductor("Migration-v0", 10);
     }
 
-    private DStaffConductor setId(int id) {
-        this.id = id;
-        return this;
+    public static DStaffConductor insertSystemConductor(String systemUsername, long systemId) {
+
+        DStaffConductor conductor = new QDStaffConductor().where()
+            .id.eq(systemId)
+            .findOne();
+        if (conductor != null) return conductor;
+        conductor = new DStaffConductor(systemId, systemUsername, null);
+        conductor.save();
+        return conductor;
+    }
+
+    public String getName() {
+        if (this.client == null) return this.username;
+        return this.client.getEffectiveName();
     }
 }

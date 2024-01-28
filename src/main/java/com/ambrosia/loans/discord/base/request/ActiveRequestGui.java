@@ -60,6 +60,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     private void reset(ButtonInteractionEvent event) {
         this.data.stage = ActiveRequestStage.CREATED;
+        this.error = null;
     }
 
     private void approve(ButtonInteractionEvent event) {
@@ -73,27 +74,36 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     }
 
     private void unClaim(ButtonInteractionEvent event) {
+        if (!setEndorser(event)) return;
         this.data.stage = ActiveRequestStage.UNCLAIMED;
-        this.data.setEndorser(event.getUser());
         this.updateSender();
     }
 
+    private boolean setEndorser(ButtonInteractionEvent event) {
+        if (!this.data.setEndorser(event.getUser())) {
+            this.error = "%s is not a client".formatted(event.getUser().getEffectiveName());
+            return false;
+        }
+        this.error = null;
+        return true;
+    }
+
     private void deny(ButtonInteractionEvent event) {
+        if (!setEndorser(event)) return;
         this.data.stage = ActiveRequestStage.DENIED;
-        this.data.setEndorser(event.getUser());
         this.remove();
         this.updateSender();
     }
 
     private void claim(ButtonInteractionEvent event) {
+        if (!setEndorser(event)) return;
         this.data.stage = ActiveRequestStage.CLAIMED;
-        this.data.setEndorser(event.getUser());
         this.updateSender();
     }
 
     private void complete(ButtonInteractionEvent event) {
+        if (!setEndorser(event)) return;
         this.data.stage = ActiveRequestStage.COMPLETED;
-        this.data.setEndorser(event.getUser());
         try {
             this.data.onComplete();
             this.onComplete();
