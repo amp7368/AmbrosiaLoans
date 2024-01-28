@@ -10,6 +10,7 @@ import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.balance.ClientBalance;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
@@ -32,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "client")
-public class DClient extends Model implements ClientAccess {
+public class DClient extends Model implements ClientAccess, Commentable {
 
     @Id
     @Column
@@ -194,4 +195,8 @@ public class DClient extends Model implements ClientAccess {
         return Stream.concat(this.investments.stream(), this.withdrawals.stream()).toList();
     }
 
+    @Override
+    public List<DComment> getComments() {
+        return this.comments;
+    }
 }

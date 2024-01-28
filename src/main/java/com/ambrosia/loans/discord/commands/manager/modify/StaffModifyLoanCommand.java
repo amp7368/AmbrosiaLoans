@@ -34,11 +34,14 @@ public class StaffModifyLoanCommand extends BaseSubCommand implements BaseModify
     }
 
     private ModifyRequestMsg setDate(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
-        String startDate = findOption(event, "start_date", OptionMapping::getAsString);
-        if (startDate == null) return null;
+        String startDateString = findOption(event, "start_date", OptionMapping::getAsString);
+        if (startDateString == null) return null;
         try {
-            TemporalAccessor parsed = SIMPLE_DATE_FORMATTER.parse(startDate);
-            loan.getData().setStartDate(Instant.from(parsed));
+            TemporalAccessor parsed = SIMPLE_DATE_FORMATTER.parse(startDateString);
+            Instant startDate = Instant.from(parsed);
+            if (startDate.isAfter(Instant.now()))
+                return ModifyRequestMsg.error("Cannot set the start date in the future");
+            loan.getData().setStartDate(startDate);
             return ModifyRequestMsg.info("Set the start date to %s".formatted(SIMPLE_DATE_FORMATTER.format(parsed)));
         } catch (DateTimeParseException e) {
             return ModifyRequestMsg.error("Failed to parse date. Please use format MM/dd/yy");

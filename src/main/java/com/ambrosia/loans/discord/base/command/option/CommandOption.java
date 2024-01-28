@@ -2,6 +2,8 @@ package com.ambrosia.loans.discord.base.command.option;
 
 import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
 
+import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -39,17 +41,29 @@ public interface CommandOption<R> {
 
 
     // request
-    CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the loan", OptionType.INTEGER,
+    CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
-    // loans
+    // loan request
     CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
         OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
     CommandOption<Double> RATE = basic("rate", "The interest rate expressed as a percent. (Enter 5.2 for 5.2%)", OptionType.NUMBER,
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
+        OptionMapping::getAsString);
+
+    // staff query
+    CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
+        OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DLoan> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
+        OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DLoan> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
+        OptionMapping::getAsLong, LoanQueryApi::findById);
+
+    // comments
+    CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
 
     @NotNull

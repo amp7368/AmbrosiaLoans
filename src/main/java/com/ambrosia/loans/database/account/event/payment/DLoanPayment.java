@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
@@ -24,7 +25,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "loan_payment")
-public class DLoanPayment extends Model {
+public class DLoanPayment extends Model implements Commentable {
 
     @Id
     private UUID id;
@@ -58,6 +59,11 @@ public class DLoanPayment extends Model {
     public BigDecimal getEffectiveAmount(Duration duration, BigDecimal rate) {
         BigDecimal amount = BigDecimal.valueOf(this.amount);
         return amount.add(Bank.interest(duration, amount, rate));
+    }
+
+    @Override
+    public List<DComment> getComments() {
+        return this.comments;
     }
 
     public void updateSimulation() {

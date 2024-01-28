@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.account.event.base;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.Commentable;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -13,7 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class AccountEvent extends Model {
+public abstract class AccountEvent extends Model implements Commentable {
 
     @Id
     protected UUID id;
@@ -38,4 +39,5 @@ public class AccountEvent extends Model {
     public DClient getClient() {
         return client;
     }
+
 }

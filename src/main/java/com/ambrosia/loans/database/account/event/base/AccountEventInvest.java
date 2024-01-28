@@ -10,7 +10,7 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class AccountEventInvest extends AccountEvent implements IAccountChange {
+public abstract class AccountEventInvest extends AccountEvent implements IAccountChange {
 
     @Column(nullable = false)
     private long amount;
@@ -49,5 +49,6 @@ public class AccountEventInvest extends AccountEvent implements IAccountChange {
     public Emeralds getDeltaAmount() {
         return Emeralds.of(this.amount);
     }
+
 
 }

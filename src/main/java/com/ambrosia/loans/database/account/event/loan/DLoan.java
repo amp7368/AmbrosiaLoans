@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -38,10 +39,10 @@ import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "loan")
-public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange {
+public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange, Commentable {
 
     @Id
-    @Identity
+    @Identity(start = 100)
     private long id;
     @ManyToOne
     private DClient client;
@@ -270,5 +271,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public Emeralds getInitialAmount() {
         return Emeralds.of(this.initialAmount);
+    }
+
+    @Override
+    public List<DComment> getComments() {
+        return this.comments;
     }
 }

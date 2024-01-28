@@ -59,6 +59,7 @@ public class ExampleData {
     }
 
     public static void resetData() {
+        new QDComment().delete();
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
         new QDLoan().delete();
@@ -68,7 +69,6 @@ public class ExampleData {
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
-        new QDComment().delete();
         new QDStaffConductor().delete();
         new QDClient().delete();
         InitDatabase.init();

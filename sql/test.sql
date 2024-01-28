@@ -10,6 +10,10 @@ DROP SCHEMA public CASCADE;
 
 SELECT *
 FROM loan;
+
+SELECT *
+FROM comment;
+
 SELECT p.amount, l.initial_amount, l.id
 FROM loan_payment p
          LEFT JOIN loan l ON p.loan_id = l.id;

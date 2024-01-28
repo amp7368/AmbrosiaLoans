@@ -37,6 +37,11 @@ public interface LoanApi {
                 .findList();
         }
 
+        static DLoan findById(long id) {
+            return new QDLoan().where()
+                .id.eq(id)
+                .findOne();
+        }
     }
 
     interface LoanCreateApi {

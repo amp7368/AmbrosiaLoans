@@ -94,7 +94,7 @@ public class AmbrosiaMessages {
             return error(msg);
         }
 
-        public static AmbrosiaMessage notClient(DClient client) {
+        public static AmbrosiaMessage notCorrectClient(DClient client) {
             String msg = "This is %s's!".formatted(client.getEffectiveName());
             return error(msg);
         }

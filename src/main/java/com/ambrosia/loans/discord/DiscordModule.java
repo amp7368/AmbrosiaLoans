@@ -11,6 +11,7 @@ import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
+import com.ambrosia.loans.discord.commands.staff.comment.CommentCommand;
 import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
 import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
@@ -84,7 +85,11 @@ public class DiscordModule extends AppleModule {
 
         DCFCommandManager commands = dcf.commands();
         // employee commands
-        commands.addCommand(new StaffModifyRequestCommand(), new CommandLink(), new CreateProfileCommand(), new ViewProfileCommand());
+        commands.addCommand(new CommandLink(),
+            new CreateProfileCommand(),
+            new ViewProfileCommand());
+        commands.addCommand(new CommentCommand());
+        commands.addCommand(new StaffModifyRequestCommand());
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
