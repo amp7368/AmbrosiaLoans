@@ -3,7 +3,6 @@ package com.ambrosia.loans.database.entity.client;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
@@ -121,7 +120,7 @@ public interface ClientAccess {
 
     default Optional<DLoan> getActiveLoan() {
         return getLoans().stream()
-            .filter(loan -> loan.getStatus() == DLoanStatus.ACTIVE)
+            .filter(loan -> loan.getStatus().isActive())
             .findFirst();
     }
 }

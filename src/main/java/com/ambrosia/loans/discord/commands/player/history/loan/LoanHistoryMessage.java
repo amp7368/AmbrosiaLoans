@@ -62,7 +62,8 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         DLoan loan = page.get(0).entry();
 
         String status = switch (loan.getStatus()) {
-            case ACTIVE -> loan.getLastSection().getRate() == 0 ? "Frozen" : "Active";
+            case ACTIVE -> "Active";
+            case FROZEN -> "Frozen";
             case PAID -> "Fully Paid";
             case DEFAULTED -> "Defaulted";
         };

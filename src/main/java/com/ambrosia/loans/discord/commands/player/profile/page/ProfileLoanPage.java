@@ -4,7 +4,6 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
@@ -76,7 +75,7 @@ public class ProfileLoanPage extends ProfilePage {
         }
         List<String> summaries = new ArrayList<>();
         for (DLoan loan : client.getLoans()) {
-            if (loan.getStatus() == DLoanStatus.ACTIVE) continue;
+            if (loan.getStatus().isActive()) continue;
             Emeralds initialAmount = loan.getInitialAmount();
             String endDate = formatDate(loan.getEndDate());
             String startDate = formatDate(loan.getStartDate());

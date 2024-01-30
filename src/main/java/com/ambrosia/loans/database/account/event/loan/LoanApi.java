@@ -12,6 +12,7 @@ import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 public interface LoanApi {
@@ -27,13 +28,16 @@ public interface LoanApi {
         static List<DLoan> findClientActiveLoans(DClient client) {
             return new QDLoan().where()
                 .client.eq(client)
+                .or()
                 .status.eq(DLoanStatus.ACTIVE)
+                .status.eq(DLoanStatus.FROZEN)
                 .findList();
         }
 
         static List<DLoan> findAllActiveLoans() {
             return new QDLoan().where()
                 .status.eq(DLoanStatus.ACTIVE)
+                .status.eq(DLoanStatus.FROZEN)
                 .findList();
         }
 
@@ -41,6 +45,10 @@ public interface LoanApi {
             return new QDLoan().where()
                 .id.eq(id)
                 .findOne();
+        }
+
+        static Collection<DLoan> findAllLoans() {
+            return new QDLoan().findList();
         }
     }
 

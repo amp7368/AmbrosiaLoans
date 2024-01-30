@@ -99,6 +99,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.sections = List.of(firstSection);
         this.discount = request.getDiscount();
         this.status = DLoanStatus.ACTIVE;
+        this.checkIsFrozen();
     }
 
 
@@ -276,5 +277,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @Override
     public List<DComment> getComments() {
         return this.comments;
+    }
+
+    public void checkIsFrozen() {
+        if (this.status.isActive()) {
+            if (this.isFrozen()) this.status = DLoanStatus.FROZEN;
+            else this.status = DLoanStatus.ACTIVE;
+            this.save();
+        }
     }
 }

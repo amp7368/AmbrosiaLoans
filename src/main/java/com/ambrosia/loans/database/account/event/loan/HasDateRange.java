@@ -26,4 +26,8 @@ public interface HasDateRange {
         Instant constrainedEnd = end.isBefore(endDate) ? end : endDate;
         return Duration.between(constrainedStart, constrainedEnd);
     }
+
+    default Duration getTotalDuration() {
+        return Duration.between(this.getStartDate(), this.getEndDate(Instant.now()));
+    }
 }
