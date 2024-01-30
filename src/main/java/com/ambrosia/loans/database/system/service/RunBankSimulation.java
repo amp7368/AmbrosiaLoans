@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
+import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
@@ -82,6 +83,9 @@ public class RunBankSimulation {
             IAccountChange accountChange = accountChanges.get(index);
             accountChange.getClient().refresh();
             accountChange.updateSimulation();
+        }
+        for (DLoan loan : LoanQueryApi.findAllLoans()) {
+            loan.checkIsFrozen();
         }
     }
 

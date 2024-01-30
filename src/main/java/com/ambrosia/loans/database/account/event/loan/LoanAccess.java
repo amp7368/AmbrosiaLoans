@@ -46,6 +46,7 @@ public interface LoanAccess {
             transaction.commit();
         }
         entity.refresh();
+        entity.checkIsFrozen();
     }
 
     DLoan getEntity();
@@ -92,4 +93,20 @@ public interface LoanAccess {
     }
 
     List<DLoanPayment> getPayments();
+
+    default double getCurrentRate() {
+        return getEntity().getLastSection().getRate();
+    }
+
+    default boolean isFrozen() {
+        return getCurrentRate() == 0;
+    }
+
+    default boolean isActive() {
+        return getEntity().getStatus().isActive();
+    }
+
+    default boolean isDefaulted() {
+        return getEntity().getStatus() == DLoanStatus.DEFAULTED;
+    }
 }

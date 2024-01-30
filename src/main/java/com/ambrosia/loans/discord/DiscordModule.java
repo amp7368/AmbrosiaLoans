@@ -13,6 +13,7 @@ import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.commands.staff.blacklist.BlacklistCommand;
 import com.ambrosia.loans.discord.commands.staff.comment.CommentCommand;
+import com.ambrosia.loans.discord.commands.staff.list.ListCommand;
 import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
 import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
@@ -40,6 +41,7 @@ public class DiscordModule extends AppleModule {
         .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
         .toFormatter()
         .withZone(DiscordModule.TIME_ZONE);
+
     private static DiscordModule instance;
 
     public DiscordModule() {
@@ -92,6 +94,7 @@ public class DiscordModule extends AppleModule {
             new BlacklistCommand());
         commands.addCommand(new CommentCommand());
         commands.addCommand(new StaffModifyRequestCommand());
+        commands.addCommand(new ListCommand());
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
