@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.system.log;
 
+import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
@@ -40,7 +40,7 @@ public class DiscordLog implements SendMessage {
 
     public void modifyMinecraft(DClient client, User actor) {
         EmbedBuilder msg = normal("Modify Minecraft", actor);
-        client(msg, client).setDescription(client.getMinecraft(ClientMinecraftDetails::getName))
+        client(msg, client).setDescription(client.getMinecraft(ClientMinecraftDetails::getUsername))
             .setThumbnail(client.getMinecraft(ClientMinecraftDetails::skinUrl));
         log(msg.build(), true);
     }

@@ -54,8 +54,8 @@ public class RunBankSimulation {
             status   = '%s'
         WHERE status = '%s'
           AND end_date >= :from_date;""".formatted(
-        DLoanStatus.ACTIVE.toString(),
-        DLoanStatus.PAID.toString()));
+        DLoanStatus.ACTIVE,
+        DLoanStatus.PAID));
 
     public static void simulateFromDate(Instant simulateStartDate) {
         resetSimulationFromDate(simulateStartDate);
@@ -85,7 +85,7 @@ public class RunBankSimulation {
             accountChange.updateSimulation();
         }
         for (DLoan loan : LoanQueryApi.findAllLoans()) {
-            loan.checkIsFrozen();
+            loan.checkIsFrozen(true);
         }
     }
 

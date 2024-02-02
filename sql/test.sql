@@ -21,5 +21,5 @@ SELECT *
 FROM loan_payment;
 
 SELECT *
-FROM loan
-WHERE loan.client_id = '5f9d08ca-c2b3-4a74-a329-43fb766042ad'
+FROM loan_payment
+WHERE loan_id = 102

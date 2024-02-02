@@ -70,10 +70,10 @@ public class DLoanSection extends Model implements HasDateRange {
         this.rate = rate;
     }
 
-    public BigDecimal getInterest(Instant start, Instant end, BigDecimal balance) {
+    public BigDecimal getInterest(Instant start, Instant end, BigDecimal principal) {
         Duration duration = getDuration(start, end);
         if (duration.isNegative()) return BigDecimal.ZERO;
         BigDecimal rate = BigDecimal.valueOf(getRate());
-        return Bank.interest(duration, balance, rate);
+        return Bank.interest(duration, principal, rate);
     }
 }

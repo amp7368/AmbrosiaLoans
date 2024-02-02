@@ -44,7 +44,7 @@ public interface ClientAccess {
 
     default String getEffectiveName() {
         if (this.getDisplayName() != null) return this.getDisplayName();
-        String minecraft = getMinecraft(ClientMinecraftDetails::getName);
+        String minecraft = getMinecraft(ClientMinecraftDetails::getUsername);
         if (minecraft != null) return minecraft;
         String discord = getDiscord(ClientDiscordDetails::getUsername);
         if (discord != null) return discord;

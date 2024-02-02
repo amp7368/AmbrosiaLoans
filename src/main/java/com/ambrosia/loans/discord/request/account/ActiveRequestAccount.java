@@ -70,7 +70,7 @@ public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccou
     public List<Field> displayFields() {
         List<Field> fields = new ArrayList<>();
         fields.add(checkEqual(DClient::getDisplayName, this.displayName, "Profile DisplayName"));
-        fields.add(checkEqual(c -> c.getMinecraft(ClientMinecraftDetails::getName), minecraft.getName(), "Minecraft"));
+        fields.add(checkEqual(c -> c.getMinecraft(ClientMinecraftDetails::getUsername), minecraft.getUsername(), "Minecraft"));
         fields.removeIf(Objects::isNull);
         return fields;
     }

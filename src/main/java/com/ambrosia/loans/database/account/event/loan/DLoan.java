@@ -12,11 +12,11 @@ import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Identity;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -53,7 +53,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @OneToMany(cascade = CascadeType.ALL)
     private List<DCollateral> collateral;
     @Column
-    private long initialAmount;
+    private long initialAmount; // positive
     @Column(nullable = false)
     private Timestamp startDate;
     @Column
@@ -63,13 +63,16 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @ManyToOne(optional = false)
     private DStaffConductor conductor;
     @Column
+    @DbDefault("none")
     private String reason;
+    @Column
+    @DbDefault("none")
+    private String repayment;
     @OneToOne
     private DClient vouch;
     @Column
+    @DbDefault("none")
     private String discount;
-    @Column
-    private String repayment;
     @OneToMany
     private List<DComment> comments;
 
@@ -82,7 +85,9 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.ACTIVE;
     }
 
-    public DLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
+    public DLoan(LoanBuilder request) throws CreateEntityException, InvalidStaffConductorException {
+        if (request.getLoanId() != null)
+            this.id = request.getLoanId();
         this.client = request.getClient();
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();
@@ -99,12 +104,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.sections = List.of(firstSection);
         this.discount = request.getDiscount();
         this.status = DLoanStatus.ACTIVE;
-        this.checkIsFrozen();
+        this.checkIsFrozen(false);
     }
 
 
     @Nullable
-    private static BigDecimal calcPayment(DLoanSection section, DLoanPayment payment, BigDecimal amount) {
+    private static BigDecimal calcPayment(DLoanSection section, DLoanPayment payment) {
         Instant sectionEndDate = section.getEndDate();
         Instant sectionEndDateOrNow = Objects.requireNonNullElseGet(sectionEndDate, Instant::now);
         BigDecimal sectionRate = BigDecimal.valueOf(section.getRate());
@@ -184,32 +189,72 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public Emeralds getTotalOwed() {
         BigDecimal negativeInitialAmount = BigDecimal.valueOf(-initialAmount);
-        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), Instant.now(), true);
-        return interest.add(this.initialAmount);
+        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), Instant.now());
+        return interest.add(this.initialAmount)
+            .add(getTotalPaid().negative());
     }
 
-    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end, boolean includePayments) {
-        BigDecimal balance = accountBalanceAtStart.negate();
+    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end) {
+        BigDecimal runningBalance = accountBalanceAtStart.negate();
+        BigDecimal totalInterest = BigDecimal.ZERO;
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
             String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
             DatabaseModule.get().logger().warn(msg);
             return Emeralds.zero();
         }
-        int paymentIndex = 0;
-        for (DLoanSection section : getSections()) {
-            BigDecimal sectionInterest = section.getInterest(start, end, balance);
-            balance = balance.add(sectionInterest);
 
-            if (!includePayments) continue;
-            while (paymentIndex < payments.size()) {
-                DLoanPayment payment = payments.get(paymentIndex);
-                BigDecimal paymentAmount = calcPayment(section, payment, balance);
-                if (paymentAmount == null) break;
-                balance = balance.subtract(paymentAmount);
+        int paymentIndex = 0;
+        int sectionIndex = 0;
+        List<DLoanSection> sections = getSections().stream()
+            .filter(s -> !s.getEndDate(end).isBefore(start))
+            .toList();
+        List<DLoanPayment> payments = getPayments().stream()
+            .filter(p -> p.getDate().isAfter(start))
+            .toList();
+        BigDecimal initialLoanBal = this.getInitialAmount().toBigDecimal();
+        Instant checkpoint = start;
+        BigDecimal principal = initialLoanBal;
+
+        // while there's payments, make payments until there's none left
+        // each iteration, increment either sectionIndex or paymentIndex
+        while (paymentIndex < payments.size()) {
+            if (sectionIndex >= sections.size()) {
+                Instant date = payments.get(paymentIndex).getDate();
+                String msg = "Payment for loan(%d) made in the future on %s!".formatted(this.getId(), date);
+                throw new IllegalStateException(msg);
+            }
+            DLoanSection section = sections.get(sectionIndex);
+            DLoanPayment payment = payments.get(paymentIndex);
+
+            Instant sectionEndDate = section.getEndDate(Instant.now());
+            boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
+            principal = principal.min(runningBalance);
+            if (isPaymentEarlierOrEq) {
+                if (!payment.getDate().isBefore(end)) break;
+                // make payment
+                BigDecimal sectionInterest = section.getInterest(checkpoint, payment.getDate(), principal);
+                BigDecimal paymentAmount = payment.getAmount().toBigDecimal();
+                runningBalance = runningBalance.add(sectionInterest).subtract(paymentAmount);
+                totalInterest = totalInterest.add(sectionInterest);
+                checkpoint = payment.getDate();
                 paymentIndex++;
+            } else {
+                BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
+                checkpoint = section.getEndDate(end);
+                runningBalance = runningBalance.add(sectionInterest);
+                totalInterest = totalInterest.add(sectionInterest);
+                sectionIndex++;
             }
         }
-        return Emeralds.of(balance.subtract(accountBalanceAtStart.negate()));
+        principal = principal.min(runningBalance);
+        while (sectionIndex < sections.size()) {
+            DLoanSection section = sections.get(sectionIndex);
+            BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
+            checkpoint = section.getEndDate(end);
+            totalInterest = totalInterest.add(sectionInterest);
+            sectionIndex++;
+        }
+        return Emeralds.of(totalInterest);
     }
 
     public DClient getClient() {
@@ -221,6 +266,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         if (isWithinPaidBounds(getTotalOwed().amount())) {
             markPaid(payment.getDate(), transaction);
         }
+        payment.save(transaction);
+        this.save(transaction);
     }
 
     public DLoan markPaid(Instant endDate, Transaction transaction) {
@@ -279,11 +326,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.comments;
     }
 
-    public void checkIsFrozen() {
+    public void checkIsFrozen(boolean saveIfChanged) {
         if (this.status.isActive()) {
             if (this.isFrozen()) this.status = DLoanStatus.FROZEN;
             else this.status = DLoanStatus.ACTIVE;
-            this.save();
+
+            if (saveIfChanged) this.save();
         }
     }
 }

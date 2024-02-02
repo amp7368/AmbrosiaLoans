@@ -17,7 +17,7 @@ public class ClientSearch {
         List<DClient> clients = new QDClient().findList();
         for (DClient client : clients) {
             String displayName = client.getDisplayName();
-            String minecraft = client.getMinecraft(ClientMinecraftDetails::getName);
+            String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
             String discord = client.getDiscord(ClientDiscordDetails::getUsername);
             byName.add(new ClientName(client, displayName, discord, minecraft));
         }

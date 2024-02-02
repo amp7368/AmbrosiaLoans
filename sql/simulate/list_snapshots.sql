@@ -13,15 +13,14 @@ FROM client_snapshot
          LEFT JOIN client ON client_id = client.id
 GROUP BY client_id, display_name;
 
-SELECT client.display_name,
+SELECT client.minecraft_username,
        event,
        account_balance / 64 / 64.0 balance_le,
        account_delta / 64 / 64.0   delta_le,
        date
 FROM client_snapshot
          LEFT JOIN client ON client_id = client.id
-WHERE client.display_name = 'NothingA'
-ORDER BY date;
+ORDER BY client.minecraft_username, date;
 
 SELECT *
 FROM client;

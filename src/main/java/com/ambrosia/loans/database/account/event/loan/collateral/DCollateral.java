@@ -30,7 +30,7 @@ public class DCollateral extends Model {
 
     public DCollateral(DLoan loan, String link) {
         this.loan = loan;
-        this.link = link;
+        this.link = link.strip();
     }
 
     private FileUpload getImage() {

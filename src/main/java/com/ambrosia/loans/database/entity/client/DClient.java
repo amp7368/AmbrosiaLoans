@@ -12,6 +12,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Identity;
@@ -45,10 +46,10 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Column
     @Embedded(prefix = "discord_")
     private ClientDiscordDetails discord;
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String displayName;
     @Column(nullable = false)
-    private final Timestamp dateCreated = Timestamp.from(Instant.now());
+    private Timestamp dateCreated = Timestamp.from(Instant.now());
     @Column(nullable = false)
     private boolean blacklisted = false;
 
@@ -70,6 +71,13 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
     public DClient(String displayName) {
         this.displayName = displayName;
+    }
+
+    public DClient(ImportedClient imported) {
+        this.id = imported.getId();
+        this.minecraft = imported.getMinecraft();
+        this.discord = imported.getDiscord();
+        this.dateCreated = imported.getDateCreated();
     }
 
     public long getId() {
@@ -107,7 +115,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
             if (!loanDuration.isPositive()) continue; // consider 0 as well
 
-            Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime, false);
+            // if we call this for running a simulation, we don't want to include payments.
+            // However,
+            Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime);
             totalInterest = totalInterest.add(interest.toBigDecimal());
         }
         return Emeralds.of(totalInterest);

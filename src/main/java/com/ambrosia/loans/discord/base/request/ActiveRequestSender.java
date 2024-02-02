@@ -37,7 +37,7 @@ public class ActiveRequestSender {
 
     public void author(EmbedBuilder embed) {
         DClient client = getClient();
-        Optional<String> name = Optional.ofNullable(client.getMinecraft(ClientMinecraftDetails::getName));
+        Optional<String> name = Optional.ofNullable(client.getMinecraft(ClientMinecraftDetails::getUsername));
 
         String url = name.isPresent() ? "https://wynncraft.com/stats/player/" + name : null;
         String discordName = client.getDiscord(ClientDiscordDetails::getUsername);

@@ -46,7 +46,7 @@ public interface LoanAccess {
             transaction.commit();
         }
         entity.refresh();
-        entity.checkIsFrozen();
+        entity.checkIsFrozen(true);
     }
 
     DLoan getEntity();
@@ -61,8 +61,6 @@ public interface LoanAccess {
         DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount(), DStaffConductor.SYSTEM);
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
-            payment.save(transaction);
-            loan.save(transaction);
             transaction.commit();
         }
         return payment;
@@ -75,8 +73,6 @@ public interface LoanAccess {
         DLoanPayment payment = new DLoanPayment(loan, request.getTimestamp(), emeralds.amount(), request.getConductor());
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
-            payment.save(transaction);
-            loan.save(transaction);
             transaction.commit();
         }
         payment.refresh();

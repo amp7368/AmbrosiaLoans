@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.request.loan;
 
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
+import com.ambrosia.loans.database.account.event.loan.LoanBuilder;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.util.CreateEntityException;
@@ -15,7 +16,7 @@ import io.avaje.lang.Nullable;
 import java.time.Instant;
 import java.util.List;
 
-public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
+public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> implements LoanBuilder {
 
 
     @Nullable
@@ -66,10 +67,12 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return AccountEventType.LOAN;
     }
 
+    @Override
     public Emeralds getAmount() {
         return Emeralds.of(amount);
     }
 
+    @Override
     public DClient getClient() {
         if (client != null) return client;
         return this.client = ClientQueryApi.findById(clientId);
@@ -79,6 +82,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         return collateral;
     }
 
+    @Override
     public String getReason() {
         return this.reason;
     }
@@ -93,10 +97,12 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         this.save();
     }
 
+    @Override
     public String getRepayment() {
         return repayment;
     }
 
+    @Override
     public String getDiscount() {
         return discount;
     }
@@ -106,6 +112,12 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
         this.save();
     }
 
+    @Override
+    public Long getLoanId() {
+        return null;
+    }
+
+    @Override
     public DClient getVouchClient() {
         if (vouchClientId == null) return null;
         if (vouchClient != null) return vouchClient;
@@ -119,6 +131,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> {
     }
 
     @Nullable
+    @Override
     public Instant getStartDate() {
         return this.startDate;
     }
