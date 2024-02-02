@@ -69,9 +69,10 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             this.db.changeToNewRate(0, this.startDate.plus(duration));
         }
         try (Transaction transaction = DB.beginTransaction()) {
-            additionalPayment(transaction);
+            long payments = additionalPayment(transaction);
             if (this.endDate != null) {
-                this.additionalPayment(transaction, this.endDate, this.finalPayment);
+                // todo
+                this.additionalPayment(transaction, this.endDate, this.finalPayment - payments);
                 this.db.markPaid(endDate, transaction);
             }
             transaction.commit();
@@ -80,19 +81,38 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
 
     }
 
-    public void additionalPayment(Transaction transaction) {
+    public long additionalPayment(Transaction transaction) {
         if (this.id == 102) {
             Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("07/23/23"));
-            int amount = 7936 * 64;
+            long amount = 7936 * 64;
             additionalPayment(transaction, date, amount);
+            return amount;
         } else if (this.id == 104) {
             Instant date1 = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("12/20/23"));
-            int amount1 = 2 * Emeralds.STACK;
+            long amount1 = 2L * Emeralds.STACK;
             additionalPayment(transaction, date1, amount1);
             Instant date2 = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("12/25/23"));
-            int amount2 = 4 * Emeralds.STACK;
+            long amount2 = 4L * Emeralds.STACK;
             additionalPayment(transaction, date2, amount2);
+            return amount1 + amount2;
+        } else if (this.id == 149) {
+            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/20/22"));
+            long amount = Emeralds.STACK;
+            additionalPayment(transaction, date, amount);
+            return amount;
+        } else if (this.id == 161) {
+            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/28/22"));
+            long amount = Emeralds.STACK;
+            additionalPayment(transaction, date, amount);
+            return amount;
+        } else if (this.id == 164) return -Emeralds.STACK; // they invested weird
+        else if (this.id == 129) {
+            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/28/22"));
+            long amount = 148L * Emeralds.LIQUID;
+            additionalPayment(transaction, date, amount);
+            return 0;
         }
+        return 0;
     }
 
     public void additionalPayment(Transaction transaction, Instant date, long amount) {

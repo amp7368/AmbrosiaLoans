@@ -124,7 +124,11 @@ public class RunBankSimulation {
     @NotNull
     private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
         return investors.stream()
-            .map(c -> c.getBalance(currentTime))
+            .map(c -> {
+                Emeralds b = c.getBalance(currentTime);
+                if (b.isNegative()) System.out.println(c);
+                return b;
+            })
             .reduce(Emeralds.zero(), Emeralds::add)
             .toBigDecimal();
     }

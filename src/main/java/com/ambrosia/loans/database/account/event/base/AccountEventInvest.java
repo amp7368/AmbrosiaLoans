@@ -17,7 +17,7 @@ public abstract class AccountEventInvest extends AccountEvent implements IAccoun
 
     public AccountEventInvest(DClient account, Instant date, DStaffConductor conductor, Emeralds amount, AccountEventType eventType) {
         super(account, date, conductor, eventType);
-        if (eventType != AccountEventType.INVEST && eventType != AccountEventType.WITHDRAWAL) {
+        if (!eventType.isInvestLike()) {
             String msg = "Investment must be %s or %s"
                 .formatted(AccountEventType.INVEST.toString(),
                     AccountEventType.WITHDRAWAL.toString());

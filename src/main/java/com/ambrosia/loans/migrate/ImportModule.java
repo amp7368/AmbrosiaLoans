@@ -8,10 +8,13 @@ import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.migrate.base.ImportedData;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.migrate.client.RawClient;
+import com.ambrosia.loans.migrate.investment.ImportedInvestment;
+import com.ambrosia.loans.migrate.investment.RawInvestment;
 import com.ambrosia.loans.migrate.loan.ImportedLoan;
 import com.ambrosia.loans.migrate.loan.RawLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,8 +34,7 @@ public class ImportModule extends AppleModule {
         List<ImportedClient> clients = rawData.clients().stream()
             .map(RawClient::convert).toList();
         rawData.loans().forEach(loan -> loan.setClient(clients));
-        // todo
-        // rawData.investments().forEach(loan -> loan.setClient(clients));
+        rawData.investments().forEach(invest -> invest.setClient(clients));
 
         return clients.stream()
             .map(ImportedData::toDB)
@@ -41,11 +43,38 @@ public class ImportModule extends AppleModule {
 
 
     public static List<DLoan> toDBLoans(ImportRawData rawData) {
-        List<DLoan> loans = rawData.loans().parallelStream()
+        return rawData.loans().parallelStream()
             .map(RawLoan::convert)
             .map(ImportedLoan::toDB)
             .toList();
-        return loans;
+    }
+
+    private static List<RawInvestment> toDBInvestments(ImportRawData rawData) {
+        Comparator<RawInvestment> comparator = Comparator.comparing(RawInvestment::getClientId)
+            .thenComparing(RawInvestment::getDate);
+        List<RawInvestment> investments = rawData.investments().stream()
+            .sorted(comparator)
+            .toList();
+        List<ImportedInvestment> imported = new ArrayList<>();
+        List<RawInvestment> group = new ArrayList<>();
+        long clientId = 0;
+        for (RawInvestment raw : investments) {
+            if (raw.getClientId() != clientId) {
+                if (!group.isEmpty()) {
+                    clientId = raw.getClientId();
+                    imported.add(new ImportedInvestment(group));
+                    group = new ArrayList<>();
+                }
+            }
+            group.add(raw);
+        }
+        imported.forEach(ImportedInvestment::toDB);
+        List<RawInvestment> confirms = new ArrayList<>();
+        imported.stream()
+            .map(ImportedInvestment::confirmList)
+            .forEach(confirms::addAll);
+        confirms.sort(Comparator.comparing(RawInvestment::getDate));
+        return confirms;
     }
 
     @Override
@@ -58,7 +87,12 @@ public class ImportModule extends AppleModule {
 
         List<DLoan> loans = toDBLoans(rawData);
 
+        List<RawInvestment> confirms = toDBInvestments(rawData);
         RunBankSimulation.simulateFromDate(Instant.EPOCH);
+
+        confirms.forEach(RawInvestment::confirm);
+        RunBankSimulation.simulateFromDate(Instant.EPOCH);
+
         printLoans(loans, rawData, false);
     }
 
@@ -75,7 +109,7 @@ public class ImportModule extends AppleModule {
         for (DLoan loan : loans) {
             if (loan.isActive()) continue;
             Emeralds owed = loan.getTotalOwed().add(loan.getTotalPaid());
-            String client = loan.getClient().getEffectiveName();
+            String client = loan.getClient().getEffectiveName() + " " + loan.getClient().getId();
             long id = loan.getId();
             RawLoan raw = rawData.getLoan(id);
             Emeralds finalPayment = raw.getFinalPayment();

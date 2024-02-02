@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account.event.investment;
 
+import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
@@ -27,7 +28,7 @@ public class InvestApi {
         Emeralds balance = client.getBalance(date);
         if (balance.amount() < emeralds.amount()) {
             String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance);
-            throw new IllegalStateException(msg);
+            DatabaseModule.get().logger().error(msg);
         }
         return (DWithdrawal) createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
     }

@@ -71,8 +71,12 @@ public class CSVUtil {
 
     public static boolean isIntNumber(Field field) {
         Class<?> type = field.getType();
-        return type == int.class || type == long.class ||
-            type.isAssignableFrom(Long.class) || type.isAssignableFrom(Integer.class);
+        return type == int.class ||
+            type == long.class ||
+            type == double.class ||
+            type.isAssignableFrom(Long.class) ||
+            type.isAssignableFrom(Double.class) ||
+            type.isAssignableFrom(Integer.class);
     }
 
     @NotNull

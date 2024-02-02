@@ -218,11 +218,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         // while there's payments, make payments until there's none left
         // each iteration, increment either sectionIndex or paymentIndex
         while (paymentIndex < payments.size()) {
-            if (sectionIndex >= sections.size()) {
-                Instant date = payments.get(paymentIndex).getDate();
-                String msg = "Payment for loan(%d) made in the future on %s!".formatted(this.getId(), date);
-                throw new IllegalStateException(msg);
-            }
+            if (sectionIndex >= sections.size()) break; // payments in future means running simulation
             DLoanSection section = sections.get(sectionIndex);
             DLoanPayment payment = payments.get(paymentIndex);
 
