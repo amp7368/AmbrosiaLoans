@@ -6,6 +6,7 @@ import com.ambrosia.loans.migrate.base.RawData;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -99,6 +100,9 @@ public class RawLoan implements RawData<ImportedLoan> {
 
     public Instant getEndDate() {
         if (this.endDate == null) return null;
+        if (this.startDate.equals(this.endDate)) {
+            return endDate.toInstant().plus(6, ChronoUnit.HOURS);
+        }
         return this.endDate.toInstant();
     }
 
@@ -111,5 +115,9 @@ public class RawLoan implements RawData<ImportedLoan> {
     public Long getInterestCap() {
         if (this.interestCap == null) return null;
         return Emeralds.BLOCK * this.interestCap;
+    }
+
+    public String getReason() {
+        return this.reason;
     }
 }

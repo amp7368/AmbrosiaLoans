@@ -5,8 +5,6 @@ FROM loan
 SELECT *
 FROM loan_section;
 
-DROP SCHEMA public CASCADE;
-
 
 SELECT *
 FROM loan;

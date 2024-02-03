@@ -1,6 +1,5 @@
 package com.ambrosia.loans.discord.commands.player.profile.page;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -13,7 +12,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +39,7 @@ public class ProfileTransactionsPage extends ProfilePage {
     }
 
     @NotNull
-    public static ByteArrayOutputStream createGraph(List<DClient> clients) {
-        Comparator<DAccountSnapshot> comparator = Comparator.comparing(DAccountSnapshot::getDate)
-            .thenComparing(snap -> snap.getAccountBalance().amount());
+    public static ByteArrayOutputStream createGraph(List<DClient> clients, File file) {
         DefaultTableXYDataset dataset = new DefaultTableXYDataset();
         for (DClient client : clients) {
             Map<Long, Double> dataPoints = new HashMap<>();
@@ -95,12 +91,12 @@ public class ProfileTransactionsPage extends ProfilePage {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try {
             BufferedImage img = chart.createBufferedImage(2000, 1000);
-            ImageIO.write(img, "png", bytes);
-            ImageIO.write(img, "png", new File("img.png"));
+//            ImageIO.write(img, "png", bytes);
+            ImageIO.write(img, "png", file);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return bytes;
+        return null;
     }
 
     public static ValueAxis axis(ValueAxis axis) {

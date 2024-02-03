@@ -10,7 +10,9 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
-import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.version.DApiVersion;
+import com.ambrosia.loans.database.version.VersionEntityType;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -75,6 +77,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     private String discount;
     @OneToMany
     private List<DComment> comments;
+    @ManyToOne
+    private DApiVersion version = DApiVersion.current(VersionEntityType.LOAN);
 
     public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor, Instant startDate) {
         this.client = client;
@@ -188,8 +192,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
+        return getTotalOwed(Instant.now());
+    }
+
+    public Emeralds getTotalOwed(Instant endDate) {
         BigDecimal negativeInitialAmount = BigDecimal.valueOf(-initialAmount);
-        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), Instant.now());
+        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), endDate);
         return interest.add(this.initialAmount)
             .add(getTotalPaid().negative());
     }
@@ -324,10 +332,19 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public void checkIsFrozen(boolean saveIfChanged) {
         if (this.status.isActive()) {
-            if (this.isFrozen()) this.status = DLoanStatus.FROZEN;
-            else this.status = DLoanStatus.ACTIVE;
-
+            if (this.isFrozen() && this.status != DLoanStatus.FROZEN) this.status = DLoanStatus.FROZEN;
+            else if (status != DLoanStatus.ACTIVE) this.status = DLoanStatus.ACTIVE;
+            else return;
             if (saveIfChanged) this.save();
         }
+    }
+
+    public DApiVersion getVersion() {
+        return this.version;
+    }
+
+    public DLoan setVersion(DApiVersion version) {
+        this.version = version;
+        return this;
     }
 }

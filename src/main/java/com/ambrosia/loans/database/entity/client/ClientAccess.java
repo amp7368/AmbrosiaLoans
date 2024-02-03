@@ -75,7 +75,6 @@ public interface ClientAccess {
             transaction.commit();
             return snapshot;
         }
-
     }
 
     default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
@@ -93,13 +92,17 @@ public interface ClientAccess {
         client.save(transaction);
 
         // mark past loans as paid
-        if (DLoan.isWithinPaidBounds(-newBalance)) {
-            client.getLoans().stream()
-                .filter(loan -> loan.getStartDate().isBefore(timestamp))
-                .filter(loan -> loan.getEndDate() == null)
-                .forEach(loan -> loan.markPaid(timestamp, transaction));
-        }
+        checkLoansPaid(timestamp, transaction, newBalance);
         return snapshot;
+    }
+
+    private void checkLoansPaid(Instant timestamp, Transaction transaction, long newBalance) {
+        if (!DLoan.isWithinPaidBounds(-newBalance)) return;
+
+        getEntity().getLoans().stream()
+            .filter(loan -> loan.getStartDate().isBefore(timestamp))
+            .filter(loan -> loan.getEndDate() == null)
+            .forEach(loan -> loan.markPaid(timestamp, transaction));
     }
 
     default ClientGui profile(GuiReplyFirstMessage createFirstMessage) {

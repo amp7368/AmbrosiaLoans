@@ -22,8 +22,8 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 import com.ambrosia.loans.database.message.query.QDCheckInMessage;
 import com.ambrosia.loans.database.message.query.QDComment;
+import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import java.time.Duration;
@@ -52,7 +52,7 @@ public class ExampleData {
             createPayments();
             withdrawals();
             clientManyLoans();
-            RunBankSimulation.simulateFromDate(Instant.EPOCH);
+            RunBankSimulation.simulate(Instant.EPOCH);
         } catch (CreateEntityException e) {
             throw new RuntimeException(e);
         }
@@ -95,7 +95,7 @@ public class ExampleData {
     }
 
     private static void clientManyLoansMakePayment(DLoan loan, Instant paymentDate, boolean isAll) {
-        RunBankSimulation.simulateFromDate(Instant.EPOCH);
+        RunBankSimulation.simulate(Instant.EPOCH);
         loan.getClient().refresh();
         Emeralds balance = loan.getClient().getBalance(paymentDate);
         long amount = isAll ? balance.amount() : balance.amount() / 2;

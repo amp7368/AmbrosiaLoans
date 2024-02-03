@@ -7,7 +7,8 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.migrate.base.ImportedData;
@@ -29,10 +30,13 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
     private final List<String> collateral;
     private final Instant endDate;
     private final long finalPayment;
-    private DLoan db;
     private final Long interestCap;
+    private DLoan db;
+    private final RawLoan raw;
+    private ImportedLoanAdjustment confirm;
 
     public ImportedLoan(RawLoan rawLoan) {
+        this.raw = rawLoan;
         this.id = rawLoan.getId();
         this.client = rawLoan.getClient();
         this.amount = rawLoan.getAmount();
@@ -54,6 +58,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
         if (this.db != null) throw new IllegalStateException("#toDB() was already called for client %d!".formatted(this.id));
         try {
             this.db = new DLoan(this);
+            this.db.setVersion(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY.getDB());
         } catch (CreateEntityException | InvalidStaffConductorException e) {
             throw new RuntimeException(e);
         }
@@ -73,6 +78,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             if (this.endDate != null) {
                 // todo
                 this.additionalPayment(transaction, this.endDate, this.finalPayment - payments);
+                this.confirm = new ImportedLoanAdjustment(this.db, this.endDate.plusSeconds(1), Emeralds.zero(), client);
                 this.db.markPaid(endDate, transaction);
             }
             transaction.commit();
@@ -137,7 +143,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
 
     @Override
     public String getReason() {
-        return null;
+        return this.raw.getReason();
     }
 
     @Override
@@ -166,5 +172,9 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
     @Override
     public String getDiscount() {
         return null;
+    }
+
+    public ImportedLoanAdjustment getConfirm() {
+        return confirm;
     }
 }

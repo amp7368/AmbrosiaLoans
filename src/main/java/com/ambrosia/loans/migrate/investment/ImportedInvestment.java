@@ -18,15 +18,19 @@ public class ImportedInvestment {
         Emeralds balance = Emeralds.zero();
         int index = 0;
         for (RawInvestment raw : raws) {
-            Emeralds rawAmount = raw.getAmount();
-            Emeralds delta = rawAmount.add(balance.negative());
+            Emeralds rawAmount = raw.amount();
+            Emeralds delta = rawAmount.minus(balance);
             balance = rawAmount;
             RawInvestmentType type = raw.getEventType();
             raw.setOffset(index);
             switch (type) {
                 case INVEST -> invest(delta, raw);
-                case WITHDRAWAL, CLOSED -> withdrawal(delta, raw);
-                case CONFIRM -> index++;
+                case CLOSED -> {
+                    withdrawal(delta, raw);
+                    raw.setOffset(++index);
+                }
+                case WITHDRAWAL -> withdrawal(delta, raw);
+//                case CONFIRM -> index++;
             }
             index++;
         }
@@ -39,12 +43,12 @@ public class ImportedInvestment {
     }
 
     private void invest(Emeralds delta, RawInvestment raw) {
-        Instant date = raw.getDate();
-        InvestApi.createInvestment(raw.getClient(), date, DStaffConductor.MIGRATION, delta);
+        Instant date = raw.date();
+        InvestApi.createInvestment(raw.client(), date, DStaffConductor.MIGRATION, delta);
     }
 
     private void withdrawal(Emeralds delta, RawInvestment raw) {
-        Instant date = raw.getDate();
-        InvestApi.createWithdrawal(raw.getClient(), date, DStaffConductor.MIGRATION, delta.negative());
+        Instant date = raw.date();
+        InvestApi.createWithdrawal(raw.client(), date, DStaffConductor.MIGRATION, delta.negative());
     }
 }

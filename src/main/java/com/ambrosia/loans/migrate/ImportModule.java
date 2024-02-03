@@ -6,6 +6,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.migrate.base.ImportedData;
+import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.migrate.client.RawClient;
 import com.ambrosia.loans.migrate.investment.ImportedInvestment;
@@ -16,7 +17,9 @@ import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ImportModule extends AppleModule {
 
@@ -42,16 +45,15 @@ public class ImportModule extends AppleModule {
     }
 
 
-    public static List<DLoan> toDBLoans(ImportRawData rawData) {
-        return rawData.loans().parallelStream()
+    public static List<ImportedLoan> toDBLoans(ImportRawData rawData) {
+        return rawData.loans().stream()
             .map(RawLoan::convert)
-            .map(ImportedLoan::toDB)
             .toList();
     }
 
-    private static List<RawInvestment> toDBInvestments(ImportRawData rawData) {
+    private static List<RawMakeAdjustment> toDBInvestments(ImportRawData rawData) {
         Comparator<RawInvestment> comparator = Comparator.comparing(RawInvestment::getClientId)
-            .thenComparing(RawInvestment::getDate);
+            .thenComparing(RawInvestment::date);
         List<RawInvestment> investments = rawData.investments().stream()
             .sorted(comparator)
             .toList();
@@ -69,11 +71,11 @@ public class ImportModule extends AppleModule {
             group.add(raw);
         }
         imported.forEach(ImportedInvestment::toDB);
-        List<RawInvestment> confirms = new ArrayList<>();
+        List<RawMakeAdjustment> confirms = new ArrayList<>();
         imported.stream()
             .map(ImportedInvestment::confirmList)
             .forEach(confirms::addAll);
-        confirms.sort(Comparator.comparing(RawInvestment::getDate));
+        confirms.sort(Comparator.comparing(RawMakeAdjustment::date));
         return confirms;
     }
 
@@ -85,15 +87,23 @@ public class ImportModule extends AppleModule {
         ImportRawData rawData = ImportRawData.loadData();
         List<DClient> clients = toDBClients(rawData);
 
-        List<DLoan> loans = toDBLoans(rawData);
+        List<ImportedLoan> loans = toDBLoans(rawData);
+        List<DLoan> loansDB = loans.stream().map(ImportedLoan::toDB).toList();
 
-        List<RawInvestment> confirms = toDBInvestments(rawData);
-        RunBankSimulation.simulateFromDate(Instant.EPOCH);
+        List<RawMakeAdjustment> confirms = toDBInvestments(rawData);
 
-        confirms.forEach(RawInvestment::confirm);
-        RunBankSimulation.simulateFromDate(Instant.EPOCH);
+        for (ImportedLoan loan : loans) {
+            if (loan.getConfirm() != null)
+                confirms.add(loan.getConfirm());
+        }
+        Set<Long> clientHadAdjustment = new HashSet<>();
 
-        printLoans(loans, rawData, false);
+        confirms.stream()
+            .sorted(Comparator.comparing(RawMakeAdjustment::date))
+            .forEachOrdered(RawMakeAdjustment::confirm);
+        RunBankSimulation.simulate(Instant.EPOCH);
+
+        printLoans(loansDB, rawData, false);
     }
 
     public void printClients(List<DClient> clients) {

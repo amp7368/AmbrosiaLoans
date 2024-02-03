@@ -3,6 +3,8 @@ package com.ambrosia.loans.database.account.event.loan.section;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.HasDateRange;
+import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
+import com.ambrosia.loans.database.version.DApiVersion;
 import io.avaje.lang.Nullable;
 import io.ebean.Model;
 import java.math.BigDecimal;
@@ -74,6 +76,13 @@ public class DLoanSection extends Model implements HasDateRange {
         Duration duration = getDuration(start, end);
         if (duration.isNegative()) return BigDecimal.ZERO;
         BigDecimal rate = BigDecimal.valueOf(getRate());
+
+        DApiVersion version = loan.getVersion();
+        if (version.getLoan() == ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY) {
+            int weeks = (int) Math.ceil(duration.toDays() / 7.0);
+            duration = Duration.ofDays(weeks * 7L);
+        }
+
         return Bank.interest(duration, principal, rate);
     }
 }

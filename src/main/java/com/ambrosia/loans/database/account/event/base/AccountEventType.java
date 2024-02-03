@@ -16,6 +16,7 @@ public enum AccountEventType {
     TRADE_GIVE(8),
     TRADE_GET(9);
     public static final Set<AccountEventType> INVEST_LIKE = Set.of(INVEST, WITHDRAWAL, ADJUST_DOWN, ADJUST_UP);
+    private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, PAYMENT, ADJUST_UP);
     private final int id;
 
     AccountEventType(int id) {
@@ -34,5 +35,9 @@ public enum AccountEventType {
 
     public boolean isInvestLike() {
         return INVEST_LIKE.contains(this);
+    }
+
+    public boolean isLoanLike() {
+        return LOAN_LIKE.contains(this);
     }
 }

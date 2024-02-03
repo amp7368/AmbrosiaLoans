@@ -1,22 +1,14 @@
 package com.ambrosia.loans.migrate.investment;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
-import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.investment.DInvestment;
-import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
-import io.ebean.DB;
-import io.ebean.Transaction;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
-public class RawInvestment {
+public class RawInvestment implements RawMakeAdjustment {
 
     private long id;
     private long clientId;
@@ -25,43 +17,13 @@ public class RawInvestment {
     private RawInvestmentType eventType;
     private ImportedClient client;
     private int offset;
-
-    private Emeralds getBalanceAt(Instant date) {
-        DAccountSnapshot snapshot = new QDAccountSnapshot().where()
-            .date.le(Timestamp.from(date))
-            .client.eq(client.getDB())
-            .order().date.desc()
-            .setMaxRows(1)
-            .findOne();
-        if (snapshot == null) return Emeralds.zero();
-        return snapshot.getAccountBalance();
-    }
+    private DClient clientDB;
 
     public void setOffset(int offset) {
         this.offset = offset;
     }
 
-    public void confirm() {
-        Instant date = this.getDate().plusSeconds(offset);
-        Emeralds realBal = getBalanceAt(date);
-        try (Transaction transaction = DB.beginTransaction()) {
-            Emeralds difference = this.getAmount().add(realBal.negative());
-            DClient client = this.getClient();
-            AccountEventType type;
-            if (!difference.isNegative()) {
-                type = AccountEventType.ADJUST_UP;
-                DInvestment investment = new DInvestment(client, date, DStaffConductor.MIGRATION, difference, type);
-                investment.save(transaction);
-            } else {
-                type = AccountEventType.ADJUST_DOWN;
-                DWithdrawal withdrawal = new DWithdrawal(client, date, DStaffConductor.MIGRATION, difference, type);
-                withdrawal.save(transaction);
-            }
-//            client.updateBalance(difference.amount(), date, type, transaction);
-            transaction.commit();
-        }
-    }
-
+    @Override
     public long getId() {
         return id;
     }
@@ -70,20 +32,35 @@ public class RawInvestment {
         return clientId;
     }
 
-    public Instant getDate() {
-        return date.toInstant().plusSeconds(1 + offset);
+    @Override
+    public Emeralds getBalanceAt(Instant date) {
+        Emeralds balance = client().getBalance(date);
+        Emeralds loanBalance = client().getLoans().stream()
+            .map(loan -> loan.getTotalOwed(date))
+            .reduce(Emeralds.zero(), Emeralds::add);
+        return balance.add(loanBalance);
+    }
+
+    @Override
+    public Instant date() {
+        return date.toInstant()
+            .plusSeconds(1 + offset);
     }
 
     public RawInvestmentType getEventType() {
         return eventType;
     }
 
-    public Emeralds getAmount() {
+
+    @Override
+    public Emeralds amount() {
         return Emeralds.leToEmeralds(this.amountLE);
     }
 
-    public DClient getClient() {
-        return this.client.getDB();
+    @Override
+    public DClient client() {
+        if (this.clientDB != null) return clientDB;
+        return this.clientDB = this.client.getDB();
     }
 
     public void setClient(List<ImportedClient> clients) {
@@ -98,6 +75,6 @@ public class RawInvestment {
 
     private void setClient(ImportedClient client) {
         this.client = client;
-        client.checkDateCreated(this.getDate());
+        client.checkDateCreated(this.date());
     }
 }

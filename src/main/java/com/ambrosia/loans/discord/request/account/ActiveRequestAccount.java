@@ -3,7 +3,7 @@ package com.ambrosia.loans.discord.request.account;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import java.util.ArrayList;

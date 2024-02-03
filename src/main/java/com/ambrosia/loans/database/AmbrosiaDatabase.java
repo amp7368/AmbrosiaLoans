@@ -11,12 +11,14 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.bank.DBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DCheckInMessage;
 import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.version.DApiVersion;
 import java.util.Collection;
 import java.util.List;
 
@@ -42,6 +44,10 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
         // simulation
         entities.add(DAccountSnapshot.class);
+
+        // misc
+        entities.add(DApiVersion.class);
+        entities.add(DBankSnapshot.class);
     }
 
     @Override

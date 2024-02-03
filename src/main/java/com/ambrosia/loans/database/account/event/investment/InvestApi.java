@@ -65,8 +65,28 @@ public class InvestApi {
         event.refresh();
         event.getClient().refresh();
 
-        RunBankSimulation.simulateFromDate(event.getDate());
+        RunBankSimulation.simulate(event.getDate());
         return event;
+    }
+
+    public static void createAdjustment(Emeralds difference, DClient client, Instant date, boolean updateBalance) {
+        if (difference.isZero()) return;
+
+        AccountEventType type;
+        try (Transaction transaction = DB.beginTransaction()) {
+            if (difference.isPositive()) {
+                type = AccountEventType.ADJUST_UP;
+                DInvestment investment = new DInvestment(client, date, DStaffConductor.MIGRATION, difference, type);
+                investment.save(transaction);
+            } else {
+                type = AccountEventType.ADJUST_DOWN;
+                DWithdrawal withdrawal = new DWithdrawal(client, date, DStaffConductor.MIGRATION, difference, type);
+                withdrawal.save(transaction);
+            }
+            if (updateBalance)
+                client.updateBalance(difference.amount(), date, type, transaction);
+            transaction.commit();
+        }
     }
 
     public interface InvestQueryApi {
