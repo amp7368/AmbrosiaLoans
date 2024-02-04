@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.account.event.loan;
 
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -52,6 +54,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     private List<DLoanSection> sections;
     @OneToMany(cascade = CascadeType.ALL)
     private List<DLoanPayment> payments;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<DAdjustLoan> adjustments;
     @OneToMany(cascade = CascadeType.ALL)
     private List<DCollateral> collateral;
     @Column
@@ -192,21 +196,41 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        return getTotalOwed(Instant.now());
+        return getTotalOwed(getStartDate(), Instant.now());
     }
 
-    public Emeralds getTotalOwed(Instant endDate) {
-        BigDecimal negativeInitialAmount = BigDecimal.valueOf(-initialAmount);
-        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), endDate);
+    public Emeralds getTotalOwed(@Nullable Instant start, Instant endDate) {
+        Emeralds owedAtStart = start == null ? getInitialAmount() : getTotalOwed(null, start);
+        BigDecimal accountBalanceAtStart = owedAtStart.negative().toBigDecimal();
+
+        Instant startDate = Objects.requireNonNullElseGet(start, this::getStartDate);
+        Emeralds interest = getInterest(accountBalanceAtStart, startDate, endDate);
+
+        Emeralds adjustment = getTotalOwedAdjustments(endDate, startDate);
         return interest.add(this.initialAmount)
-            .add(getTotalPaid().negative());
+            .add(getTotalPaid(startDate, endDate).negative())
+            .add(adjustment.negative());
+    }
+
+    private Emeralds getTotalOwedAdjustments(Instant endDate, Instant startDate) {
+        Predicate<DAdjustLoan> isDateBetween = ad -> {
+            Instant date = ad.getDate();
+            return !date.isBefore(startDate) ||
+                !date.isAfter(endDate);
+        };
+        return this.adjustments.stream()
+            .filter(isDateBetween)
+            .map(DAdjustLoan::getAmount)
+            .reduce(Emeralds.zero(), Emeralds::add);
     }
 
     public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end) {
         BigDecimal runningBalance = accountBalanceAtStart.negate();
         BigDecimal totalInterest = BigDecimal.ZERO;
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
-            String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
+            Emeralds bal = Emeralds.of(accountBalanceAtStart);
+            String msg = "%s{%d}'s balance of %s is > 0, but has active loan!"
+                .formatted(client.getEffectiveName(), client.getId(), bal);
             DatabaseModule.get().logger().warn(msg);
             return Emeralds.zero();
         }
@@ -346,5 +370,16 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     public DLoan setVersion(DApiVersion version) {
         this.version = version;
         return this;
+    }
+
+    public void checkIsPaid(Instant endDate, Transaction transaction) {
+        Emeralds totalOwed = getTotalOwed(null, endDate);
+        if (isWithinPaidBounds(totalOwed.amount())) {
+            markPaid(endDate, transaction);
+        }
+    }
+
+    public void setDefaulted() {
+        this.status = DLoanStatus.DEFAULTED;
     }
 }

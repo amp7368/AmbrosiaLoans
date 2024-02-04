@@ -7,10 +7,12 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.CommentApi;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.migrate.ImportModule;
 import com.ambrosia.loans.migrate.base.ImportedData;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -59,6 +61,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
         try {
             this.db = new DLoan(this);
             this.db.setVersion(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY.getDB());
+            if (raw.isDefaulted()) this.db.setDefaulted();
         } catch (CreateEntityException | InvalidStaffConductorException e) {
             throw new RuntimeException(e);
         }
@@ -67,18 +70,26 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             for (String link : this.collateral) {
                 new DCollateral(this.db, link).save(transaction);
             }
+            for (String comment : raw.getComments()) {
+                CommentApi.comment(getConductor(), this.db, comment, transaction);
+            }
             transaction.commit();
         }
         if (this.interestCap != null) {
             Duration duration = Bank.interestDuration(this.interestCap, this.amount.amount(), this.rate);
-            this.db.changeToNewRate(0, this.startDate.plus(duration));
+            Instant rateChangeDate = this.startDate.plus(duration);
+            if (rateChangeDate.isAfter(this.endDate)) {
+                String msg = "Loan{%d} is frozen at %s, after the end date".formatted(getLoanId(), rateChangeDate);
+                ImportModule.get().logger().error(msg);
+            }
+            this.db.changeToNewRate(0, rateChangeDate);
         }
         try (Transaction transaction = DB.beginTransaction()) {
             long payments = additionalPayment(transaction);
             if (this.endDate != null) {
                 // todo
                 this.additionalPayment(transaction, this.endDate, this.finalPayment - payments);
-                this.confirm = new ImportedLoanAdjustment(this.db, this.endDate.plusSeconds(1), Emeralds.zero(), client);
+                this.confirm = new ImportedLoanAdjustment(this.db, this.endDate, Emeralds.zero(), client);
                 this.db.markPaid(endDate, transaction);
             }
             transaction.commit();
@@ -113,10 +124,10 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             return amount;
         } else if (this.id == 164) return -Emeralds.STACK; // they invested weird
         else if (this.id == 129) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/28/22"));
-            long amount = 148L * Emeralds.LIQUID;
+            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("09/08/22"));
+            long amount = 30L * Emeralds.STACK;
             additionalPayment(transaction, date, amount);
-            return 0;
+            return amount; // todo
         }
         return 0;
     }
@@ -148,7 +159,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
 
     @Override
     public String getRepayment() {
-        return null;
+        return raw.getRepayment();
     }
 
     @Nullable
@@ -171,7 +182,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
     @Nullable
     @Override
     public String getDiscount() {
-        return null;
+        return raw.getDiscount();
     }
 
     public ImportedLoanAdjustment getConfirm() {

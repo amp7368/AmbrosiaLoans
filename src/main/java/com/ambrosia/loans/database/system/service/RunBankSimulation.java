@@ -2,6 +2,10 @@ package com.ambrosia.loans.database.system.service;
 
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
@@ -28,7 +32,6 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -89,6 +92,7 @@ public class RunBankSimulation {
         // divide payment to investors
         BigDecimal amountToInvestors = calcProfits(loanPayment).toBigDecimal()
             .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
+        // difference is leftover from rounding errors
         long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
 
         BankApi.updateBankBalance(loanPayment.getAmount().amount() - amountGiven, currentDate, AccountEventType.PROFIT);
@@ -157,15 +161,10 @@ public class RunBankSimulation {
 
     private static void resetSimulationFromDate(Instant fromDateInstant, SimulationOptions options) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
-        QDAccountSnapshot clientQ = new QDAccountSnapshot().where()
-            .date.greaterOrEqualTo(fromDate);
-        if (options.hasClient()) {
-            clientQ.client.eq(options.getClient())
-                .delete();
-            DB.getDefault().execute(UPDATE_BALANCE_WITH_SNAPSHOT_QUERY);
-            return;
-        }
-        clientQ.delete();
+
+        new QDAccountSnapshot().where()
+            .date.greaterOrEqualTo(fromDate)
+            .delete();
         new QDBankSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
@@ -179,18 +178,18 @@ public class RunBankSimulation {
         Timestamp endDate = Timestamp.from(options.getEndDate());
         List<DInvestment> investments = findInvestmentsAfter(fromDate, endDate);
         List<DWithdrawal> withdrawals = findWithdrawalsAfter(fromDate, endDate);
+        List<DAdjustLoan> loanAdjustments = findLoanAdjustments(fromDate, endDate);
+        List<DAdjustBalance> balanceAdjustments = findBalanceAdjustmentsAfter(fromDate, endDate);
         List<DLoan> loans = findLoansAfter(fromDate, endDate);
 
         List<IAccountChange> changes = new ArrayList<>();
         changes.addAll(investments);
         changes.addAll(withdrawals);
+        changes.addAll(loanAdjustments);
+        changes.addAll(balanceAdjustments);
         changes.addAll(loans);
 
-        if (options.hasClient()) {
-            long clientId = options.getClient().getId();
-            changes.removeIf(c -> c.getClient().getId() != clientId);
-        }
-        changes.sort(Comparator.comparing(IAccountChange::getDate));
+        changes.sort(IAccountChange.ORDER);
         return changes;
     }
 
@@ -213,6 +212,24 @@ public class RunBankSimulation {
             .findList();
     }
 
+    private static List<DAdjustBalance> findBalanceAdjustmentsAfter(Timestamp fromDate, Timestamp endDate) {
+        return new QDAdjustBalance().where()
+            .or()
+            .date.between(fromDate, endDate)
+            .endOr()
+            .orderBy("date")
+            .findList();
+    }
+
+    private static List<DAdjustLoan> findLoanAdjustments(Timestamp fromDate, Timestamp endDate) {
+        return new QDAdjustLoan().where()
+            .or()
+            .date.between(fromDate, endDate)
+            .endOr()
+            .orderBy("date")
+            .findList();
+    }
+
     private static List<DLoan> findLoansAfter(Timestamp fromDate, Timestamp endDate) {
         return new QDLoan().where()
             .or()
@@ -225,13 +242,7 @@ public class RunBankSimulation {
     private static List<DLoanPayment> findLoanPayments(Instant fromDateInstant, SimulationOptions options) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
         Timestamp endDate = Timestamp.from(options.getEndDate());
-        if (options.hasClient()) {
-            return new QDLoanPayment().where()
-                .date.between(fromDate, endDate)
-                .loan.client.eq(options.getClient())
-                .orderBy("date")
-                .findList();
-        }
+
         return new QDLoanPayment().where()
             .date.between(fromDate, endDate)
             .orderBy("date")

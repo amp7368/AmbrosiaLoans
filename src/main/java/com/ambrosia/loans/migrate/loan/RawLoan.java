@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class RawLoan implements RawData<ImportedLoan> {
 
@@ -18,7 +19,6 @@ public class RawLoan implements RawData<ImportedLoan> {
     private String collateral;
     private double initialRate;
     private Date startDate;
-    // todo done ^^^^^
     private Date endDate;
     private long amount;
     private Long amountInterest;
@@ -119,5 +119,22 @@ public class RawLoan implements RawData<ImportedLoan> {
 
     public String getReason() {
         return this.reason;
+    }
+
+    public String getRepayment() {
+        return this.reason;
+    }
+
+    public String getDiscount() {
+        return this.reason;
+    }
+
+    public List<String> getComments() {
+        if (this.comments.isBlank()) return List.of();
+        return Stream.of(this.comments.split(",")).map(String::trim).toList();
+    }
+
+    public boolean isDefaulted() {
+        return this.status == DLoanStatus.DEFAULTED;
     }
 }

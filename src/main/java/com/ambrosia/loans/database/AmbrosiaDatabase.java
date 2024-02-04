@@ -4,6 +4,8 @@ import apple.lib.ebean.database.AppleEbeanDatabase;
 import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
 import apple.lib.ebean.database.config.AppleEbeanPostgresConfig;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
@@ -35,8 +37,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         // log
         entities.add(AccountEvent.class);
         entities.addAll(List.of(DLoan.class, DLoanSection.class, DLoanPayment.class, DCollateral.class));
-        entities.add(DInvestment.class);
-        entities.add(DWithdrawal.class);
+        entities.addAll(List.of(DInvestment.class, DWithdrawal.class, DAdjustBalance.class, DAdjustLoan.class));
 
         // message
         entities.add(DCheckInMessage.class);

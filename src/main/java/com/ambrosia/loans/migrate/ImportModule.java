@@ -98,12 +98,21 @@ public class ImportModule extends AppleModule {
         }
         Set<Long> clientHadAdjustment = new HashSet<>();
 
-        confirms.stream()
-            .sorted(Comparator.comparing(RawMakeAdjustment::date))
-            .forEachOrdered(RawMakeAdjustment::confirm);
+        Instant lastDate = Instant.EPOCH;
+        Instant lastLastDate = Instant.EPOCH;
+        confirms.sort(Comparator.comparing(RawMakeAdjustment::date));
+        for (int i = 0, size = confirms.size(); i < size; i++) {
+            RawMakeAdjustment confirm = confirms.get(i);
+            confirm.confirm(lastLastDate);
+            lastLastDate = lastDate;
+            lastDate = confirm.date();
+            logger().info("confirm %d/%d %d %s".formatted(i + 1, size, confirm.getId(), confirm.date()));
+        }
+        logger().info("Running final simulation");
         RunBankSimulation.simulate(Instant.EPOCH);
 
         printLoans(loansDB, rawData, false);
+        logger().info("Migration complete!");
     }
 
     public void printClients(List<DClient> clients) {

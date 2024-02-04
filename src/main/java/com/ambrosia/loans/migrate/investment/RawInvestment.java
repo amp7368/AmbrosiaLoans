@@ -1,5 +1,6 @@
 package com.ambrosia.loans.migrate.investment;
 
+import com.ambrosia.loans.database.account.event.investment.InvestApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
@@ -28,6 +29,11 @@ public class RawInvestment implements RawMakeAdjustment {
         return id;
     }
 
+    @Override
+    public void createAdjustment(Emeralds difference, Instant date) {
+        InvestApi.createAdjustment(difference, this.client(), date, false);
+    }
+
     public long getClientId() {
         return clientId;
     }
@@ -36,7 +42,7 @@ public class RawInvestment implements RawMakeAdjustment {
     public Emeralds getBalanceAt(Instant date) {
         Emeralds balance = client().getBalance(date);
         Emeralds loanBalance = client().getLoans().stream()
-            .map(loan -> loan.getTotalOwed(date))
+            .map(loan -> loan.getTotalOwed(null, date))
             .reduce(Emeralds.zero(), Emeralds::add);
         return balance.add(loanBalance);
     }

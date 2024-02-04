@@ -5,9 +5,9 @@ import java.math.MathContext;
 
 public final class Emeralds {
 
-    public static final int STACK = (int) Math.pow(64, 3);
-    public static final int LIQUID = (int) Math.pow(64, 2);
-    public static final int BLOCK = 64;
+    public static final long STACK = (long) Math.pow(64, 3);
+    public static final long LIQUID = (long) Math.pow(64, 2);
+    public static final long BLOCK = 64;
     private static final Emeralds ZERO = of(0);
     private final long amount;
 
@@ -59,6 +59,10 @@ public final class Emeralds {
 
     public Emeralds add(Emeralds addedAmount) {
         return of(this.amount + addedAmount.amount());
+    }
+
+    public Emeralds minus(long minusAmount) {
+        return of(this.amount - minusAmount);
     }
 
     public Emeralds minus(Emeralds minusAmount) {

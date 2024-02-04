@@ -83,7 +83,14 @@ public interface LoanAccess {
     }
 
     default Emeralds getTotalPaid() {
+        DLoan loan = getEntity();
+        return getTotalPaid(loan.getStartDate(), loan.getEndDate());
+    }
+
+    default Emeralds getTotalPaid(Instant startDate, Instant endDate) {
         return getPayments().stream()
+            .filter(pay -> !pay.getDate().isBefore(startDate))
+            .filter(pay -> !pay.getDate().isAfter(endDate))
             .map(DLoanPayment::getAmount)
             .reduce(Emeralds.zero(), Emeralds::add);
     }

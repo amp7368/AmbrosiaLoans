@@ -5,6 +5,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.investment.InvestApi;
 import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
@@ -62,9 +64,11 @@ public class ExampleData {
         new QDComment().delete();
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
-        new QDLoan().delete();
         new QDInvestment().delete();
         new QDWithdrawal().delete();
+        new QDAdjustBalance().delete();
+        new QDAdjustLoan().delete();
+        new QDLoan().delete();
         new QDAccountSnapshot().delete();
         new QDBankSnapshot().delete();
         new QDCollateral().delete();

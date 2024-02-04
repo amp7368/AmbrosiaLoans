@@ -1,12 +1,10 @@
 package com.ambrosia.loans.database.system.service;
 
-import com.ambrosia.loans.database.entity.client.DClient;
 import java.time.Instant;
 import java.util.Objects;
 
 public class SimulationOptions {
 
-    private DClient client;
     private Instant endDate;
 
     public static SimulationOptions options() {
@@ -27,19 +25,5 @@ public class SimulationOptions {
     public SimulationOptions setEndDate(Instant endDate) {
         this.endDate = endDate;
         return this;
-    }
-
-    public DClient getClient() {
-        return client;
-    }
-
-    public SimulationOptions setClient(DClient client) {
-        this.client = client;
-        return this;
-    }
-
-    public boolean hasClient() {
-        return false;
-        // todo        return this.client != null;
     }
 }

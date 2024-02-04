@@ -13,25 +13,43 @@ WHERE NOT EXISTS(
                 WHERE loan.client_id = q.id)
 ORDER BY q.balance_le;
 
+SELECT q1.client_id, q1.event, q1.delta_le, COUNT(q2.delta_le) total_change
+FROM (
+     SELECT gen_random_uuid()         id,
+            client_id,
+            event,
+            SUM(account_delta) / 4096 delta_le
+     FROM client_snapshot
+     WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+     GROUP BY client_id, event
+     ORDER BY delta_le) q1
+         INNER JOIN (
+                    SELECT client_id,
+                           event,
+                           SUM(account_delta) / 4096 delta_le
+                    FROM client_snapshot
+                    WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+                    GROUP BY client_id, event
+                    ORDER BY delta_le) q2 ON q1.client_id = q2.client_id
+GROUP BY q1.delta_le, q1.event, q1.client_id
+HAVING COUNT(q2.delta_le) > 1
+ORDER BY MAX(q2.delta_le), q1.client_id;
+
 SELECT client_id,
+       event,
        SUM(account_delta) / 4096 delta_le
 FROM client_snapshot
-WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN')
---    OR event = 'ADJUST_DOWN'
---     AND client_id = 117
-GROUP BY client_id
-ORDER BY delta_le DESC;
+WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+GROUP BY client_id, event
+ORDER BY delta_le;
 
-SELECT *
-FROM loan
-WHERE client_id = 132;
 
 SELECT account_delta   delta,
        account_balance balance,
        event,
        date
 FROM client_snapshot
-WHERE client_id = 132
+WHERE client_id = 139
 ORDER BY date;
 
 SELECT *, amount / 4096
@@ -41,8 +59,8 @@ WHERE event_type = 'ADJUST_UP'
 
 SELECT *
 FROM loan
-WHERE client_id = 148;
+WHERE id = 115;
 
 SELECT *
 FROM loan_payment
-WHERE loan_id = 129;
+WHERE loan_id = 115;

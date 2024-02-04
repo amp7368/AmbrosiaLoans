@@ -92,17 +92,16 @@ public interface ClientAccess {
         client.save(transaction);
 
         // mark past loans as paid
-        checkLoansPaid(timestamp, transaction, newBalance);
+        checkLoansPaid(timestamp, transaction);
         return snapshot;
     }
 
-    private void checkLoansPaid(Instant timestamp, Transaction transaction, long newBalance) {
-        if (!DLoan.isWithinPaidBounds(-newBalance)) return;
-
+    private void checkLoansPaid(Instant timestamp, Transaction transaction) {
         getEntity().getLoans().stream()
+            .filter(DLoan::isActive)
             .filter(loan -> loan.getStartDate().isBefore(timestamp))
             .filter(loan -> loan.getEndDate() == null)
-            .forEach(loan -> loan.markPaid(timestamp, transaction));
+            .forEach(loan -> loan.checkIsPaid(timestamp, transaction));
     }
 
     default ClientGui profile(GuiReplyFirstMessage createFirstMessage) {

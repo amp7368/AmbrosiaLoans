@@ -1,7 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
-import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
@@ -23,7 +24,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -68,6 +68,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private final List<DInvestment> investments = new ArrayList<>();
     @OneToMany
     private final List<DWithdrawal> withdrawals = new ArrayList<>();
+    @OneToMany
+    private final List<DAdjustBalance> adjustments = new ArrayList<>();
 
     public DClient(String displayName) {
         this.displayName = displayName;
@@ -109,14 +111,14 @@ public class DClient extends Model implements ClientAccess, Commentable {
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
             throw new IllegalArgumentException(error);
         }
-        BigDecimal balanceAtStart = this.balance.getAmount().toBigDecimal();
         BigDecimal totalInterest = BigDecimal.ZERO;
         for (DLoan loan : getLoans()) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
-            if (!loanDuration.isPositive()) continue; // consider 0 as well
+            if (loanDuration.isNegative()) continue; // todo ??? consider 0 as well
 
             // if we call this for running a simulation, we don't want to include payments.
             // However,
+            BigDecimal balanceAtStart = loan.getTotalOwed(null, lastUpdated).negative().toBigDecimal();
             Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime);
             totalInterest = totalInterest.add(interest.toBigDecimal());
         }
@@ -167,14 +169,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
     public List<DAccountSnapshot> getAccountSnapshots() {
         Comparator<DAccountSnapshot> comparator = Comparator.comparing(DAccountSnapshot::getDate)
-            .thenComparing(DAccountSnapshot::getEventType,
-                (a, b) -> {
-                    boolean isInterestA = a == AccountEventType.INTEREST;
-                    boolean isInterestB = b == AccountEventType.INTEREST;
-                    if (isInterestA) return isInterestB ? 0 : -1;
-                    else return isInterestB ? 1 : 0;
-                })
-            .thenComparing(snap -> snap.getEventType().toString());
+            .thenComparing(DAccountSnapshot::getEventType, AccountEventType.ORDER);
+
         return accountSnapshots.stream()
             .sorted(comparator)
             .toList();
@@ -214,8 +210,11 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.investments.add(investment);
     }
 
-    public List<AccountEventInvest> getInvestmentLike() {
-        return Stream.concat(this.investments.stream(), this.withdrawals.stream()).toList();
+    public List<AccountEvent> getInvestmentLike() {
+        List<AccountEvent> events = new ArrayList<>(this.investments);
+        events.addAll(this.withdrawals);
+        events.addAll(this.adjustments);
+        return events;
     }
 
     @Override
