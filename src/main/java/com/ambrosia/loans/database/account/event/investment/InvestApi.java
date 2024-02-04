@@ -19,7 +19,6 @@ import io.ebean.Transaction;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
-import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 public class InvestApi {
@@ -112,14 +111,13 @@ public class InvestApi {
         static BigDecimal getInvestorStake(DClient investor) {
             Emeralds balance = investor.getBalance(Instant.now());
             if (balance.isNegative()) return BigDecimal.ZERO;
-            Optional<Emeralds> totalInvested = new QDClient().where()
-                .where().balance.amount.gt(0)
+            Emeralds totalInvested = new QDClient().where()
+                .where().balance.investAmount.gt(0)
                 .findStream()
-                .map(c -> c.getBalance(Instant.now()))
-                .reduce(Emeralds::add);
-            if (totalInvested.isEmpty()) return BigDecimal.ZERO;
+                .map(c -> c.getInvestBalance(Instant.now()))
+                .reduce(Emeralds.zero(), Emeralds::add);
 
-            BigDecimal bigTotalInvested = totalInvested.get().toBigDecimal();
+            BigDecimal bigTotalInvested = totalInvested.toBigDecimal();
             return balance.toBigDecimal()
                 .divide(bigTotalInvested, MathContext.DECIMAL128);
         }

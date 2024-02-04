@@ -20,6 +20,7 @@ import io.ebean.Transaction;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
@@ -78,11 +79,12 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
         if (this.interestCap != null) {
             Duration duration = Bank.interestDuration(this.interestCap, this.amount.amount(), this.rate);
             Instant rateChangeDate = this.startDate.plus(duration);
-            if (rateChangeDate.isAfter(this.endDate)) {
+            if (rateChangeDate.isAfter(Objects.requireNonNullElseGet(this.endDate, Instant::now))) {
                 String msg = "Loan{%d} is frozen at %s, after the end date".formatted(getLoanId(), rateChangeDate);
                 ImportModule.get().logger().error(msg);
             }
             this.db.changeToNewRate(0, rateChangeDate);
+            this.db.refresh();
         }
         try (Transaction transaction = DB.beginTransaction()) {
             long payments = additionalPayment(transaction);
@@ -122,12 +124,16 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             long amount = Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
-        } else if (this.id == 164) return -Emeralds.STACK; // they invested weird
-        else if (this.id == 129) {
+        } else if (this.id == 129) {
             Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("09/08/22"));
             long amount = 30L * Emeralds.STACK;
             additionalPayment(transaction, date, amount);
-            return amount; // todo
+            return amount;
+        } else if (this.id == 110) {
+            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("02/04/24"));
+            long amount = 2L * Emeralds.STACK + 20 * Emeralds.LIQUID;
+            additionalPayment(transaction, date, amount);
+            return amount;
         }
         return 0;
     }

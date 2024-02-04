@@ -1,10 +1,13 @@
 package com.ambrosia.loans.migrate;
 
 import apple.lib.modules.AppleModule;
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
+import com.ambrosia.loans.discord.commands.player.profile.page.ProfileTransactionsPage;
 import com.ambrosia.loans.migrate.base.ImportedData;
 import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
@@ -14,12 +17,11 @@ import com.ambrosia.loans.migrate.investment.RawInvestment;
 import com.ambrosia.loans.migrate.loan.ImportedLoan;
 import com.ambrosia.loans.migrate.loan.RawLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import java.io.File;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ImportModule extends AppleModule {
 
@@ -96,8 +98,6 @@ public class ImportModule extends AppleModule {
             if (loan.getConfirm() != null)
                 confirms.add(loan.getConfirm());
         }
-        Set<Long> clientHadAdjustment = new HashSet<>();
-
         Instant lastDate = Instant.EPOCH;
         Instant lastLastDate = Instant.EPOCH;
         confirms.sort(Comparator.comparing(RawMakeAdjustment::date));
@@ -152,6 +152,29 @@ public class ImportModule extends AppleModule {
         }
     }
 
+    @Override
+    public void onEnablePost() {
+        Ambrosia.get().getFile("Graphs").mkdirs();
+        logger().info("Creating graphs");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        List<Long> ids = new QDClient().findIds();
+        for (Long clientId : ids) {
+            DClient client = new QDClient()
+                .id.eq(clientId)
+                .fetch("accountSnapshots")
+                .findOne();
+            if (client == null || client.getAccountSnapshots().isEmpty()) continue;
+
+            File file = Ambrosia.get().getFile("Graphs", "%d-%s.png".formatted(client.getId(), client.getEffectiveName()));
+            ProfileTransactionsPage.createGraph(List.of(client), file);
+        }
+        logger().info("Completed making graphs!");
+    }
+
     private boolean shouldReset() {
         // todo
         return true;
@@ -164,6 +187,10 @@ public class ImportModule extends AppleModule {
 
     public boolean isProduction() {
         // todo
+        return false;
+    }
+
+    public boolean isQuick() {
         return false;
     }
 

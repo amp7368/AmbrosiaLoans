@@ -22,11 +22,15 @@ import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
-    private DAccountSnapshot newSnapshot(Instant timestamp, long newBalance, long interest,
+    private DAccountSnapshot newSnapshot(Instant timestamp,
+        long newInvestBalance, long newLoanBalance, long interest,
         AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
-        client.setBalance(newBalance, timestamp);
-        DAccountSnapshot snapshot = new DAccountSnapshot(client, timestamp, newBalance, interest, eventType);
+        client.setBalance(newInvestBalance, newLoanBalance, timestamp);
+
+        DAccountSnapshot snapshot = new DAccountSnapshot(client, timestamp,
+            newInvestBalance, newLoanBalance, interest,
+            eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
         return snapshot;
@@ -81,14 +85,18 @@ public interface ClientAccess {
         DClient client = getEntity();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-        if (balanceWithInterest.hasInterest()) {
-            long newBalance = balanceWithInterest.total();
+        long newInvestBalance = balanceWithInterest.investTotal();
+        long newLoanBalance = balanceWithInterest.loanTotal();
+
+        if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
             long interest = balanceWithInterest.interestAsNegative().amount();
-            newSnapshot(timestamp, newBalance, interest, AccountEventType.INTEREST, transaction);
+            newSnapshot(timestamp, newInvestBalance, newLoanBalance, interest, AccountEventType.INTEREST, transaction);
         }
 
-        long newBalance = balanceWithInterest.total() + delta;
-        DAccountSnapshot snapshot = newSnapshot(timestamp, newBalance, delta, eventType, transaction);
+        if (eventType.isLoanLike()) newLoanBalance += delta;
+        else newInvestBalance += delta;
+
+        DAccountSnapshot snapshot = newSnapshot(timestamp, newInvestBalance, newLoanBalance, delta, eventType, transaction);
         client.save(transaction);
 
         // mark past loans as paid

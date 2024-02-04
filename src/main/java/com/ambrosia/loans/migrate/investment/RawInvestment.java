@@ -40,11 +40,7 @@ public class RawInvestment implements RawMakeAdjustment {
 
     @Override
     public Emeralds getBalanceAt(Instant date) {
-        Emeralds balance = client().getBalance(date);
-        Emeralds loanBalance = client().getLoans().stream()
-            .map(loan -> loan.getTotalOwed(null, date))
-            .reduce(Emeralds.zero(), Emeralds::add);
-        return balance.add(loanBalance);
+        return client().getInvestBalance(date);
     }
 
     @Override

@@ -39,11 +39,13 @@ public class RunBankSimulation {
 
     private static final CallableSql UPDATE_BALANCE_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
-        SET balance_amount       = COALESCE(q.account_balance, 0),   -- account_balance might be null
-            balance_last_updated = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
+        SET balance_loan_amount   = COALESCE(q.loan_balance, 0),      -- account_balance might be null
+            balance_invest_amount = COALESCE(q.invest_balance, 0),    -- account_balance might be null
+            balance_last_updated  = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
         FROM (
              SELECT DISTINCT ON (c.id) c.id,
-                                       ss.account_balance,
+                                       ss.invest_balance,
+                                       ss.loan_balance,
                                        ss.date
              FROM client c
                       LEFT JOIN client_snapshot ss ON c.id = ss.client_id
@@ -90,12 +92,13 @@ public class RunBankSimulation {
         BigDecimal totalInvested = calcTotalInvested(investors, currentDate);
 
         // divide payment to investors
-        BigDecimal amountToInvestors = calcProfits(loanPayment).toBigDecimal()
-            .multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
+        BigDecimal profits = calcProfits(loanPayment).toBigDecimal();
+        BigDecimal amountToInvestors = profits.multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
         // difference is leftover from rounding errors
         long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
 
-        BankApi.updateBankBalance(loanPayment.getAmount().amount() - amountGiven, currentDate, AccountEventType.PROFIT);
+        BigDecimal bankProfits = profits.subtract(BigDecimal.valueOf(amountGiven));
+        BankApi.updateBankBalance(bankProfits.longValue(), currentDate, AccountEventType.PROFIT);
         return index;
     }
 
@@ -120,7 +123,7 @@ public class RunBankSimulation {
         long amountGiven = 0;
         Instant currentTime = loanPayment.getDate();
         for (DClient investor : investors) {
-            BigDecimal investorBalance = investor.getBalance(currentTime).toBigDecimal();
+            BigDecimal investorBalance = investor.getInvestBalance(currentTime).toBigDecimal();
             long amountToInvestor = investorBalance
                 .multiply(amountToInvestors)
                 .divide(totalInvested, RoundingMode.FLOOR)
@@ -135,7 +138,7 @@ public class RunBankSimulation {
     @NotNull
     private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
         return investors.stream()
-            .map(c -> c.getBalance(currentTime))
+            .map(c -> c.getInvestBalance(currentTime))
             .reduce(Emeralds.zero(), Emeralds::add)
             .toBigDecimal();
     }
@@ -153,7 +156,7 @@ public class RunBankSimulation {
 
     private static List<DClient> findAllInvestors(long notClient) {
         return new QDClient().where()
-            .balance.amount.gt(0)
+            .balance.investAmount.gt(0)
             .id.notEqualTo(notClient)
             .findList();
     }

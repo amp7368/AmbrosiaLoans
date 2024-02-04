@@ -91,14 +91,20 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .totalEmeralds();
     }
 
-    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
-        Emeralds balance = this.balance.getAmount();
-        Emeralds interestAsNegative = getInterest(currentTime).negative();
-        return new BalanceWithInterest(balance, interestAsNegative);
+    public Emeralds getInvestBalance(Instant now) {
+        return getBalanceWithRecentInterest(now)
+            .investBalance();
     }
 
-    DClient setBalance(long balance, Instant date) {
-        this.balance.setBalance(balance, date);
+    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
+        Emeralds investAmount = this.balance.getInvestAmount();
+        Emeralds loanAmount = this.balance.getLoanAmount();
+        Emeralds interestAsNegative = getInterest(currentTime).negative();
+        return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative);
+    }
+
+    DClient setBalance(long investAmount, long loanAmount, Instant date) {
+        this.balance.setBalance(investAmount, loanAmount, date);
         return this;
     }
 

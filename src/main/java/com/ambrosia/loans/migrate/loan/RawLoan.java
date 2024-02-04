@@ -32,27 +32,6 @@ public class RawLoan implements RawData<ImportedLoan> {
     private ImportedClient client;
 
     @Override
-    public String toString() {
-        return "ImportLoan{" +
-            "id=" + id +
-            ", clientId=" + clientId +
-            ", collateral='" + collateral + '\'' +
-            ", initialRate=" + initialRate +
-            ", startDate=" + startDate +
-            ", endDate=" + endDate +
-            ", amount=" + amount +
-            ", amountInterest=" + amountInterest +
-            ", interestCap=" + interestCap +
-            ", status=" + status +
-            ", vouchId='" + vouchId + '\'' +
-            ", discount='" + discount + '\'' +
-            ", reason='" + reason + '\'' +
-            ", repayment='" + repayment + '\'' +
-            ", comments='" + comments + '\'' +
-            '}';
-    }
-
-    @Override
     public ImportedLoan convert() {
         if (this.amount <= 0)
             logger().warn("%d initial amount is negative: %d".formatted(id, amount));
@@ -130,7 +109,7 @@ public class RawLoan implements RawData<ImportedLoan> {
     }
 
     public List<String> getComments() {
-        if (this.comments.isBlank()) return List.of();
+        if (this.comments == null || this.comments.isBlank()) return List.of();
         return Stream.of(this.comments.split(",")).map(String::trim).toList();
     }
 

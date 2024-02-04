@@ -30,7 +30,6 @@ public class ImportedInvestment {
                     raw.setOffset(++index);
                 }
                 case WITHDRAWAL -> withdrawal(delta, raw);
-//                case CONFIRM -> index++;
             }
             index++;
         }

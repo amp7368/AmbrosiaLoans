@@ -20,9 +20,8 @@ public enum AccountEventType {
     TRADE_GIVE(9),
     TRADE_GET(10);
 
-    public static final Set<AccountEventType> INVEST_LIKE = Set.of(INVEST, WITHDRAWAL, ADJUST_DOWN, ADJUST_UP);
     public static final Comparator<? super AccountEventType> ORDER = Comparator.comparing(Function.identity());
-    private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, PAYMENT, ADJUST_UP);
+    private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, PAYMENT, ADJUST_LOAN);
     private final int id;
 
     AccountEventType(int id) {
@@ -40,7 +39,7 @@ public enum AccountEventType {
     }
 
     public boolean isInvestLike() {
-        return INVEST_LIKE.contains(this);
+        return !LOAN_LIKE.contains(this);
     }
 
     public boolean isLoanLike() {

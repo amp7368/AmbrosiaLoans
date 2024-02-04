@@ -79,8 +79,9 @@ public class DLoanSection extends Model implements HasDateRange {
 
         DApiVersion version = loan.getVersion();
         if (version.getLoan() == ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY) {
-            int weeks = (int) Math.ceil(duration.toDays() / 7.0);
-            duration = Duration.ofDays(weeks * 7L);
+            double weeks = duration.toSeconds() / (double) Duration.ofDays(7).toSeconds();
+            int up = (int) Math.ceil(weeks - 0.25);
+            duration = Duration.ofDays(up * 7L);
         }
 
         return Bank.interest(duration, principal, rate);

@@ -15,10 +15,10 @@ ORDER BY q.balance_le;
 
 SELECT q1.client_id, q1.event, q1.delta_le, COUNT(q2.delta_le) total_change
 FROM (
-     SELECT gen_random_uuid()         id,
+     SELECT gen_random_uuid()                     id,
             client_id,
             event,
-            SUM(account_delta) / 4096 delta_le
+            SUM(loan_delta + invest_delta) / 4096 delta_le
      FROM client_snapshot
      WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
      GROUP BY client_id, event
@@ -26,7 +26,7 @@ FROM (
          INNER JOIN (
                     SELECT client_id,
                            event,
-                           SUM(account_delta) / 4096 delta_le
+                           SUM(loan_delta + invest_delta) / 4096 delta_le
                     FROM client_snapshot
                     WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
                     GROUP BY client_id, event
@@ -35,22 +35,40 @@ GROUP BY q1.delta_le, q1.event, q1.client_id
 HAVING COUNT(q2.delta_le) > 1
 ORDER BY MAX(q2.delta_le), q1.client_id;
 
-SELECT client_id,
-       event,
-       SUM(account_delta) / 4096 delta_le
+
+-- All
+SELECT event,
+       SUM(loan_delta + invest_delta) / 4096 / 64 delta_stx
 FROM client_snapshot
 WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
-GROUP BY client_id, event
-ORDER BY delta_le;
+GROUP BY event
+ORDER BY delta_stx;
 
+-- by client
+SELECT client_id,
+       minecraft_username,
+       event,
+       SUM(loan_delta + invest_delta) / 4096 delta_le
+FROM client_snapshot
+         LEFT JOIN client ON client.id = client_snapshot.client_id
+WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+GROUP BY client_id, event, minecraft_username
+-- HAVING ABS(SUM(loan_delta + invest_delta) / 4096) > 32
+ORDER BY event, delta_le;
 
-SELECT account_delta   delta,
-       account_balance balance,
+SELECT ROUND((loan_delta + invest_delta) / 4096.0, 2)     delta_le,
+       ROUND((loan_balance + invest_balance) / 4096.0, 2) balance_le,
+       ROUND(loan_balance / 4096.0, 2)                    loan_le,
+       ROUND(invest_balance / 4096.0, 2)                  invest_le,
        event,
        date
 FROM client_snapshot
-WHERE client_id = 139
+WHERE client_id = 141
 ORDER BY date;
+
+SELECT *
+FROM loan_section
+WHERE loan_id = 139;
 
 SELECT *, amount / 4096
 FROM investment
