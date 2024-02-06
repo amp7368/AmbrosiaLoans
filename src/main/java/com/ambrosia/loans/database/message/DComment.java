@@ -1,5 +1,7 @@
 package com.ambrosia.loans.database.message;
 
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
@@ -39,6 +41,10 @@ public class DComment extends Model {
     private DInvestment investment;
     @ManyToOne
     private DWithdrawal withdrawal;
+    @ManyToOne
+    private DAdjustLoan adjustLoan;
+    @ManyToOne
+    private DAdjustBalance adjustBalance;
 
     public DComment(Commentable entity, String comment, DStaffConductor conductor) {
         this.conductor = conductor;
@@ -53,6 +59,10 @@ public class DComment extends Model {
             this.investment = i;
         } else if (entity instanceof DWithdrawal w) {
             this.withdrawal = w;
+        } else if (entity instanceof DAdjustBalance a) {
+            this.adjustBalance = a;
+        } else if (entity instanceof DAdjustLoan a) {
+            this.adjustLoan = a;
         } else {
             throw new IllegalArgumentException(entity + " is not commentable");
         }

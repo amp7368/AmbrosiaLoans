@@ -1,7 +1,8 @@
 package com.ambrosia.loans.database.account.event.investment;
 
-import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
+import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DComment;
@@ -17,7 +18,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "investment")
-public class DInvestment extends AccountEventInvest {
+public class DInvestment extends AccountEvent implements IAccountChange {
 
     @OneToMany
     private final List<DComment> comments = new ArrayList<>();

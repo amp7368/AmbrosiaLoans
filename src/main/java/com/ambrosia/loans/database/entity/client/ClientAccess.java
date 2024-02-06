@@ -22,11 +22,15 @@ import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
-    private DAccountSnapshot newSnapshot(Instant timestamp, long newBalance, long interest,
+    private DAccountSnapshot newSnapshot(Instant timestamp,
+        long newInvestBalance, long newLoanBalance, long interest,
         AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
-        client.setBalance(newBalance, timestamp);
-        DAccountSnapshot snapshot = new DAccountSnapshot(client, timestamp, newBalance, interest, eventType);
+        client.setBalance(newInvestBalance, newLoanBalance, timestamp);
+
+        DAccountSnapshot snapshot = new DAccountSnapshot(client, timestamp,
+            newInvestBalance, newLoanBalance, interest,
+            eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
         return snapshot;
@@ -44,7 +48,7 @@ public interface ClientAccess {
 
     default String getEffectiveName() {
         if (this.getDisplayName() != null) return this.getDisplayName();
-        String minecraft = getMinecraft(ClientMinecraftDetails::getName);
+        String minecraft = getMinecraft(ClientMinecraftDetails::getUsername);
         if (minecraft != null) return minecraft;
         String discord = getDiscord(ClientDiscordDetails::getUsername);
         if (discord != null) return discord;
@@ -75,31 +79,37 @@ public interface ClientAccess {
             transaction.commit();
             return snapshot;
         }
-
     }
 
     default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-        if (balanceWithInterest.hasInterest()) {
-            long newBalance = balanceWithInterest.total();
+        long newInvestBalance = balanceWithInterest.investTotal();
+        long newLoanBalance = balanceWithInterest.loanTotal();
+
+        if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
             long interest = balanceWithInterest.interestAsNegative().amount();
-            newSnapshot(timestamp, newBalance, interest, AccountEventType.INTEREST, transaction);
+            newSnapshot(timestamp, newInvestBalance, newLoanBalance, interest, AccountEventType.INTEREST, transaction);
         }
 
-        long newBalance = balanceWithInterest.total() + delta;
-        DAccountSnapshot snapshot = newSnapshot(timestamp, newBalance, delta, eventType, transaction);
+        if (eventType.isLoanLike()) newLoanBalance += delta;
+        else newInvestBalance += delta;
+
+        DAccountSnapshot snapshot = newSnapshot(timestamp, newInvestBalance, newLoanBalance, delta, eventType, transaction);
         client.save(transaction);
 
         // mark past loans as paid
-        if (DLoan.isWithinPaidBounds(-newBalance)) {
-            client.getLoans().stream()
-                .filter(loan -> loan.getStartDate().isBefore(timestamp))
-                .filter(loan -> loan.getEndDate() == null)
-                .forEach(loan -> loan.markPaid(timestamp, transaction));
-        }
+        checkLoansPaid(timestamp, transaction);
         return snapshot;
+    }
+
+    private void checkLoansPaid(Instant timestamp, Transaction transaction) {
+        getEntity().getLoans().stream()
+            .filter(DLoan::isActive)
+            .filter(loan -> loan.getStartDate().isBefore(timestamp))
+            .filter(loan -> loan.getEndDate() == null)
+            .forEach(loan -> loan.checkIsPaid(timestamp, transaction));
     }
 
     default ClientGui profile(GuiReplyFirstMessage createFirstMessage) {

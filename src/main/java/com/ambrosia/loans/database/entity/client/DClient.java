@@ -1,7 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
-import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
@@ -12,6 +13,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Identity;
@@ -22,7 +24,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -45,10 +46,10 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Column
     @Embedded(prefix = "discord_")
     private ClientDiscordDetails discord;
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String displayName;
     @Column(nullable = false)
-    private final Timestamp dateCreated = Timestamp.from(Instant.now());
+    private Timestamp dateCreated = Timestamp.from(Instant.now());
     @Column(nullable = false)
     private boolean blacklisted = false;
 
@@ -67,9 +68,18 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private final List<DInvestment> investments = new ArrayList<>();
     @OneToMany
     private final List<DWithdrawal> withdrawals = new ArrayList<>();
+    @OneToMany
+    private final List<DAdjustBalance> adjustments = new ArrayList<>();
 
     public DClient(String displayName) {
         this.displayName = displayName;
+    }
+
+    public DClient(ImportedClient imported) {
+        this.id = imported.getId();
+        this.minecraft = imported.getMinecraft();
+        this.discord = imported.getDiscord();
+        this.dateCreated = imported.getDateCreated();
     }
 
     public long getId() {
@@ -81,14 +91,20 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .totalEmeralds();
     }
 
-    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
-        Emeralds balance = this.balance.getAmount();
-        Emeralds interestAsNegative = getInterest(currentTime).negative();
-        return new BalanceWithInterest(balance, interestAsNegative);
+    public Emeralds getInvestBalance(Instant now) {
+        return getBalanceWithRecentInterest(now)
+            .investBalance();
     }
 
-    DClient setBalance(long balance, Instant date) {
-        this.balance.setBalance(balance, date);
+    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
+        Emeralds investAmount = this.balance.getInvestAmount();
+        Emeralds loanAmount = this.balance.getLoanAmount();
+        Emeralds interestAsNegative = getInterest(currentTime).negative();
+        return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative);
+    }
+
+    DClient setBalance(long investAmount, long loanAmount, Instant date) {
+        this.balance.setBalance(investAmount, loanAmount, date);
         return this;
     }
 
@@ -101,13 +117,15 @@ public class DClient extends Model implements ClientAccess, Commentable {
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
             throw new IllegalArgumentException(error);
         }
-        BigDecimal balanceAtStart = this.balance.getAmount().toBigDecimal();
         BigDecimal totalInterest = BigDecimal.ZERO;
         for (DLoan loan : getLoans()) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
-            if (!loanDuration.isPositive()) continue; // consider 0 as well
+            if (loanDuration.isNegative()) continue; // todo ??? consider 0 as well
 
-            Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime, false);
+            // if we call this for running a simulation, we don't want to include payments.
+            // However,
+            BigDecimal balanceAtStart = loan.getTotalOwed(null, lastUpdated).negative().toBigDecimal();
+            Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime);
             totalInterest = totalInterest.add(interest.toBigDecimal());
         }
         return Emeralds.of(totalInterest);
@@ -157,14 +175,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
     public List<DAccountSnapshot> getAccountSnapshots() {
         Comparator<DAccountSnapshot> comparator = Comparator.comparing(DAccountSnapshot::getDate)
-            .thenComparing(DAccountSnapshot::getEventType,
-                (a, b) -> {
-                    boolean isInterestA = a == AccountEventType.INTEREST;
-                    boolean isInterestB = b == AccountEventType.INTEREST;
-                    if (isInterestA) return isInterestB ? 0 : -1;
-                    else return isInterestB ? 1 : 0;
-                })
-            .thenComparing(snap -> snap.getEventType().toString());
+            .thenComparing(DAccountSnapshot::getEventType, AccountEventType.ORDER);
+
         return accountSnapshots.stream()
             .sorted(comparator)
             .toList();
@@ -204,8 +216,11 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.investments.add(investment);
     }
 
-    public List<AccountEventInvest> getInvestmentLike() {
-        return Stream.concat(this.investments.stream(), this.withdrawals.stream()).toList();
+    public List<AccountEvent> getInvestmentLike() {
+        List<AccountEvent> events = new ArrayList<>(this.investments);
+        events.addAll(this.withdrawals);
+        events.addAll(this.adjustments);
+        return events;
     }
 
     @Override

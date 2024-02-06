@@ -46,7 +46,7 @@ public interface LoanAccess {
             transaction.commit();
         }
         entity.refresh();
-        entity.checkIsFrozen();
+        entity.checkIsFrozen(true);
     }
 
     DLoan getEntity();
@@ -61,8 +61,6 @@ public interface LoanAccess {
         DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount(), DStaffConductor.SYSTEM);
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
-            payment.save(transaction);
-            loan.save(transaction);
             transaction.commit();
         }
         return payment;
@@ -75,19 +73,24 @@ public interface LoanAccess {
         DLoanPayment payment = new DLoanPayment(loan, request.getTimestamp(), emeralds.amount(), request.getConductor());
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
-            payment.save(transaction);
-            loan.save(transaction);
             transaction.commit();
         }
         payment.refresh();
         loan.refresh();
         loan.getClient().refresh();
-        RunBankSimulation.simulateFromDate(payment.getDate());
+        RunBankSimulation.simulate(payment.getDate());
         return payment;
     }
 
     default Emeralds getTotalPaid() {
+        DLoan loan = getEntity();
+        return getTotalPaid(loan.getStartDate(), loan.getEndDate());
+    }
+
+    default Emeralds getTotalPaid(Instant startDate, Instant endDate) {
         return getPayments().stream()
+            .filter(pay -> !pay.getDate().isBefore(startDate))
+            .filter(pay -> !pay.getDate().isAfter(endDate))
             .map(DLoanPayment::getAmount)
             .reduce(Emeralds.zero(), Emeralds::add);
     }

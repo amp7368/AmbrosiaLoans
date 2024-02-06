@@ -3,7 +3,7 @@ package com.ambrosia.loans.discord.commands.player.request.loan;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;

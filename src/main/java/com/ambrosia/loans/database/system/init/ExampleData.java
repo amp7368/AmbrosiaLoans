@@ -5,6 +5,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.investment.InvestApi;
 import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
@@ -22,8 +24,8 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 import com.ambrosia.loans.database.message.query.QDCheckInMessage;
 import com.ambrosia.loans.database.message.query.QDComment;
+import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.database.util.CreateEntityException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import java.time.Duration;
@@ -52,7 +54,7 @@ public class ExampleData {
             createPayments();
             withdrawals();
             clientManyLoans();
-            RunBankSimulation.simulateFromDate(Instant.EPOCH);
+            RunBankSimulation.simulate(Instant.EPOCH);
         } catch (CreateEntityException e) {
             throw new RuntimeException(e);
         }
@@ -62,9 +64,11 @@ public class ExampleData {
         new QDComment().delete();
         new QDLoanSection().delete();
         new QDLoanPayment().delete();
-        new QDLoan().delete();
         new QDInvestment().delete();
         new QDWithdrawal().delete();
+        new QDAdjustBalance().delete();
+        new QDAdjustLoan().delete();
+        new QDLoan().delete();
         new QDAccountSnapshot().delete();
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
@@ -95,7 +99,7 @@ public class ExampleData {
     }
 
     private static void clientManyLoansMakePayment(DLoan loan, Instant paymentDate, boolean isAll) {
-        RunBankSimulation.simulateFromDate(Instant.EPOCH);
+        RunBankSimulation.simulate(Instant.EPOCH);
         loan.getClient().refresh();
         Emeralds balance = loan.getClient().getBalance(paymentDate);
         long amount = isAll ? balance.amount() : balance.amount() / 2;

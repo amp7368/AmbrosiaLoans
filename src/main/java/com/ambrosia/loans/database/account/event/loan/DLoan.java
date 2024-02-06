@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.account.event.loan;
 
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.base.IAccountChange;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
@@ -10,13 +11,15 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
-import com.ambrosia.loans.database.util.CreateEntityException;
+import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.version.DApiVersion;
+import com.ambrosia.loans.database.version.VersionEntityType;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Identity;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -51,9 +55,11 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @OneToMany(cascade = CascadeType.ALL)
     private List<DLoanPayment> payments;
     @OneToMany(cascade = CascadeType.ALL)
+    private List<DAdjustLoan> adjustments;
+    @OneToMany(cascade = CascadeType.ALL)
     private List<DCollateral> collateral;
     @Column
-    private long initialAmount;
+    private long initialAmount; // positive
     @Column(nullable = false)
     private Timestamp startDate;
     @Column
@@ -63,15 +69,20 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @ManyToOne(optional = false)
     private DStaffConductor conductor;
     @Column
+    @DbDefault("none")
     private String reason;
+    @Column
+    @DbDefault("none")
+    private String repayment;
     @OneToOne
     private DClient vouch;
     @Column
+    @DbDefault("none")
     private String discount;
-    @Column
-    private String repayment;
     @OneToMany
     private List<DComment> comments;
+    @ManyToOne
+    private DApiVersion version = DApiVersion.current(VersionEntityType.LOAN);
 
     public DLoan(DClient client, long initialAmount, double rate, DStaffConductor conductor, Instant startDate) {
         this.client = client;
@@ -82,7 +93,9 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.ACTIVE;
     }
 
-    public DLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
+    public DLoan(LoanBuilder request) throws CreateEntityException, InvalidStaffConductorException {
+        if (request.getLoanId() != null)
+            this.id = request.getLoanId();
         this.client = request.getClient();
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();
@@ -99,12 +112,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.sections = List.of(firstSection);
         this.discount = request.getDiscount();
         this.status = DLoanStatus.ACTIVE;
-        this.checkIsFrozen();
+        this.checkIsFrozen(false);
     }
 
 
     @Nullable
-    private static BigDecimal calcPayment(DLoanSection section, DLoanPayment payment, BigDecimal amount) {
+    private static BigDecimal calcPayment(DLoanSection section, DLoanPayment payment) {
         Instant sectionEndDate = section.getEndDate();
         Instant sectionEndDateOrNow = Objects.requireNonNullElseGet(sectionEndDate, Instant::now);
         BigDecimal sectionRate = BigDecimal.valueOf(section.getRate());
@@ -183,33 +196,93 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        BigDecimal negativeInitialAmount = BigDecimal.valueOf(-initialAmount);
-        Emeralds interest = getInterest(negativeInitialAmount, getStartDate(), Instant.now(), true);
-        return interest.add(this.initialAmount);
+        return getTotalOwed(getStartDate(), Instant.now());
     }
 
-    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end, boolean includePayments) {
-        BigDecimal balance = accountBalanceAtStart.negate();
+    public Emeralds getTotalOwed(@Nullable Instant start, Instant endDate) {
+        Emeralds owedAtStart = start == null ? getInitialAmount() : getTotalOwed(null, start);
+        BigDecimal accountBalanceAtStart = owedAtStart.negative().toBigDecimal();
+
+        Instant startDate = Objects.requireNonNullElseGet(start, this::getStartDate);
+        Emeralds interest = getInterest(accountBalanceAtStart, startDate, endDate);
+
+        Emeralds adjustment = getTotalOwedAdjustments(endDate, startDate);
+        return interest.add(this.initialAmount)
+            .add(getTotalPaid(startDate, endDate).negative())
+            .add(adjustment.negative());
+    }
+
+    private Emeralds getTotalOwedAdjustments(Instant endDate, Instant startDate) {
+        Predicate<DAdjustLoan> isDateBetween = ad -> {
+            Instant date = ad.getDate();
+            return !date.isBefore(startDate) ||
+                !date.isAfter(endDate);
+        };
+        return this.adjustments.stream()
+            .filter(isDateBetween)
+            .map(DAdjustLoan::getAmount)
+            .reduce(Emeralds.zero(), Emeralds::add);
+    }
+
+    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end) {
+        BigDecimal runningBalance = accountBalanceAtStart.negate();
+        BigDecimal totalInterest = BigDecimal.ZERO;
         if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
-            String msg = "%s{%d}'s balance > 0, but has active loan!".formatted(client.getEffectiveName(), client.getId());
+            Emeralds bal = Emeralds.of(accountBalanceAtStart);
+            String msg = "%s{%d}'s balance of %s is > 0, but has active loan!"
+                .formatted(client.getEffectiveName(), client.getId(), bal);
             DatabaseModule.get().logger().warn(msg);
             return Emeralds.zero();
         }
-        int paymentIndex = 0;
-        for (DLoanSection section : getSections()) {
-            BigDecimal sectionInterest = section.getInterest(start, end, balance);
-            balance = balance.add(sectionInterest);
 
-            if (!includePayments) continue;
-            while (paymentIndex < payments.size()) {
-                DLoanPayment payment = payments.get(paymentIndex);
-                BigDecimal paymentAmount = calcPayment(section, payment, balance);
-                if (paymentAmount == null) break;
-                balance = balance.subtract(paymentAmount);
+        int paymentIndex = 0;
+        int sectionIndex = 0;
+        List<DLoanSection> sections = getSections().stream()
+            .filter(s -> !s.getEndDate(end).isBefore(start))
+            .toList();
+        List<DLoanPayment> payments = getPayments().stream()
+            .filter(p -> p.getDate().isAfter(start))
+            .toList();
+        BigDecimal initialLoanBal = this.getInitialAmount().toBigDecimal();
+        Instant checkpoint = start;
+        BigDecimal principal = initialLoanBal;
+
+        // while there's payments, make payments until there's none left
+        // each iteration, increment either sectionIndex or paymentIndex
+        while (paymentIndex < payments.size()) {
+            if (sectionIndex >= sections.size()) break; // payments in future means running simulation
+            DLoanSection section = sections.get(sectionIndex);
+            DLoanPayment payment = payments.get(paymentIndex);
+
+            Instant sectionEndDate = section.getEndDate(Instant.now());
+            boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
+            principal = principal.min(runningBalance);
+            if (isPaymentEarlierOrEq) {
+                if (!payment.getDate().isBefore(end)) break;
+                // make payment
+                BigDecimal sectionInterest = section.getInterest(checkpoint, payment.getDate(), principal);
+                BigDecimal paymentAmount = payment.getAmount().toBigDecimal();
+                runningBalance = runningBalance.add(sectionInterest).subtract(paymentAmount);
+                totalInterest = totalInterest.add(sectionInterest);
+                checkpoint = payment.getDate();
                 paymentIndex++;
+            } else {
+                BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
+                checkpoint = section.getEndDate(end);
+                runningBalance = runningBalance.add(sectionInterest);
+                totalInterest = totalInterest.add(sectionInterest);
+                sectionIndex++;
             }
         }
-        return Emeralds.of(balance.subtract(accountBalanceAtStart.negate()));
+        principal = principal.min(runningBalance);
+        while (sectionIndex < sections.size()) {
+            DLoanSection section = sections.get(sectionIndex);
+            BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
+            checkpoint = section.getEndDate(end);
+            totalInterest = totalInterest.add(sectionInterest);
+            sectionIndex++;
+        }
+        return Emeralds.of(totalInterest);
     }
 
     public DClient getClient() {
@@ -221,6 +294,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         if (isWithinPaidBounds(getTotalOwed().amount())) {
             markPaid(payment.getDate(), transaction);
         }
+        payment.save(transaction);
+        this.save(transaction);
     }
 
     public DLoan markPaid(Instant endDate, Transaction transaction) {
@@ -279,11 +354,32 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.comments;
     }
 
-    public void checkIsFrozen() {
+    public void checkIsFrozen(boolean saveIfChanged) {
         if (this.status.isActive()) {
-            if (this.isFrozen()) this.status = DLoanStatus.FROZEN;
-            else this.status = DLoanStatus.ACTIVE;
-            this.save();
+            if (this.isFrozen() && this.status != DLoanStatus.FROZEN) this.status = DLoanStatus.FROZEN;
+            else if (status != DLoanStatus.ACTIVE) this.status = DLoanStatus.ACTIVE;
+            else return;
+            if (saveIfChanged) this.save();
         }
+    }
+
+    public DApiVersion getVersion() {
+        return this.version;
+    }
+
+    public DLoan setVersion(DApiVersion version) {
+        this.version = version;
+        return this;
+    }
+
+    public void checkIsPaid(Instant endDate, Transaction transaction) {
+        Emeralds totalOwed = getTotalOwed(null, endDate);
+        if (isWithinPaidBounds(totalOwed.amount())) {
+            markPaid(endDate, transaction);
+        }
+    }
+
+    public void setDefaulted() {
+        this.status = DLoanStatus.DEFAULTED;
     }
 }

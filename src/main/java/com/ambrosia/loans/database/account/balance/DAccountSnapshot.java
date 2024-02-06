@@ -27,22 +27,31 @@ public class DAccountSnapshot extends Model {
     @Column(nullable = false)
     private Timestamp date;
     @Column(nullable = false)
-    private long accountDelta;
+    private long InvestDelta;
     @Column(nullable = false)
-    private long accountBalance;
+    private long InvestBalance;
+    @Column(nullable = false)
+    private long loanDelta;
+    @Column(nullable = false)
+    private long loanBalance;
     @Column(nullable = false)
     private AccountEventType event;
 
-    public DAccountSnapshot(DClient client, Instant date, long accountBalance, long accountDelta, AccountEventType event) {
+    public DAccountSnapshot(DClient client, Instant date, long InvestBalance, long loanBalance, long delta,
+        AccountEventType event) {
         this.date = Timestamp.from(date);
         this.client = client;
-        this.accountBalance = accountBalance;
-        this.accountDelta = accountDelta;
+        this.InvestBalance = InvestBalance;
+        this.loanBalance = loanBalance;
+
+        if (event.isLoanLike()) loanDelta = delta;
+        else InvestDelta = delta;
+
         this.event = event;
     }
 
     public Emeralds getAccountBalance() {
-        return Emeralds.of(this.accountBalance);
+        return Emeralds.of(this.InvestBalance + this.loanBalance);
     }
 
     @NotNull
@@ -56,6 +65,6 @@ public class DAccountSnapshot extends Model {
     }
 
     public Emeralds getDelta() {
-        return Emeralds.of(this.accountDelta);
+        return Emeralds.of(this.InvestDelta + this.loanDelta);
     }
 }

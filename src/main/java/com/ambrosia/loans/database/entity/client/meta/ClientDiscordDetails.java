@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 
 @Embeddable()
 public class ClientDiscordDetails {
@@ -16,23 +17,30 @@ public class ClientDiscordDetails {
     @Column
     public String username;
 
-    public ClientDiscordDetails(Long discordId, String avatarUrl, String username) {
+    private ClientDiscordDetails(Long discordId, String avatarUrl, String username) {
         this.discordId = discordId;
         this.avatarUrl = avatarUrl;
         this.username = username;
     }
 
-    public ClientDiscordDetails(Member member) {
-        this(member.getIdLong(), member.getEffectiveAvatarUrl(), member.getEffectiveName());
+    public static ClientDiscordDetails fromMember(Member member) {
+        long discordId = member.getIdLong();
+        String avatarUrl = member.getEffectiveAvatarUrl();
+        String username = member.getEffectiveName();
+        return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
 
-    public static ClientDiscordDetails fromMember(Member member) {
-        return new ClientDiscordDetails(member);
+    public static ClientDiscordDetails fromUser(User user) {
+        long discordId = user.getIdLong();
+        String avatarUrl = user.getEffectiveAvatarUrl();
+        String username = user.getEffectiveName();
+        return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
 
     public static ClientDiscordDetails fromManual(Long discordId, String avatarUrl, String username) {
         return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
+
 
     public String getUsername() {
         return this.username;

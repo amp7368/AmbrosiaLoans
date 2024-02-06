@@ -23,7 +23,7 @@ public class ProfileOverviewPage extends ProfilePage {
         EmbedBuilder embed = embed("Overview");
         balance(embed);
 
-        String minecraft = client.getMinecraft(ClientMinecraftDetails::getName);
+        String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
         embed.addField("Minecraft", Objects.requireNonNullElse(minecraft, "None"), true);
 
         Optional<DLoan> activeLoan = client.getActiveLoan();

@@ -11,12 +11,18 @@ import org.jetbrains.annotations.NotNull;
 public class ClientBalance {
 
     @Column
+    private long investAmount = 0;
+    @Column
+    private long loanAmount = 0;
+    @Column
     private long amount = 0;
     @Column
     private Timestamp lastUpdated = Timestamp.from(Instant.EPOCH);
 
-    public void setBalance(long amount, Instant date) {
-        this.amount = amount;
+    public void setBalance(long investAmount, long loanAmount, Instant date) {
+        this.investAmount = investAmount;
+        this.loanAmount = loanAmount;
+        this.amount = investAmount + loanAmount;
         this.lastUpdated = Timestamp.from(date);
     }
 
@@ -25,7 +31,11 @@ public class ClientBalance {
         return this.lastUpdated.toInstant();
     }
 
-    public Emeralds getAmount() {
-        return Emeralds.of(amount);
+    public Emeralds getInvestAmount() {
+        return Emeralds.of(investAmount);
+    }
+
+    public Emeralds getLoanAmount() {
+        return Emeralds.of(loanAmount);
     }
 }

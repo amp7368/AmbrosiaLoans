@@ -1,7 +1,11 @@
 package com.ambrosia.loans.database.account.event.investment;
 
-import com.ambrosia.loans.database.account.event.base.AccountEventInvest;
+import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
+import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
@@ -15,7 +19,7 @@ import io.ebean.Transaction;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
-import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 
 public class InvestApi {
 
@@ -27,14 +31,14 @@ public class InvestApi {
         Emeralds balance = client.getBalance(date);
         if (balance.amount() < emeralds.amount()) {
             String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance);
-            throw new IllegalStateException(msg);
+            DatabaseModule.get().logger().error(msg);
         }
         return (DWithdrawal) createInvestEvent(client, date, conductor, emeralds.negative(), AccountEventType.WITHDRAWAL);
     }
 
-    private static AccountEventInvest createInvestEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds,
+    private static AccountEvent createInvestEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds,
         AccountEventType type) {
-        AccountEventInvest investment;
+        AccountEvent investment;
         if (type == AccountEventType.INVEST)
             investment = new DInvestment(client, date, conductor, emeralds, type);
         else
@@ -48,8 +52,8 @@ public class InvestApi {
         return investment;
     }
 
-    public static AccountEventInvest createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {
-        AccountEventInvest event;
+    public static AccountEvent createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {
+        AccountEvent event;
         if (request.getEventType() == AccountEventType.INVEST) {
             DInvestment investment = new DInvestment(request, Instant.now());
             event = investment;
@@ -64,23 +68,56 @@ public class InvestApi {
         event.refresh();
         event.getClient().refresh();
 
-        RunBankSimulation.simulateFromDate(event.getDate());
+        RunBankSimulation.simulate(event.getDate());
         return event;
     }
+
+    public static void createAdjustment(Emeralds difference, DClient client, Instant date, boolean updateBalance) {
+        createAdjustment(null, difference, client, date, updateBalance);
+    }
+
+    public static void createAdjustment(@Nullable DLoan loan, Emeralds difference, DClient client, Instant date,
+        boolean updateBalance) {
+        try (Transaction transaction = DB.beginTransaction()) {
+            createAdjustment(loan, difference, client, date, updateBalance, transaction);
+            transaction.commit();
+        }
+    }
+
+    public static void createAdjustment(@Nullable DLoan loan, Emeralds difference, DClient client, Instant date,
+        boolean updateBalance, Transaction transaction) {
+        if (difference.isZero()) return;
+
+        AccountEventType type;
+        if (loan != null) type = AccountEventType.ADJUST_LOAN;
+        else if (difference.isPositive()) type = AccountEventType.ADJUST_UP;
+        else type = AccountEventType.ADJUST_DOWN;
+
+        if (loan == null) {
+            DAdjustBalance adjustment = new DAdjustBalance(client, date, DStaffConductor.MIGRATION, difference, type);
+            adjustment.save(transaction);
+        } else {
+            DAdjustLoan adjustment = new DAdjustLoan(loan, date, DStaffConductor.MIGRATION, difference, type);
+            adjustment.save(transaction);
+            loan.refresh();
+        }
+        if (updateBalance)
+            client.updateBalance(difference.amount(), date, type, transaction);
+    }
+
 
     public interface InvestQueryApi {
 
         static BigDecimal getInvestorStake(DClient investor) {
             Emeralds balance = investor.getBalance(Instant.now());
             if (balance.isNegative()) return BigDecimal.ZERO;
-            Optional<Emeralds> totalInvested = new QDClient().where()
-                .where().balance.amount.gt(0)
+            Emeralds totalInvested = new QDClient().where()
+                .where().balance.investAmount.gt(0)
                 .findStream()
-                .map(c -> c.getBalance(Instant.now()))
-                .reduce(Emeralds::add);
-            if (totalInvested.isEmpty()) return BigDecimal.ZERO;
+                .map(c -> c.getInvestBalance(Instant.now()))
+                .reduce(Emeralds.zero(), Emeralds::add);
 
-            BigDecimal bigTotalInvested = totalInvested.get().toBigDecimal();
+            BigDecimal bigTotalInvested = totalInvested.toBigDecimal();
             return balance.toBigDecimal()
                 .divide(bigTotalInvested, MathContext.DECIMAL128);
         }

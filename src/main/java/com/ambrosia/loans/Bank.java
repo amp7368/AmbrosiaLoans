@@ -1,6 +1,5 @@
 package com.ambrosia.loans;
 
-import ch.obermuhlner.math.big.BigDecimalMath;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Duration;
@@ -8,21 +7,26 @@ import java.time.Duration;
 public class Bank {
 
     public static final Duration INTEREST_INTERVAL = Duration.ofDays(7);
-    public static final Duration INTEREST_ACCUMULATE_INTERVAL = Duration.ofDays(7);
     public static final BigDecimal INTEREST_INTERVAL_DECIMAL = BigDecimal.valueOf(INTEREST_INTERVAL.toHours());
     public static final BigDecimal INVESTOR_SHARE = BigDecimal.valueOf(0.6);
-    public static final Duration LOAN_GRACE_PERIOD = Duration.ofDays(7);
-    public static final double INTEREST_RATE_MODIFIER =
-        INTEREST_INTERVAL.toMillis() / (double) INTEREST_ACCUMULATE_INTERVAL.toMillis();
+
 
     public static BigDecimal interest(Duration duration, BigDecimal amount, BigDecimal rate) {
         BigDecimal durationHours = BigDecimal.valueOf(duration.toHours());
-        BigDecimal interval = BigDecimal.valueOf(Bank.INTEREST_INTERVAL.toHours());
-        BigDecimal time = durationHours.divide(interval, MathContext.DECIMAL128);
-        BigDecimal exponent = time.multiply(rate);
-        BigDecimal E = BigDecimal.valueOf(Math.E);
-        BigDecimal multiplier = BigDecimalMath.pow(E, exponent, MathContext.DECIMAL128)
-            .subtract(BigDecimal.valueOf(1));
-        return amount.multiply(multiplier);
+        BigDecimal time = durationHours.divide(INTEREST_INTERVAL_DECIMAL, MathContext.DECIMAL128);
+        return amount.multiply(time.multiply(rate));
+    }
+
+    public static Duration interestDuration(long interest, long amount, double rate) {
+        return interestDuration(BigDecimal.valueOf(interest), BigDecimal.valueOf(amount), BigDecimal.valueOf(rate));
+    }
+
+    public static Duration interestDuration(BigDecimal interest, BigDecimal amount, BigDecimal rate) {
+        // I = PRT
+        // I/PR = T
+        BigDecimal interval = BigDecimal.valueOf(INTEREST_INTERVAL.toSeconds());
+        BigDecimal durationSeconds = interest.multiply(interval)
+            .divide(amount.multiply(rate), MathContext.DECIMAL128);
+        return Duration.ofSeconds(durationSeconds.longValue());
     }
 }

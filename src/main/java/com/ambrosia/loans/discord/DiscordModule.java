@@ -112,11 +112,6 @@ public class DiscordModule extends AppleModule {
     }
 
     @Override
-    public List<AppleModule> createModules() {
-        return List.of();
-    }
-
-    @Override
     public String getName() {
         return "Discord";
     }

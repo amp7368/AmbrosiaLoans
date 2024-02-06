@@ -5,9 +5,10 @@ import java.math.MathContext;
 
 public final class Emeralds {
 
-    public static final int STACK = (int) Math.pow(64, 3);
-    public static final int LIQUID = (int) Math.pow(64, 2);
-    public static final int BLOCK = 64;
+    public static final long STACK = (long) Math.pow(64, 3);
+    public static final long LIQUID = (long) Math.pow(64, 2);
+    public static final long BLOCK = 64;
+    private static final Emeralds ZERO = of(0);
     private final long amount;
 
     private Emeralds(long amount) {
@@ -24,7 +25,7 @@ public final class Emeralds {
     }
 
     public static Emeralds zero() {
-        return of(0);
+        return ZERO;
     }
 
     public static Emeralds leToEmeralds(double le) {
@@ -60,6 +61,14 @@ public final class Emeralds {
         return of(this.amount + addedAmount.amount());
     }
 
+    public Emeralds minus(long minusAmount) {
+        return of(this.amount - minusAmount);
+    }
+
+    public Emeralds minus(Emeralds minusAmount) {
+        return of(this.amount - minusAmount.amount());
+    }
+
     public BigDecimal toBigDecimal() {
         return BigDecimal.valueOf(this.amount);
     }
@@ -88,9 +97,6 @@ public final class Emeralds {
         return (int) (this.amount % Integer.MAX_VALUE);
     }
 
-    public boolean isNegative() {
-        return this.amount < 0;
-    }
 
     public boolean lte(long compareAmount) {
         return this.amount <= compareAmount;
@@ -106,5 +112,21 @@ public final class Emeralds {
 
     public boolean gt(long compareAmount) {
         return this.amount > compareAmount;
+    }
+
+    public boolean eq(long compareAmount) {
+        return this.amount == compareAmount;
+    }
+
+    public boolean isNegative() {
+        return this.amount < 0;
+    }
+
+    public boolean isZero() {
+        return eq(0);
+    }
+
+    public boolean isPositive() {
+        return gt(0);
     }
 }
