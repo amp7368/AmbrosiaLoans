@@ -7,6 +7,7 @@ public class AmbrosiaAssets {
 
     public static final String ACTIVE = png("active");
     public static final String CHECK = png("check");
+    public static final String ERROR = png("error");
     public static final String FOOTER_ACCEPTED = gif("loanacceptedfooter");
     public static final String FOOTER_PROMOTE = gif("ambrosiacreditsfooter");
     public static final String FOOTER_PENDING_LOAN = gif("loanpendingfooter");
@@ -35,7 +36,8 @@ public class AmbrosiaAssets {
         REQUEST_CLAIMED(1201671145124790312L),
         REQUEST_ACCEPTED(1201671148870574130L),
         REQUEST_COMPLETED(1201671141027217458L),
-        REQUEST_ERROR(1202020940930621501L),
+        ERROR(1202020940930621501L),
+        SUCCESS(1202020944147922944L),
         LOAN_BALANCE(1201636693267193866L),
         LOAN_PAYMENT(1202017326720090243L),
         LOAN_REPAYMENT_PLAN(1202020919992909845L),

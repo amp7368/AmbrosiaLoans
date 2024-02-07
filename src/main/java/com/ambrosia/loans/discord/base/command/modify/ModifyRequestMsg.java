@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.base.command.modify;
 
-import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 
 public record ModifyRequestMsg(String msg, boolean error, boolean warning) {
 
@@ -18,10 +18,10 @@ public record ModifyRequestMsg(String msg, boolean error, boolean warning) {
 
     @Override
     public String toString() {
-        String prefix;
-        if (error) prefix = DiscordEmojis.DENY;
-        else if (warning) prefix = DiscordEmojis.WARNING;
-        else prefix = DiscordEmojis.SUCCESS;
-        return prefix + " " + msg;
+        AmbrosiaEmoji prefix;
+        if (error) prefix = AmbrosiaEmoji.ERROR;
+        else if (warning) prefix = AmbrosiaEmoji.ERROR;
+        else prefix = AmbrosiaEmoji.SUCCESS;
+        return prefix.spaced() + msg;
     }
 }

@@ -39,8 +39,9 @@ public class ClientSearch {
         }
 
         protected void match(String match) {
+            String matchLower = match.toLowerCase();
             for (String name : names) {
-                int score = FuzzySearch.partialRatio(match, name);
+                int score = FuzzySearch.partialRatio(matchLower, name.toLowerCase());
                 if (score > this.score)
                     this.score = score;
             }

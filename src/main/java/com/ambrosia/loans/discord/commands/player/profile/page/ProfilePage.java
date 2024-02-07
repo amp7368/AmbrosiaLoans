@@ -34,9 +34,9 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
 
     protected EmbedBuilder embed(String title, int color) {
         EmbedBuilder embed = new EmbedBuilder();
-        author(embed);
         embed.setTitle(title)
             .setColor(color);
+        author(embed);
         return embed;
     }
 

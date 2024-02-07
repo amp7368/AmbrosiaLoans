@@ -14,6 +14,11 @@ public class ListLoansCommand extends BaseSubCommand {
     }
 
     @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
     public SubcommandData getData() {
         return new SubcommandData("loans", "List all loans");
     }

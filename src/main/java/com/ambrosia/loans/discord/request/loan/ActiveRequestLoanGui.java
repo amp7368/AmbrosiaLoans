@@ -5,7 +5,7 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPer
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
-import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,7 +54,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected String staffDescription() {
         if (this.hasApproveButton()) return null;
         return "\n\n%sSet the interest rate of the loan before approving this loan!"
-            .formatted(DiscordEmojis.WARNING);
+            .formatted(AmbrosiaEmoji.ERROR);
     }
 
     @Override

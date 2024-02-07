@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.base.command;
 
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
-import com.ambrosia.loans.discord.system.theme.DiscordEmojis;
 import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -36,7 +36,7 @@ public interface SendMessage {
 
     default EmbedBuilder error() {
         return new EmbedBuilder()
-            .setAuthor("Error! " + DiscordEmojis.DENY)
+            .setAuthor("Error! " + AmbrosiaEmoji.ERROR)
             .setColor(AmbrosiaColor.RED);
     }
 

@@ -19,9 +19,21 @@ public class BlacklistSetCommand extends BaseSubCommand {
     }
 
     @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
+        if (client.isBlacklisted() == blacklisted) {
+            String msg;
+            if (client.isBlacklisted()) msg = "%s is already blacklisted";
+            else msg = "%s is already not blacklisted";
+            replyError(event, msg.formatted(client.getEffectiveName()));
+            return;
+        }
         client.setBlacklisted(blacklisted);
         client.save();
 

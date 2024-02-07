@@ -3,8 +3,6 @@ package com.ambrosia.loans.discord;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
-import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
-import com.ambrosia.loans.discord.commands.manager.modify.StaffModifyRequestCommand;
 import com.ambrosia.loans.discord.commands.player.help.HelpCommand;
 import com.ambrosia.loans.discord.commands.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
@@ -13,10 +11,12 @@ import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
 import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.commands.staff.blacklist.BlacklistCommand;
 import com.ambrosia.loans.discord.commands.staff.comment.CommentCommand;
+import com.ambrosia.loans.discord.commands.staff.history.AHistoryCommand;
 import com.ambrosia.loans.discord.commands.staff.list.ListCommand;
+import com.ambrosia.loans.discord.commands.staff.modify.AModifyRequestCommand;
+import com.ambrosia.loans.discord.commands.staff.profile.AProfileCommand;
 import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
-import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.DCF;
@@ -91,13 +91,15 @@ public class DiscordModule extends AppleModule {
         // employee commands
         commands.addCommand(new CommandLink(),
             new CreateProfileCommand(),
-            new ViewProfileCommand(),
             new BlacklistCommand());
+        commands.addCommand(new AProfileCommand(),
+            new AHistoryCommand());
         commands.addCommand(new CommentCommand());
-        commands.addCommand(new StaffModifyRequestCommand());
+        commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new ListCommand());
+
         // manager commands
-        commands.addCommand(new CommandDelete());
+
         // client commands
         commands.addCommand(new HelpCommand(),
             new ProfileCommand(), new HistoryCommand(),

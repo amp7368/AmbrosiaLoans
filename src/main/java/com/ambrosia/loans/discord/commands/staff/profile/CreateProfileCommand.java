@@ -31,8 +31,6 @@ public class CreateProfileCommand extends BaseCommand {
             return;
         }
         event.replyEmbeds(this.success(String.format("Successfully created %s", client.getDisplayName()))).queue();
-        if (client.getDiscord() != null)
-            CommandLinkDiscord.sendRegistrationMessage(discord);
         DiscordLog.log().createAccount(client, event.getUser());
     }
 

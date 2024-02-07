@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class DiscordPermissions {
 
@@ -21,7 +22,7 @@ public class DiscordPermissions {
         return instance;
     }
 
-    public boolean isEmployee(Member member) {
+    public boolean isEmployee(@Nullable Member member) {
         if (member == null) return false;
         return isEmployee(member.getRoles());
     }
@@ -33,7 +34,7 @@ public class DiscordPermissions {
         return false;
     }
 
-    public boolean isManager(Member member) {
+    public boolean isManager(@Nullable Member member) {
         if (member == null) return false;
         return isManager(member.getRoles());
     }
