@@ -9,25 +9,21 @@ public record BalanceWithInterest(Emeralds investBalance, Emeralds loanBalance, 
     }
 
 
-    public long total() {
-        return investBalance.add(loanBalance).add(interestAsNegative).amount();
-    }
-
     public Emeralds totalEmeralds() {
-        return Emeralds.of(total());
+        return Emeralds.of(investBalance.add(loanBalance).add(interestAsNegative).amount());
     }
 
-    public long investTotal() {
-        return investBalance.amount();
+    public Emeralds investTotal() {
+        return investBalance;
     }
 
     /**
-     * includes interest
+     * loan balance as negative (includes interest)
      *
      * @return interest + loanBalance
      */
-    public long loanTotal() {
-        return loanBalance.add(interestAsNegative).amount();
+    public Emeralds loanTotal() {
+        return loanBalance.add(interestAsNegative);
     }
 
 }

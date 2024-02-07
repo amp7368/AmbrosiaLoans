@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.commands.manager.modify;
+package com.ambrosia.loans.discord.commands.staff.modify;
 
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.modify.BaseModifyInvestmentRequest;
@@ -11,7 +11,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class StaffModifyInvestmentCommand extends BaseSubCommand implements BaseModifyInvestmentRequest {
+public class AModifyInvestmentCommand extends BaseSubCommand implements BaseModifyInvestmentRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -20,6 +20,11 @@ public class StaffModifyInvestmentCommand extends BaseSubCommand implements Base
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setAmount(loan, event));
         replyChanges(event, changes, loan);
+    }
+
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
     }
 
     @Override

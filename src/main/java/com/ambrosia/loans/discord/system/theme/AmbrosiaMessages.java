@@ -6,6 +6,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -16,11 +17,18 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class AmbrosiaMessages {
 
+    public static final String NULL_MSG = "N/A";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLLL dd yyyy")
         .withZone(DiscordModule.TIME_ZONE);
 
     public static String formatDate(Instant date) {
-        return DATE_FORMATTER.format(date);
+        return formatDate(date, false);
+    }
+
+    public static String formatDate(Instant date, boolean emoji) {
+        String dateFormatted = DATE_FORMATTER.format(date);
+        if (emoji) return AmbrosiaEmoji.DATE + " " + dateFormatted;
+        return dateFormatted;
     }
 
     public static String formatPercentage(double perc) {

@@ -9,20 +9,13 @@ public interface CommandCheckPermission extends SendMessage {
 
     default boolean isBadPermission(SlashCommandInteractionEvent event) {
         Member sender = event.getMember();
-        if (sender == null) {
-            ErrorMessages.onlyInAmbrosia()
-                .replyError(event);
+        if (requiresMember() && sender == null) {
+            ErrorMessages.onlyInAmbrosia().replyError(event);
             return true;
         }
         DiscordPermissions perms = DiscordPermissions.get();
-        boolean wrongDiscord = perms.wrongServer(event.getGuild());
-        if (wrongDiscord) {
-            ErrorMessages.onlyInAmbrosia()
-                .replyError(event);
-            return true;
-        }
-        boolean isManager = perms.isManager(sender.getRoles());
-        boolean isEmployee = perms.isEmployee(sender.getRoles()) || isManager;
+        boolean isManager = perms.isManager(sender);
+        boolean isEmployee = perms.isEmployee(sender) || isManager;
         if (!isEmployee && isOnlyEmployee()) {
             ErrorMessages.badRole("Employee", event)
                 .replyError(event);
@@ -33,6 +26,10 @@ public interface CommandCheckPermission extends SendMessage {
                 .replyError(event);
             return true;
         }
+        return false;
+    }
+
+    default boolean requiresMember() {
         return false;
     }
 

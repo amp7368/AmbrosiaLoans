@@ -23,7 +23,7 @@ public class ClientSearch {
         }
 
         byName.forEach(c -> c.match(match));
-        byName.sort(Comparator.comparing(ClientName::score));
+        byName.sort(Comparator.comparing(ClientName::score).reversed());
         return byName.stream().map(ClientName::getClient).toList();
     }
 
@@ -39,8 +39,9 @@ public class ClientSearch {
         }
 
         protected void match(String match) {
+            String matchLower = match.toLowerCase();
             for (String name : names) {
-                int score = FuzzySearch.partialRatio(match, name);
+                int score = FuzzySearch.partialRatio(matchLower, name.toLowerCase());
                 if (score > this.score)
                     this.score = score;
             }

@@ -26,13 +26,8 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         }
         client.setMinecraft(minecraft);
         client.save();
-        if (true) {
-            client.profile(event::reply).send();
-            DiscordLog.log().modifyMinecraft(client, event.getUser());
-        } else {
-            // todo unsuccessful save
-            this.replyError(event, "Minecraft was already assigned");
-        }
+        client.profile(event::reply).send();
+        DiscordLog.log(client, event.getUser()).modifyMinecraft();
     }
 
     @Override

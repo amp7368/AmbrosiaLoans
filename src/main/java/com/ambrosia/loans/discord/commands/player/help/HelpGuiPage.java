@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.commands.player.help;
 
 import com.ambrosia.loans.discord.DiscordBot;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
@@ -37,20 +38,21 @@ public abstract class HelpGuiPage extends DCFGuiPage<DCFGui> {
 
     @Override
     public MessageCreateData makeMessage() {
-        EmbedBuilder embedBuilder = new EmbedBuilder();
-        embedBuilder.setThumbnail(DiscordBot.SELF_USER_AVATAR);
-        embedBuilder.setColor(this.color());
-        embedBuilder.setAuthor(this.getTitle());
-        embedBuilder.setTitle(String.format("Help (%d)", getPageNum() + 1));
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setThumbnail(DiscordBot.SELF_USER_AVATAR);
+        embed.setColor(this.color());
+        embed.setAuthor(this.getTitle());
+        embed.setTitle(String.format("Help (%d)", getPageNum() + 1));
+        embed.setImage(AmbrosiaAssets.FOOTER_PROMOTE);
 
-        MessageEmbed embed = this.makeEmbed(embedBuilder);
-        MessageCreateBuilder message = new MessageCreateBuilder().setEmbeds(embed);
+        MessageCreateBuilder message = new MessageCreateBuilder()
+            .setEmbeds(this.makeEmbed(embed));
         message.setComponents(pageActionRow(), navigationRow());
         return message.build();
     }
 
     protected int color() {
-        return AmbrosiaColor.LOANS_COLOR;
+        return AmbrosiaColor.YELLOW;
     }
 
     protected abstract MessageEmbed makeEmbed(EmbedBuilder embedBuilder);

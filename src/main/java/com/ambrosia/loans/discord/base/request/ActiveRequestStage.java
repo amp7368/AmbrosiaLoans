@@ -1,17 +1,16 @@
 package com.ambrosia.loans.discord.base.request;
 
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaColor.AmbrosiaColorRequest;
 import java.util.Locale;
 
 public enum ActiveRequestStage {
-    DENIED(AmbrosiaColor.BAD),
-    CLAIMED(AmbrosiaColorRequest.CLAIMED),
-    APPROVED(AmbrosiaColorRequest.CLAIMED),
-    COMPLETED(AmbrosiaColor.SUCCESS),
-    UNCLAIMED(AmbrosiaColorRequest.UNCLAIMED),
-    ERROR(AmbrosiaColor.ERROR),
-    CREATED(AmbrosiaColor.NORMAL);
+    DENIED(AmbrosiaColor.RED),
+    CLAIMED(AmbrosiaColor.YELLOW),
+    APPROVED(AmbrosiaColor.BLUE_NORMAL),
+    COMPLETED(AmbrosiaColor.GREEN),
+    UNCLAIMED(AmbrosiaColor.BLACK),
+    ERROR(AmbrosiaColor.RED),
+    CREATED(AmbrosiaColor.BLUE_SPECIAL);
 
     private final int color;
 

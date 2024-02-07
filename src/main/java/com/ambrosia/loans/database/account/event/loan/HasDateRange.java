@@ -19,6 +19,11 @@ public interface HasDateRange {
         return Objects.requireNonNullElse(getEndDate(), defaultIfNull);
     }
 
+    @NotNull
+    default Instant getEndDateOrNow() {
+        return getEndDate(Instant.now());
+    }
+
     default Duration getDuration(Instant start, Instant end) {
         Instant startDate = this.getStartDate();
         Instant endDate = this.getEndDate(end);

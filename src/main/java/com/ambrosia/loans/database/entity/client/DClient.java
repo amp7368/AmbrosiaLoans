@@ -3,7 +3,6 @@ package com.ambrosia.loans.database.entity.client;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
@@ -96,7 +95,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .investBalance();
     }
 
-    BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
+    public BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
         Emeralds investAmount = this.balance.getInvestAmount();
         Emeralds loanAmount = this.balance.getLoanAmount();
         Emeralds interestAsNegative = getInterest(currentTime).negative();
@@ -174,11 +173,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
     }
 
     public List<DAccountSnapshot> getAccountSnapshots() {
-        Comparator<DAccountSnapshot> comparator = Comparator.comparing(DAccountSnapshot::getDate)
-            .thenComparing(DAccountSnapshot::getEventType, AccountEventType.ORDER);
-
         return accountSnapshots.stream()
-            .sorted(comparator)
+            .sorted()
             .toList();
     }
 

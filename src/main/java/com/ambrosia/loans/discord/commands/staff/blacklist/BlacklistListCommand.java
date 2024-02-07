@@ -19,6 +19,11 @@ public class BlacklistListCommand extends BaseSubCommand {
     }
 
     @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
     public SubcommandData getData() {
         return new SubcommandData("list", "List everyone on the blacklist");
     }

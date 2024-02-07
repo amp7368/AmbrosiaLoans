@@ -74,7 +74,9 @@ public class RawLoan implements RawData<ImportedLoan> {
     }
 
     public List<String> getCollateral() {
-        return List.of(this.collateral.split(","));
+        if (this.collateral.trim().equalsIgnoreCase("N/A"))
+            return List.of();
+        return List.of(this.collateral.trim().split(","));
     }
 
     public Instant getEndDate() {

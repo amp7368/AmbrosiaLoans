@@ -97,6 +97,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
                 return;
             }
         }
+
         ActiveRequestLoan request = new ActiveRequestLoan(
             client,
             this.emeralds,

@@ -5,13 +5,17 @@ import static com.ambrosia.loans.util.emerald.Emeralds.LIQUID;
 import static com.ambrosia.loans.util.emerald.Emeralds.STACK;
 
 import apple.utilities.util.Pretty;
+import java.math.BigDecimal;
+import java.math.MathContext;
 
 public class EmeraldsFormatter {
 
 
     public static final EmeraldsFormatter STACKS = EmeraldsFormatter.of().setStacksOnly().seNoNegative();
+    public static final EmeraldsFormatter PLUS_MINUS = EmeraldsFormatter.of().setPlusMinus();
+    private boolean sign = false;
     private boolean isBold = false;
-    private int truncate = Integer.MAX_VALUE;
+    private int truncate = 2;
     private boolean includeTotal = false;
     private boolean inline = false;
     private boolean stacksOnly = false;
@@ -22,6 +26,11 @@ public class EmeraldsFormatter {
 
     public static EmeraldsFormatter of() {
         return new EmeraldsFormatter();
+    }
+
+    private EmeraldsFormatter setPlusMinus() {
+        this.sign = true;
+        return this;
     }
 
     public EmeraldsFormatter setBold(boolean isBold) {
@@ -61,39 +70,52 @@ public class EmeraldsFormatter {
 
             return "%.2fSTX".formatted(ems.toStacks());
         }
+        StringBuilder message = new StringBuilder();
+        int fieldsLeft = truncate;
+        boolean isNegative = emeralds.isNegative() && !this.noNegativeSign;
 
-        boolean isNegative = emeralds.isNegative();
         long creditsLeft = Math.abs(emeralds.amount());
         long stx = creditsLeft / STACK;
         creditsLeft -= stx * STACK;
+        if (stx != 0) fieldsLeft -= append(message, stx, fieldsLeft, EmeraldsUnit.STACKS, creditsLeft);
+
         long le = creditsLeft / LIQUID;
         creditsLeft -= le * LIQUID;
+        if (le != 0) fieldsLeft -= append(message, le, fieldsLeft, EmeraldsUnit.LIQUIDS, creditsLeft);
+
         long eb = creditsLeft / BLOCK;
         creditsLeft -= eb * BLOCK;
+        if (eb != 0) fieldsLeft -= append(message, eb, fieldsLeft, EmeraldsUnit.BLOCKS, creditsLeft);
+
         long e = creditsLeft;
-
-        int fieldsLeft = truncate;
-
-        StringBuilder message = new StringBuilder();
-        if (stx != 0) fieldsLeft -= append(message, stx, "STX", fieldsLeft, false);
-        if (le != 0) fieldsLeft -= append(message, le, "LE", fieldsLeft, false);
-        if (eb != 0) fieldsLeft -= append(message, eb, "EB", fieldsLeft, false);
-        if (e != 0 || message.isEmpty()) append(message, e, "E", fieldsLeft, true);
+        if (e != 0 || message.isEmpty()) append(message, e, fieldsLeft, EmeraldsUnit.EMERALDS, creditsLeft);
 
         if (includeTotal) {
             message.append(inline ? " " : "\n");
             String total = Pretty.commas(emeralds.amount());
             message.append(String.format("(**%s** total)", total));
         }
-        if (isNegative && !this.noNegativeSign) return "-" + message;
+        if (isNegative) return "-" + message;
+        if (sign) return "+" + message;
         return message.toString();
     }
 
-    private int append(StringBuilder message, long amount, String unit, int fieldsLeft, boolean forceAdd) {
+    private int append(StringBuilder message, long amount, int fieldsLeft, EmeraldsUnit unit, long creditsLeft) {
+        boolean forceAdd = unit.isBase() && message.isEmpty();
         if (!forceAdd && (amount == 0 || fieldsLeft == 0)) return fieldsLeft;
         if (!message.isEmpty()) message.append(", ");
+
+        String amountPretty;
+        boolean shouldConvert = fieldsLeft == 1 && !unit.isBase();
+        if (shouldConvert) {
+            double totalInUnits = amount + unit.convert(creditsLeft);
+            if (totalInUnits == (int) totalInUnits)
+                amountPretty = String.valueOf((int) totalInUnits);
+            else amountPretty = "%.2f".formatted(totalInUnits);
+        } else amountPretty = Pretty.commas(amount);
+
         String format = isBold ? "**%s** " : "%s ";
-        message.append(String.format(format, Pretty.commas(amount))).append(unit);
+        message.append(String.format(format, amountPretty)).append(unit);
         return 1;
     }
 
@@ -105,5 +127,35 @@ public class EmeraldsFormatter {
     public EmeraldsFormatter seNoNegative() {
         this.noNegativeSign = true;
         return this;
+    }
+
+    private enum EmeraldsUnit {
+        STACKS("STX", 64 * 64 * 64),
+        LIQUIDS("LE", 64 * 64),
+        BLOCKS("EB", 64),
+        EMERALDS("E", 1);
+
+        private final String unit;
+        private final BigDecimal unitAmount;
+
+        EmeraldsUnit(String unit, long unitAmount) {
+            this.unit = unit;
+            this.unitAmount = BigDecimal.valueOf(unitAmount);
+        }
+
+        @Override
+        public String toString() {
+            return unit;
+        }
+
+        public double convert(long credits) {
+            return BigDecimal.valueOf(credits)
+                .divide(unitAmount, MathContext.DECIMAL128)
+                .doubleValue();
+        }
+
+        public boolean isBase() {
+            return this == EMERALDS;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.commands.manager.modify;
+package com.ambrosia.loans.discord.commands.staff.modify;
 
 import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
 
@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class StaffModifyPaymentCommand extends BaseSubCommand implements BaseModifyPaymentRequest {
+public class AModifyPaymentCommand extends BaseSubCommand implements BaseModifyPaymentRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -27,6 +27,11 @@ public class StaffModifyPaymentCommand extends BaseSubCommand implements BaseMod
         changes.add(setPaymentAmount(request, event));
         changes.add(setDate(request, event));
         replyChanges(event, changes, request);
+    }
+
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
     }
 
     private ModifyRequestMsg setPaymentAmount(ActiveRequestPaymentGui request, SlashCommandInteractionEvent event) {

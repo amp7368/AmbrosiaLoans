@@ -7,6 +7,7 @@ import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,8 +18,10 @@ import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "client_snapshot")
-public class DAccountSnapshot extends Model {
+public class DAccountSnapshot extends Model implements Comparable<DAccountSnapshot> {
 
+    private static final Comparator<DAccountSnapshot> COMPARATOR = Comparator.comparing(DAccountSnapshot::getDate)
+        .thenComparing(DAccountSnapshot::getEventType, AccountEventType.ORDER);
     @Id
     private UUID id;
     @ManyToOne(optional = false)
@@ -66,5 +69,10 @@ public class DAccountSnapshot extends Model {
 
     public Emeralds getDelta() {
         return Emeralds.of(this.InvestDelta + this.loanDelta);
+    }
+
+    @Override
+    public int compareTo(@NotNull DAccountSnapshot o) {
+        return COMPARATOR.compare(this, o);
     }
 }

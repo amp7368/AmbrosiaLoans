@@ -22,6 +22,11 @@ public class CommandRequestAccount extends BaseSubCommand {
     private static final String OPTION_DISPLAY_NAME = "display_name";
 
     @Override
+    public boolean requiresMember() {
+        return true;
+    }
+
+    @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
         Member member = event.getMember();
         if (member == null) return;

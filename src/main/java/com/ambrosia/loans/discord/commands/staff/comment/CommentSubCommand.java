@@ -32,6 +32,11 @@ public class CommentSubCommand extends BaseStaffSubCommand {
     }
 
     @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData(subCommand, "Comment on a loan");
         CommandOptionList.of(

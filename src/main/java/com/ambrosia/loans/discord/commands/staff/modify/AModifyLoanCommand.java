@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.commands.manager.modify;
+package com.ambrosia.loans.discord.commands.staff.modify;
 
 import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
@@ -20,7 +20,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class StaffModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
+public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
