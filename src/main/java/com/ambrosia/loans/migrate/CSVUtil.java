@@ -42,7 +42,7 @@ public class CSVUtil {
         }
     }
 
-    public static <T> void readField(Class<T> beanType, T bean, String header, Gson gson, String stringValue)
+    private static <T> void readField(Class<T> beanType, T bean, String header, Gson gson, String stringValue)
         throws NoSuchFieldException, IllegalAccessException {
         Field field = beanType.getDeclaredField(header);
         if (stringValue.isBlank()) return;
@@ -54,7 +54,7 @@ public class CSVUtil {
     }
 
     @NotNull
-    public static String[] readLine(int length, String line) {
+    private static String[] readLine(int length, String line) {
         String[] values = new String[length];
         StringBuilder val = new StringBuilder();
         int index = 0;
@@ -69,7 +69,7 @@ public class CSVUtil {
         return values;
     }
 
-    public static boolean isIntNumber(Field field) {
+    private static boolean isIntNumber(Field field) {
         Class<?> type = field.getType();
         return type == int.class ||
             type == long.class ||
@@ -80,7 +80,7 @@ public class CSVUtil {
     }
 
     @NotNull
-    public static Gson gson() {
+    private static Gson gson() {
         return new GsonBuilder()
             .setDateFormat("M/dd/yyyy")
             .create();

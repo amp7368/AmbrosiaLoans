@@ -4,19 +4,21 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.migrate.ImportModule;
-import com.ambrosia.loans.migrate.base.RawData;
 import java.util.UUID;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
-public class RawClient implements RawData<ImportedClient> {
+public class RawClient {
 
     private long id;
     private String minecraftName;
     private UUID minecraftUUID;
     private Long discordId;
 
-    @Override
+    private boolean isProduction() {
+        return ImportModule.get().isProduction();
+    }
+
     public ImportedClient convert() {
         return new ImportedClient(this);
     }

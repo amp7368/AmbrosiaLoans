@@ -56,8 +56,7 @@ public class ClientMinecraftDetails {
     private static UUID toUUID(String uuidRaw) {
         long most = HexFormat.fromHexDigitsToLong(uuidRaw.substring(0, 16));
         long least = HexFormat.fromHexDigitsToLong(uuidRaw.substring(16, 32));
-        UUID uuid = new UUID(most, least);
-        return uuid;
+        return new UUID(most, least);
     }
 
     public String skinUrl() {

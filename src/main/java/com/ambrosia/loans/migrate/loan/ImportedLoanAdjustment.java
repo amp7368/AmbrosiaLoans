@@ -3,7 +3,7 @@ package com.ambrosia.loans.migrate.loan;
 import com.ambrosia.loans.database.account.event.investment.InvestApi;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
+import com.ambrosia.loans.migrate.RawMakeAdjustment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Duration;
 import java.time.Instant;

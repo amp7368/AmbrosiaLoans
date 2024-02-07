@@ -3,12 +3,11 @@ package com.ambrosia.loans.migrate.client;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.migrate.base.ImportedData;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.jetbrains.annotations.NotNull;
 
-public class ImportedClient implements ImportedData<DClient> {
+public class ImportedClient {
 
     private final long id;
     private final ClientMinecraftDetails minecraft;
@@ -22,7 +21,6 @@ public class ImportedClient implements ImportedData<DClient> {
         this.discord = raw.getDiscord();
     }
 
-    @Override
     public DClient toDB() {
         if (this.db != null) throw new IllegalStateException("#toDB() was already called for client %d!".formatted(this.id));
         this.db = new DClient(this);

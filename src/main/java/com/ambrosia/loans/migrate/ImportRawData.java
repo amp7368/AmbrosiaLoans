@@ -20,6 +20,9 @@ public record ImportRawData(
     }
 
     public RawLoan getLoan(long id) {
-        return this.loans.stream().filter(l -> l.getId() == id).findAny().get();
+        return this.loans.stream()
+            .filter(l -> l.getId() == id)
+            .findAny()
+            .get();
     }
 }

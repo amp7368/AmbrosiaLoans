@@ -7,9 +7,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.discord.commands.player.profile.page.ProfileTransactionsPage;
-import com.ambrosia.loans.migrate.base.ImportedData;
-import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
+import com.ambrosia.loans.discord.command.player.profile.page.ProfileTransactionsPage;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.migrate.client.RawClient;
 import com.ambrosia.loans.migrate.investment.ImportedInvestment;
@@ -42,7 +40,7 @@ public class ImportModule extends AppleModule {
         rawData.investments().forEach(invest -> invest.setClient(clients));
 
         return clients.stream()
-            .map(ImportedData::toDB)
+            .map(ImportedClient::toDB)
             .toList();
     }
 
