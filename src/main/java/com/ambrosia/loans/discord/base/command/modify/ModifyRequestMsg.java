@@ -22,6 +22,6 @@ public record ModifyRequestMsg(String msg, boolean error, boolean warning) {
         if (error) prefix = AmbrosiaEmoji.ERROR;
         else if (warning) prefix = AmbrosiaEmoji.ERROR;
         else prefix = AmbrosiaEmoji.SUCCESS;
-        return prefix.spaced() + msg;
+        return "- " + prefix.spaced() + msg;
     }
 }

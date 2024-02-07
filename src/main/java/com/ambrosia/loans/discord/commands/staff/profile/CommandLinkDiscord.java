@@ -24,7 +24,7 @@ public class CommandLinkDiscord extends BaseSubCommand {
         client.save();
 
         client.profile(event::reply).send();
-        DiscordLog.log().modifyDiscord(client, event.getUser());
+        DiscordLog.log(client, event.getUser()).modifyDiscord();
     }
 
     @Override

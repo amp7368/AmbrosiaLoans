@@ -1,12 +1,12 @@
 package com.ambrosia.loans.discord.system.log;
 
-import com.ambrosia.loans.database.account.event.base.AccountEvent;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordModule;
-import com.ambrosia.loans.discord.base.command.SendMessage;
+import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.DCF;
 import java.time.Instant;
@@ -14,78 +14,76 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class DiscordLog implements SendMessage {
+public class DiscordLog implements SendMessageClient {
 
-    private static DiscordLog instance;
-    private final DCF dcf;
-    private final TextChannel channel;
+    private static TextChannel channel;
+    private final DClient client;
+    private final User actor;
+    @Nullable
+    private final DClient actorClient;
 
-    public DiscordLog(DCF dcf) {
-        this.dcf = dcf;
+    private DiscordLog(@NotNull DClient client, @NotNull User actor) {
+        this.client = client;
+        this.actor = actor;
+        this.actorClient = ClientQueryApi.findByDiscord(actor.getIdLong());
+    }
+
+    public static void load(DCF dcf) {
         channel = dcf.jda().getTextChannelById(DiscordConfig.get().logChannel);
-        instance = this;
+        if (channel == null) {
+            String msg = "Log channel{%d} is not a valid channel".formatted(DiscordConfig.get().logChannel);
+            throw new IllegalArgumentException(msg);
+        }
     }
 
-    public static DiscordLog log() {
-        return instance;
+    public static DiscordLog log(@NotNull DClient client, @NotNull User actor) {
+        return new DiscordLog(client, actor);
     }
 
-    public void modifyDiscord(DClient client, User actor) {
-        EmbedBuilder msg = normal("Modify Discord", actor);
-        client(msg, client).setDescription(client.getDiscord(ClientDiscordDetails::getUsername))
-            .setThumbnail(client.getDiscord().avatarUrl);
-        log(msg.build(), true);
+    @Override
+    public DClient getClient() {
+        return this.client;
     }
 
-    public void modifyMinecraft(DClient client, User actor) {
-        EmbedBuilder msg = normal("Modify Minecraft", actor);
-        client(msg, client).setDescription(client.getMinecraft(ClientMinecraftDetails::getUsername))
-            .setThumbnail(client.getMinecraft(ClientMinecraftDetails::skinUrl));
-        log(msg.build(), true);
+    public void modifyDiscord() {
+        EmbedBuilder embed = embed("Modify Discord");
+        String discord = client.getDiscord(ClientDiscordDetails::getUsername);
+        embed.setDescription("Set Discord to @" + discord);
+        log(embed.build());
     }
 
-    public void createAccount(DClient client, User actor) {
-        EmbedBuilder msg = success("Create Account", actor);
-        client(msg, client);
-        log(msg.build(), true);
+    public void modifyMinecraft() {
+        EmbedBuilder embed = embed("Modify Minecraft");
+        String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
+        embed.setDescription("Set Minecraft to " + minecraft);
+        log(embed.build());
     }
 
-    public void operation(DClient client, AccountEvent operation) {
-        operation(client, operation, dcf.jda().getSelfUser(), false);
+    public void createAccount() {
+        log(embed("Create Account").build());
     }
 
-    public void operation(DClient client, AccountEvent operation, User actor, boolean toDiscord) {
-//        int color = operation.amount < 0 ? AmbrosiaColorTransaction.WITHDRAW : AmbrosiaColorTransaction.DEPOSIT;
-//        EmbedBuilder msg = embed(operation.display(), actor).setColor(color);
-//        client(msg, client).addBlankField(true).addField(String.format("Id: #%d", operation.id), "", true);
-//        log(msg.build(), toDiscord);
-    }
 
-    private void log(MessageEmbed msg, boolean toDiscord) {
+    private void log(MessageEmbed msg) {
         DiscordModule.get().logger().info(msg.toData());
-        if (toDiscord && channel != null) channel.sendMessageEmbeds(msg).queue();
+        if (channel != null) channel.sendMessageEmbeds(msg).queue();
     }
 
-    private EmbedBuilder client(EmbedBuilder msg, DClient client) {
-        msg.setAuthor(String.format("%s (#%d)", client.getDisplayName(), client.getId()));
-//        msg.addField("Credits", Pretty.commas(client.emeraldsInvested), true);
-        // todo
-        return msg;
+    private String getActorName() {
+        if (this.actorClient == null) return "@" + actor.getEffectiveName();
+        return actorClient.getEffectiveName();
     }
 
-    private EmbedBuilder success(String title, User actor) {
-        return embed(title, actor).setColor(AmbrosiaColor.GREEN);
-    }
-
-    private EmbedBuilder normal(String title, User actor) {
-        return embed(title, actor).setColor(AmbrosiaColor.BLUE_NORMAL);
-    }
-
-    private EmbedBuilder embed(String title, User actor) {
-        return new EmbedBuilder()
+    private EmbedBuilder embed(String title) {
+        EmbedBuilder embed = new EmbedBuilder()
             .setTitle(title)
-            .setFooter(actor.getEffectiveName(), actor.getAvatarUrl())
+            .setColor(AmbrosiaColor.GREEN)
+            .setFooter(getActorName(), actor.getAvatarUrl())
             .setTimestamp(Instant.now());
+        author(embed);
+        return embed;
     }
 }

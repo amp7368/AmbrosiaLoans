@@ -8,9 +8,9 @@ import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
-import com.ambrosia.loans.discord.base.gui.client.ClientPage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.scroll.DCFEntry;
@@ -25,7 +25,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> implements ClientPage {
+public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> implements SendMessageClient {
 
     public LoanHistoryMessage(ClientGui parent) {
         super(parent);
@@ -53,7 +53,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
-        embed.setTitle(title("Loan History", getPageNum(), getMaxPage()));
+        embed.setTitle(title("Loan History", entryPage, getMaxPage()));
         author(embed);
 
         List<DCFEntry<DLoan>> page = getCurrentPageEntries();

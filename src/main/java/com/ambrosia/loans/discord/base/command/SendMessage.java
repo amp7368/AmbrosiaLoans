@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.base.command;
 
-import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.util.function.Function;
@@ -19,7 +19,9 @@ public interface SendMessage {
     }
 
     default EmbedBuilder success() {
-        return new EmbedBuilder().setColor(AmbrosiaColor.GREEN);
+        return new EmbedBuilder()
+            .setColor(AmbrosiaColor.GREEN)
+            .setAuthor("Success!", null, AmbrosiaAssets.EMERALD);
     }
 
     default MessageEmbed success(String msg) {
@@ -36,7 +38,7 @@ public interface SendMessage {
 
     default EmbedBuilder error() {
         return new EmbedBuilder()
-            .setAuthor("Error! " + AmbrosiaEmoji.ERROR)
+            .setAuthor("Error!", null, AmbrosiaAssets.ERROR)
             .setColor(AmbrosiaColor.RED);
     }
 

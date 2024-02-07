@@ -111,7 +111,7 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnablePost() {
-        new DiscordLog(DiscordBot.dcf);
+        DiscordLog.load(DiscordBot.dcf);
         DiscordBot.dcf.commands().updateCommands();
     }
 

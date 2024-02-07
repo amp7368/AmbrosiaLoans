@@ -7,7 +7,6 @@ import static com.ambrosia.loans.util.emerald.Emeralds.STACK;
 import apple.utilities.util.Pretty;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 
 public class EmeraldsFormatter {
 
@@ -110,9 +109,9 @@ public class EmeraldsFormatter {
         boolean shouldConvert = fieldsLeft == 1 && !unit.isBase();
         if (shouldConvert) {
             double totalInUnits = amount + unit.convert(creditsLeft);
-            amountPretty = BigDecimal.valueOf(totalInUnits)
-                .setScale(2, RoundingMode.HALF_UP)
-                .toString();
+            if (totalInUnits == (int) totalInUnits)
+                amountPretty = String.valueOf((int) totalInUnits);
+            else amountPretty = "%.2f".formatted(totalInUnits);
         } else amountPretty = Pretty.commas(amount);
 
         String format = isBold ? "**%s** " : "%s ";

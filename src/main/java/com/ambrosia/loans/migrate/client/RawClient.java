@@ -33,7 +33,10 @@ public class RawClient implements RawData<ImportedClient> {
     }
 
     public ClientDiscordDetails getDiscord() {
-        if (!isProduction()) return null;
+        if (!isProduction()) {
+            if (discordId == null) return null;
+            return ClientDiscordDetails.fromManual(discordId, null, null);
+        }
         if (discordId == null) {
             ImportModule.get().logger()
                 .debug("[Client] Skipping %s's discord search because discordId is null".formatted(this.minecraftName));

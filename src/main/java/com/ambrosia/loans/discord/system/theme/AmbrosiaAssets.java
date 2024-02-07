@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 public class AmbrosiaAssets {
 
     public static final String ACTIVE = png("active");
-    public static final String CHECK = png("check");
+    public static final String SUCCESS = png("check");
     public static final String ERROR = png("error");
     public static final String FOOTER_ACCEPTED = gif("loanacceptedfooter");
     public static final String FOOTER_PROMOTE = gif("ambrosiacreditsfooter");
@@ -54,7 +54,9 @@ public class AmbrosiaAssets {
         TRADE(LOAN_REPAYMENT_PLAN.emojiId),
         FILTER(1202020928037601300L),
         SORT(1202020933276012635L),
-        PAYMENT_REMINDER(1202020939592900618L);
+        PAYMENT_REMINDER(1202020939592900618L),
+        DISCOUNT(1202020951131439205L),
+        ACCOUNT(1201636704507924480L);
 
         private final long emojiId;
         private RichCustomEmoji emoji;
@@ -82,6 +84,10 @@ public class AmbrosiaAssets {
 
         public String spaced() {
             return this + " ";
+        }
+
+        public String spaced(Object msg) {
+            return spaced() + msg;
         }
     }
 }

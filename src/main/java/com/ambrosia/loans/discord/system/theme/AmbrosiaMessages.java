@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class AmbrosiaMessages {
 
+    public static final String NULL_MSG = "N/A";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLLL dd yyyy")
         .withZone(DiscordModule.TIME_ZONE);
 

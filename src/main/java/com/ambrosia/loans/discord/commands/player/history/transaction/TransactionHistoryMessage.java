@@ -5,9 +5,9 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
-import com.ambrosia.loans.discord.base.gui.client.ClientPage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAccountSnapshot> implements ClientPage {
+public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAccountSnapshot> implements SendMessageClient {
 
     public TransactionHistoryMessage(ClientGui gui) {
         super(gui);

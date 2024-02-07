@@ -27,7 +27,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         client.setMinecraft(minecraft);
         client.save();
         client.profile(event::reply).send();
-        DiscordLog.log().modifyMinecraft(client, event.getUser());
+        DiscordLog.log(client, event.getUser()).modifyMinecraft();
     }
 
     @Override

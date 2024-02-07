@@ -53,7 +53,7 @@ public interface ClientAccess {
         if (minecraft != null) return minecraft;
         String discord = getDiscord(ClientDiscordDetails::getUsername);
         if (discord != null) return discord;
-        return "error";
+        return "Not Found!";
     }
 
 

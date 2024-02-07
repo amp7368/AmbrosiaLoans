@@ -32,7 +32,7 @@ public class DStaffConductor extends Model {
     public DStaffConductor(DClient client) {
         this.id = client.getId();
         this.client = client;
-        this.username = client.getDisplayName();
+        this.username = client.getEffectiveName();
     }
 
     public DStaffConductor(long id, String username, DClient client) {
