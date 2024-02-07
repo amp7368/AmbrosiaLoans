@@ -25,7 +25,7 @@ public interface BaseModifyWithdrawalRequest extends BaseModifyRequest {
             ErrorMessages.amountNotPositive(amount).replyError(event);
             return true;
         }
-        Emeralds balance = client.getBalance(Instant.now());
+        Emeralds balance = client.getInvestBalance(Instant.now());
         if (balance.lt(amount.amount())) {
             ErrorMessages.withdrawalTooMuch(amount, balance).replyError(event);
             return true;

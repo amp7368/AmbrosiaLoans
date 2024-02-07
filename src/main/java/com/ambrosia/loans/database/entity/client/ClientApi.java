@@ -12,8 +12,18 @@ public interface ClientApi {
     interface ClientQueryApi {
 
         static DClient findByName(String clientName) {
-            return new QDClient().where()
+            DClient client = new QDClient().where()
                 .displayName.ieq(clientName)
+                .findOne();
+            if (client != null) return client;
+
+            client = new QDClient().where()
+                .minecraft.username.ieq(clientName)
+                .findOne();
+            if (client != null) return client;
+
+            return new QDClient().where()
+                .discord.username.ieq(clientName)
                 .findOne();
         }
 

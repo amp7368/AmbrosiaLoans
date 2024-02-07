@@ -2,8 +2,9 @@ package com.ambrosia.loans.util.emerald;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import org.jetbrains.annotations.NotNull;
 
-public final class Emeralds {
+public final class Emeralds implements Comparable<Emeralds> {
 
     public static final long STACK = (long) Math.pow(64, 3);
     public static final long LIQUID = (long) Math.pow(64, 2);
@@ -128,5 +129,10 @@ public final class Emeralds {
 
     public boolean isPositive() {
         return gt(0);
+    }
+
+    @Override
+    public int compareTo(@NotNull Emeralds o) {
+        return Long.compare(this.amount, o.amount);
     }
 }

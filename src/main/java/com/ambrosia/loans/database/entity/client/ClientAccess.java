@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
@@ -85,8 +86,8 @@ public interface ClientAccess {
         DClient client = getEntity();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-        long newInvestBalance = balanceWithInterest.investTotal();
-        long newLoanBalance = balanceWithInterest.loanTotal();
+        long newInvestBalance = balanceWithInterest.investTotal().amount();
+        long newLoanBalance = balanceWithInterest.loanTotal().amount();
 
         if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
             long interest = balanceWithInterest.interestAsNegative().amount();
@@ -121,10 +122,10 @@ public interface ClientAccess {
         return gui;
     }
 
-    default List<DAccountSnapshot> getAccountSnapshots(AccountEventType eventType) {
+    default List<DAccountSnapshot> getAccountSnapshots(Predicate<AccountEventType> test) {
         return getEntity().getAccountSnapshots()
             .stream()
-            .filter(snap -> snap.getEventType() == eventType)
+            .filter(snap -> test.test(snap.getEventType()))
             .toList();
     }
 

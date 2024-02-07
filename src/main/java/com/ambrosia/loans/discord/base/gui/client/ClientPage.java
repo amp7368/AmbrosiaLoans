@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.base.gui.client;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 public interface ClientPage {
@@ -12,7 +12,8 @@ public interface ClientPage {
     default void author(EmbedBuilder embed) {
         DClient client = getClient();
 
-        embed.setAuthor(client.getEffectiveName(), null, client.getDiscord(ClientDiscordDetails::getAvatarUrl));
+        embed.setAuthor(client.getEffectiveName(), null, AmbrosiaAssets.EMERALD);
+        // client.getDiscord(ClientDiscordDetails::getAvatarUrl));
         embed.setThumbnail(client.getMinecraft(ClientMinecraftDetails::skinUrl));
     }
 }

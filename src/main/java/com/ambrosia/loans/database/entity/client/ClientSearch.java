@@ -23,7 +23,7 @@ public class ClientSearch {
         }
 
         byName.forEach(c -> c.match(match));
-        byName.sort(Comparator.comparing(ClientName::score));
+        byName.sort(Comparator.comparing(ClientName::score).reversed());
         return byName.stream().map(ClientName::getClient).toList();
     }
 

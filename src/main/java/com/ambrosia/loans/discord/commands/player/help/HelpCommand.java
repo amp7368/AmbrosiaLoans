@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class CommandHelp extends BaseCommand {
+public class HelpCommand extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {

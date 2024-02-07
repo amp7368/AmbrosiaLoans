@@ -3,6 +3,7 @@ package com.ambrosia.loans.discord.commands.player.profile.page;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.base.gui.client.ClientPage;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
@@ -28,10 +29,14 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
     }
 
     protected EmbedBuilder embed(String title) {
+        return embed(title, AmbrosiaColor.GREEN);
+    }
+
+    protected EmbedBuilder embed(String title, int color) {
         EmbedBuilder embed = new EmbedBuilder();
         author(embed);
         embed.setTitle(title)
-            .setColor(AmbrosiaColor.NORMAL);
+            .setColor(color);
         return embed;
     }
 
@@ -39,9 +44,9 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
         Emeralds balance = getClient().getBalance(Instant.now());
         String msg;
         if (balance.isNegative())
-            msg = "### Loan balance\n%s\b".formatted(balance.negative());
+            msg = "### Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, balance.negative());
         else
-            msg = "### Investment Balance\n%s\n".formatted(balance);
+            msg = "### Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, balance);
         embed.appendDescription(msg);
     }
 

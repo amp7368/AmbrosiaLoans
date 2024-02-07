@@ -2,12 +2,16 @@ package com.ambrosia.loans.discord;
 
 import java.util.List;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
 
 public class DiscordPermissions {
 
     private static DiscordPermissions instance;
+    private final List<Long> employeeRole = List.of();
+    private final List<Long> managerRole = List.of();
+    private final List<Long> allowedServers = List.of();
 
     public DiscordPermissions() {
         instance = this;
@@ -17,15 +21,21 @@ public class DiscordPermissions {
         return instance;
     }
 
-    private final List<Long> employeeRole = List.of();
-    private final List<Long> managerRole = List.of();
-    private final List<Long> allowedServers = List.of();
+    public boolean isEmployee(Member member) {
+        if (member == null) return false;
+        return isEmployee(member.getRoles());
+    }
 
     public boolean isEmployee(List<Role> roles) {
         for (Role role : roles) {
             if (employeeRole.contains(role.getIdLong())) return true;
         }
         return false;
+    }
+
+    public boolean isManager(Member member) {
+        if (member == null) return false;
+        return isManager(member.getRoles());
     }
 
     public boolean isManager(List<Role> roles) {

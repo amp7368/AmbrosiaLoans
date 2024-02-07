@@ -1,7 +1,9 @@
 SELECT *
 FROM (
      SELECT DISTINCT ON (c.id) c.id,
-                               ss.account_balance / 4096 balance_le,
+                               c.minecraft_username,
+                               ss.invest_balance / 4096                  invest_le,
+                               (ss.invest_balance + loan_balance) / 4096 balance_le,
                                ss.date
      FROM client c
               LEFT JOIN client_snapshot ss ON c.id = ss.client_id
@@ -63,7 +65,7 @@ SELECT ROUND((loan_delta + invest_delta) / 4096.0, 2)     delta_le,
        event,
        date
 FROM client_snapshot
-WHERE client_id = 141
+WHERE client_id = 236
 ORDER BY date;
 
 SELECT *

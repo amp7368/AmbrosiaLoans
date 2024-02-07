@@ -19,17 +19,25 @@ public interface SendMessage {
     }
 
     default EmbedBuilder success() {
-        return new EmbedBuilder().setColor(AmbrosiaColor.SUCCESS);
+        return new EmbedBuilder().setColor(AmbrosiaColor.GREEN);
     }
 
     default MessageEmbed success(String msg) {
         return success().setDescription(msg).build();
     }
 
+    default String title(String title) {
+        return title;
+    }
+
+    default String title(String title, int page, int maxPage) {
+        return "%s (%d/%d)".formatted(title, page + 1, maxPage + 1);
+    }
+
     default EmbedBuilder error() {
         return new EmbedBuilder()
             .setAuthor("Error! " + DiscordEmojis.DENY)
-            .setColor(AmbrosiaColor.BAD);
+            .setColor(AmbrosiaColor.RED);
     }
 
     default MessageEmbed error(String msg) {

@@ -23,7 +23,6 @@ import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Identity;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -115,20 +114,6 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.checkIsFrozen(false);
     }
 
-
-    @Nullable
-    private static BigDecimal calcPayment(DLoanSection section, DLoanPayment payment) {
-        Instant sectionEndDate = section.getEndDate();
-        Instant sectionEndDateOrNow = Objects.requireNonNullElseGet(sectionEndDate, Instant::now);
-        BigDecimal sectionRate = BigDecimal.valueOf(section.getRate());
-        Instant paymentDate = payment.getDate();
-
-        boolean isPaymentLater = sectionEndDate != null && paymentDate.isAfter(sectionEndDate);
-        if (isPaymentLater) return null;
-
-        Duration duration = Duration.between(paymentDate, sectionEndDateOrNow);
-        return payment.getEffectiveAmount(duration, sectionRate);
-    }
 
     public static boolean isWithinPaidBounds(long loanBalance) {
         return loanBalance < Emeralds.BLOCK;
@@ -254,7 +239,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             DLoanSection section = sections.get(sectionIndex);
             DLoanPayment payment = payments.get(paymentIndex);
 
-            Instant sectionEndDate = section.getEndDate(Instant.now());
+            Instant sectionEndDate = section.getEndDateOrNow();
             boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
             principal = principal.min(runningBalance);
             if (isPaymentEarlierOrEq) {

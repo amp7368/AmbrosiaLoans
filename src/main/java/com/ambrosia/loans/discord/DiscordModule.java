@@ -5,7 +5,7 @@ import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.commands.manager.delete.CommandDelete;
 import com.ambrosia.loans.discord.commands.manager.modify.StaffModifyRequestCommand;
-import com.ambrosia.loans.discord.commands.player.help.CommandHelp;
+import com.ambrosia.loans.discord.commands.player.help.HelpCommand;
 import com.ambrosia.loans.discord.commands.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
@@ -18,6 +18,7 @@ import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
 import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
 import com.ambrosia.loans.discord.commands.staff.view.ViewProfileCommand;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import java.time.ZoneId;
@@ -98,7 +99,7 @@ public class DiscordModule extends AppleModule {
         // manager commands
         commands.addCommand(new CommandDelete());
         // client commands
-        commands.addCommand(new CommandHelp(),
+        commands.addCommand(new HelpCommand(),
             new ProfileCommand(), new HistoryCommand(),
             new CommandRequest(), new CommandModifyRequest());
 
@@ -108,6 +109,7 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnablePost() {
+        new DiscordLog(DiscordBot.dcf);
         DiscordBot.dcf.commands().updateCommands();
     }
 

@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.util.Objects;
 import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -24,11 +25,12 @@ public class ProfileOverviewPage extends ProfilePage {
         balance(embed);
 
         String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
-        embed.addField("Minecraft", Objects.requireNonNullElse(minecraft, "None"), true);
+        String minecraftMsg = AmbrosiaEmoji.MINECRAFT.spaced() + Objects.requireNonNullElse(minecraft, "None");
+        embed.addField("Minecraft", minecraftMsg, true);
 
         Optional<DLoan> activeLoan = client.getActiveLoan();
         String activeLoanMsg = activeLoan
-            .map(loan -> "Initial amount: " + loan.getInitialAmount())
+            .map(loan -> "%s Initial amount: %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()))
             .orElse("None");
         embed.addField("Active Loan", activeLoanMsg, true);
 

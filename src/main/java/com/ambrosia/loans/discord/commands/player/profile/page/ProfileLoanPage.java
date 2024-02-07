@@ -7,7 +7,8 @@ import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
-import com.ambrosia.loans.util.emerald.Emeralds;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ public class ProfileLoanPage extends ProfilePage {
 
     @Override
     public MessageCreateData makeMessage() {
-        EmbedBuilder embed = embed("Loans");
+        EmbedBuilder embed = embed("Loans", AmbrosiaColor.BLUE_NORMAL);
         balance(embed);
         pastLoansSummary(embed);
 
@@ -45,15 +46,18 @@ public class ProfileLoanPage extends ProfilePage {
         }
         DLoan loan = activeLoan.get();
         embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
-        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate())), true);
-        String rateMsg = formatPercentage(loan.getLastSection().getRate());
-        embed.addField("Rate", rateMsg, true);
+        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate(), true)), false);
+        String rateMsg = AmbrosiaEmoji.LOAN_RATE.spaced() + formatPercentage(loan.getLastSection().getRate());
+        embed.addField("Rate", rateMsg, false);
         List<String> collateral = loan.getCollateral().stream()
             .map(c -> c.link)
             .toList();
-        embed.addField("Collateral", String.join(", ", collateral), true);
-        embed.addField("Initial Amount", loan.getInitialAmount().toString(), true);
-        embed.addField("Current Balance", loan.getTotalOwed().toString(), true);
+        String collateralMsg = AmbrosiaEmoji.COLLATERAL.spaced() + String.join("\n", collateral);
+        embed.addField("Collateral", collateralMsg, false);
+        String initialAmountMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getInitialAmount();
+        embed.addField("Initial Amount", initialAmountMsg, false);
+        String currentBalanceMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getTotalOwed();
+        embed.addField("Current Balance", currentBalanceMsg, false);
 
         List<DLoanPayment> payments = loan.getPayments();
         if (payments.isEmpty()) {
@@ -62,35 +66,41 @@ public class ProfileLoanPage extends ProfilePage {
         }
         StringBuilder footer = new StringBuilder("Payments\n");
         for (DLoanPayment payment : payments) {
-            footer.append("%s + %s\n".formatted(formatDate(payment.getDate()), payment.getAmount()));
+            String entry = "%s %s + %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, formatDate(payment.getDate()), payment.getAmount());
+            footer.append(entry);
         }
         embed.setFooter(footer.toString());
     }
 
     private void pastLoansSummary(EmbedBuilder embed) {
         DClient client = getClient();
-        if (client.getLoans().isEmpty()) {
+        List<DLoan> loans = client.getLoans();
+        if (loans.isEmpty()) {
             embed.appendDescription("No past loans");
             return;
         }
         List<String> summaries = new ArrayList<>();
-        for (DLoan loan : client.getLoans()) {
+        int MAX_LISTED_LOANS = 4;
+        boolean hitMaxLoans = false;
+        for (int i = 0; i < loans.size(); i++) {
+            DLoan loan = loans.get(i);
             if (loan.getStatus().isActive()) continue;
-            Emeralds initialAmount = loan.getInitialAmount();
+            if (i >= MAX_LISTED_LOANS) {
+                hitMaxLoans = true;
+                break;
+            }
             String endDate = formatDate(loan.getEndDate());
-            String startDate = formatDate(loan.getStartDate());
-            Emeralds totalPaid = loan.getTotalPaid();
-            String loanSummary = """
-                %s to %s
-                Amount: %s
-                Total Paid: %s
-                """.formatted(startDate, endDate, initialAmount, totalPaid);
-            summaries.add(loanSummary);
+            String startDate = formatDate(loan.getStartDate(), true);
+            String line1 = "%s to %s\n".formatted(startDate, endDate);
+            String line2 = "%s Amount: %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount());
+            String line3 = "%s Total Paid: %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid());
+
+            summaries.add(line1 + line2 + line3);
         }
-        embed.appendDescription("## Past Loans\n");
+        embed.appendDescription("### Past Loans\n");
 
         embed.appendDescription(String.join("\n", summaries));
+        if (hitMaxLoans)
+            embed.appendDescription("...\n");
     }
-
-
 }

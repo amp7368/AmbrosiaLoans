@@ -4,12 +4,14 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.base.gui.client.ClientPage;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.time.Instant;
@@ -27,7 +29,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
 
     public LoanHistoryMessage(ClientGui parent) {
         super(parent);
-        addEntries(getClient().getLoans());
+        setEntries(getClient().getLoans());
         sort();
     }
 
@@ -50,8 +52,8 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setColor(AmbrosiaColor.NORMAL);
-        embed.setTitle("Page %d".formatted(entryPage + 1));
+        embed.setColor(AmbrosiaColor.BLUE_NORMAL);
+        embed.setTitle(title("Loan History", getPageNum(), getMaxPage()));
         author(embed);
 
         List<DCFEntry<DLoan>> page = getCurrentPageEntries();
@@ -61,21 +63,19 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         }
         DLoan loan = page.get(0).entry();
 
-        String status = switch (loan.getStatus()) {
-            case ACTIVE -> "Active";
-            case FROZEN -> "Frozen";
-            case PAID -> "Fully Paid";
-            case DEFAULTED -> "Defaulted";
-        };
-        embed.appendDescription("### Loan [#%d] - %s\n".formatted(loan.getId(), status));
+        DLoanStatus status = loan.getStatus();
+        AmbrosiaEmoji statusEmoji = status.getEmoji();
+        embed.appendDescription("### Loan [#%d] - %s %s\n".formatted(loan.getId(), statusEmoji, status));
 
-        embed.appendDescription("**Start Date:** %s\n".formatted(formatDate(loan.getStartDate())));
-        embed.appendDescription("**Current Rate:** %s\n".formatted(formatPercentage(loan.getLastSection().getRate())));
-        embed.appendDescription("**Initial Amount:** %s\n".formatted(loan.getInitialAmount()));
+        embed.appendDescription("**%s Start:** %s\n".formatted(AmbrosiaEmoji.DATE, formatDate(loan.getStartDate())));
+        String rateMsg = formatPercentage(loan.getLastSection().getRate());
+        embed.appendDescription("**%s Current Rate:** %s\n".formatted(AmbrosiaEmoji.LOAN_RATE, rateMsg));
+        embed.appendDescription("**%s Initial Amount:** %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()));
         String collateral = loan.getCollateral().stream()
             .map(c -> c.link)
             .collect(Collectors.joining(", "));
-        embed.appendDescription("**Collateral:** %s\n".formatted(collateral.isBlank() ? "None" : collateral));
+        String collateralMsg = collateral.isBlank() ? "None" : collateral;
+        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.COLLATERAL, collateralMsg));
 
         List<LoanEventMsg> history = new ArrayList<>();
         findChangeRateEvents(loan, history);
@@ -95,7 +95,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
 
         DLoanSection section1 = sections.get(0);
         String msg1 = "Rate started at " + formatPercentage(section1.getRate());
-        history.add(new LoanEventMsg(msg1, section1.getStartDate()));
+        history.add(new LoanEventMsg(AmbrosiaEmoji.LOAN_RATE, msg1, section1.getStartDate()));
 
         double lastRate = section1.getRate();
         for (DLoanSection section : sections) {
@@ -104,14 +104,14 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
                 .formatted(formatPercentage(lastRate),
                     formatPercentage(section.getRate()));
             lastRate = section.getRate();
-            history.add(new LoanEventMsg(msg, section.getStartDate()));
+            history.add(new LoanEventMsg(AmbrosiaEmoji.LOAN_RATE, msg, section.getStartDate()));
         }
     }
 
     private void findPaymentEvents(DLoan loan, List<LoanEventMsg> history) {
         for (DLoanPayment payment : loan.getPayments()) {
             String msg = "Payment made: " + payment.getAmount();
-            history.add(new LoanEventMsg(msg, payment.getDate()));
+            history.add(new LoanEventMsg(AmbrosiaEmoji.LOAN_PAYMENT, msg, payment.getDate()));
         }
     }
 
@@ -122,11 +122,11 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
             .build();
     }
 
-    private record LoanEventMsg(String msg, Instant date) {
+    private record LoanEventMsg(AmbrosiaEmoji emoji, String msg, Instant date) {
 
         @Override
         public String toString() {
-            return "%s - %s".formatted(formatDate(date), msg);
+            return "%s %s - %s".formatted(emoji, formatDate(date), msg);
         }
     }
 }

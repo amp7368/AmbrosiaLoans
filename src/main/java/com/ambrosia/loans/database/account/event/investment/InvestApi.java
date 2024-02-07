@@ -28,7 +28,7 @@ public class InvestApi {
     }
 
     public static DWithdrawal createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
-        Emeralds balance = client.getBalance(date);
+        Emeralds balance = client.getInvestBalance(date);
         if (balance.amount() < emeralds.amount()) {
             String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance);
             DatabaseModule.get().logger().error(msg);
@@ -109,7 +109,7 @@ public class InvestApi {
     public interface InvestQueryApi {
 
         static BigDecimal getInvestorStake(DClient investor) {
-            Emeralds balance = investor.getBalance(Instant.now());
+            Emeralds balance = investor.getInvestBalance(Instant.now());
             if (balance.isNegative()) return BigDecimal.ZERO;
             Emeralds totalInvested = new QDClient().where()
                 .where().balance.investAmount.gt(0)

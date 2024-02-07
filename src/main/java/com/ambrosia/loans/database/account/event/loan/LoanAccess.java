@@ -12,6 +12,7 @@ import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public interface LoanAccess {
@@ -88,9 +89,10 @@ public interface LoanAccess {
     }
 
     default Emeralds getTotalPaid(Instant startDate, Instant endDate) {
+        Instant end = Objects.requireNonNullElseGet(endDate, Instant::now);
         return getPayments().stream()
             .filter(pay -> !pay.getDate().isBefore(startDate))
-            .filter(pay -> !pay.getDate().isAfter(endDate))
+            .filter(pay -> !pay.getDate().isAfter(end))
             .map(DLoanPayment::getAmount)
             .reduce(Emeralds.zero(), Emeralds::add);
     }
@@ -102,7 +104,7 @@ public interface LoanAccess {
     }
 
     default boolean isFrozen() {
-        return getCurrentRate() == 0;
+        return getCurrentRate() == 0 && isActive();
     }
 
     default boolean isActive() {
@@ -111,5 +113,14 @@ public interface LoanAccess {
 
     default boolean isDefaulted() {
         return getEntity().getStatus() == DLoanStatus.DEFAULTED;
+    }
+
+    default boolean isPaid() {
+        return getEntity().getStatus() == DLoanStatus.PAID;
+    }
+
+    default Emeralds getAccumulatedInterest() {
+        DLoan interest = getEntity();
+        return interest.getTotalOwed().add(interest.getTotalPaid());
     }
 }

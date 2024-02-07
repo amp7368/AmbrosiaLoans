@@ -75,11 +75,11 @@ public class DiscordLog implements SendMessage {
     }
 
     private EmbedBuilder success(String title, User actor) {
-        return embed(title, actor).setColor(AmbrosiaColor.SUCCESS);
+        return embed(title, actor).setColor(AmbrosiaColor.GREEN);
     }
 
     private EmbedBuilder normal(String title, User actor) {
-        return embed(title, actor).setColor(AmbrosiaColor.NORMAL);
+        return embed(title, actor).setColor(AmbrosiaColor.BLUE_NORMAL);
     }
 
     private EmbedBuilder embed(String title, User actor) {
