@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class ListCommand extends BaseCommand {
+public class AListCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -28,6 +28,6 @@ public class ListCommand extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("list", "List data commands");
+        return Commands.slash("alist", "List data commands");
     }
 }

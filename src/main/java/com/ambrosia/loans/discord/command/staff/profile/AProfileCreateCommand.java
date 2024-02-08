@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class CreateProfileCommand extends BaseCommand {
+public class AProfileCreateCommand extends BaseCommand {
 
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -36,7 +36,7 @@ public class CreateProfileCommand extends BaseCommand {
 
 
     public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("create_profile", "Create a profile for a client");
+        SlashCommandData command = Commands.slash("aprofile_create", "Create a profile for a client");
         CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command)
             .setDefaultPermissions(DefaultMemberPermissions.DISABLED)

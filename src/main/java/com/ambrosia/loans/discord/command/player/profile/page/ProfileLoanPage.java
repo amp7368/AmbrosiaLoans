@@ -66,7 +66,7 @@ public class ProfileLoanPage extends ProfilePage {
         }
         StringBuilder footer = new StringBuilder("Payments\n");
         for (DLoanPayment payment : payments) {
-            String entry = "%s %s + %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, formatDate(payment.getDate()), payment.getAmount());
+            String entry = "%s + %s\n".formatted(formatDate(payment.getDate()), payment.getAmount());
             footer.append(entry);
         }
         embed.setFooter(footer.toString());

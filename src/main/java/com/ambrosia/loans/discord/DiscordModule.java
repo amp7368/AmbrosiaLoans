@@ -9,14 +9,15 @@ import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
-import com.ambrosia.loans.discord.command.staff.blacklist.BlacklistCommand;
-import com.ambrosia.loans.discord.command.staff.comment.CommentCommand;
+import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
+import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
 import com.ambrosia.loans.discord.command.staff.history.AHistoryCommand;
-import com.ambrosia.loans.discord.command.staff.list.ListCommand;
+import com.ambrosia.loans.discord.command.staff.list.AListCommand;
 import com.ambrosia.loans.discord.command.staff.modify.AModifyRequestCommand;
+import com.ambrosia.loans.discord.command.staff.profile.ACommandLink;
 import com.ambrosia.loans.discord.command.staff.profile.AProfileCommand;
-import com.ambrosia.loans.discord.command.staff.profile.CommandLink;
-import com.ambrosia.loans.discord.command.staff.profile.CreateProfileCommand;
+import com.ambrosia.loans.discord.command.staff.profile.AProfileCreateCommand;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.DCF;
@@ -29,6 +30,8 @@ import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
 public class DiscordModule extends AppleModule {
 
@@ -89,14 +92,15 @@ public class DiscordModule extends AppleModule {
 
         DCFCommandManager commands = dcf.commands();
         // employee commands
-        commands.addCommand(new CommandLink(),
-            new CreateProfileCommand(),
-            new BlacklistCommand());
+        commands.addCommand(new ACommandLink(),
+            new AProfileCreateCommand(),
+            new ABlacklistCommand());
         commands.addCommand(new AProfileCommand(),
             new AHistoryCommand());
-        commands.addCommand(new CommentCommand());
+        commands.addCommand(new ALoanCommand());
+        commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
-        commands.addCommand(new ListCommand());
+        commands.addCommand(new AListCommand());
 
         // manager commands
 
@@ -112,7 +116,11 @@ public class DiscordModule extends AppleModule {
     @Override
     public void onEnablePost() {
         DiscordLog.load(DiscordBot.dcf);
-        DiscordBot.dcf.commands().updateCommands();
+        CommandData viewProfileCommand = Commands.user("view_profile");
+        DiscordBot.dcf.commands().updateCommands(
+            action -> action.addCommands(viewProfileCommand),
+            commands -> {}
+        );
     }
 
     @Override

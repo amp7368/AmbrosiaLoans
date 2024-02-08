@@ -1,13 +1,14 @@
-package com.ambrosia.loans.discord.command.staff.blacklist;
+package com.ambrosia.loans.discord.command.staff.alter.loan;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.command.staff.alter.loan.rate.LoanSetRateCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class BlacklistCommand extends BaseCommand {
+public class ALoanCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -15,20 +16,11 @@ public class BlacklistCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(
-            new BlacklistSetCommand("add", true),
-            new BlacklistSetCommand("remove", false),
-            new BlacklistListCommand()
-        );
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
+        return List.of(new LoanSetRateCommand());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("blacklist", "Blacklist related commands");
+        return Commands.slash("aloan", "Modify anything about a loan");
     }
 }

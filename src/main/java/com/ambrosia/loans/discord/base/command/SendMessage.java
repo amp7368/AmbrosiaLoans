@@ -6,7 +6,7 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
@@ -47,12 +47,12 @@ public interface SendMessage {
     }
 
     @Nullable
-    default <T> T findOption(SlashCommandInteractionEvent event, String optionName, Function<OptionMapping, T> getAs) {
+    default <T> T findOption(CommandInteraction event, String optionName, Function<OptionMapping, T> getAs) {
         return findOption(event, optionName, getAs, false);
     }
 
     @Nullable
-    default <T> T findOption(SlashCommandInteractionEvent event, String optionName, Function<OptionMapping, T> getAs,
+    default <T> T findOption(CommandInteraction event, String optionName, Function<OptionMapping, T> getAs,
         boolean isRequired) {
         OptionMapping option = event.getOption(optionName);
         if (option == null || getAs.apply(option) == null) {
@@ -64,19 +64,19 @@ public interface SendMessage {
         return getAs.apply(option);
     }
 
-    default void replyError(SlashCommandInteractionEvent event, String msg) {
+    default void replyError(CommandInteraction event, String msg) {
         event.replyEmbeds(error(msg))
             .setEphemeral(true)
             .queue();
     }
 
-    default void replyError(SlashCommandInteractionEvent event, MessageCreateData msg) {
+    default void replyError(CommandInteraction event, MessageCreateData msg) {
         event.reply(msg)
             .setEphemeral(true)
             .queue();
     }
 
-    default void replySuccess(SlashCommandInteractionEvent event, String msg) {
+    default void replySuccess(CommandInteraction event, String msg) {
         event.replyEmbeds(success(msg)).queue();
     }
 

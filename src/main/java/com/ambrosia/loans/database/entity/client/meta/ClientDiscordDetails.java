@@ -11,14 +11,14 @@ public class ClientDiscordDetails {
 
     @EmbeddedId
     @Column(unique = true)
-    public Long discordId;
+    public Long id;
     @Column
     public String avatarUrl;
     @Column
     public String username;
 
-    private ClientDiscordDetails(Long discordId, String avatarUrl, String username) {
-        this.discordId = discordId;
+    private ClientDiscordDetails(Long id, String avatarUrl, String username) {
+        this.id = id;
         this.avatarUrl = avatarUrl;
         this.username = username;
     }
@@ -51,6 +51,6 @@ public class ClientDiscordDetails {
     }
 
     public Long getDiscordId() {
-        return discordId;
+        return id;
     }
 }

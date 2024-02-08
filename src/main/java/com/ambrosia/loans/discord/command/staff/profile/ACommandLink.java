@@ -8,11 +8,11 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class CommandLink extends BaseCommand {
+public class ACommandLink extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("link", "Link minecraft and/or discord");
+        SlashCommandData command = Commands.slash("alink", "Link minecraft and/or discord");
         return command.setDefaultPermissions(DefaultMemberPermissions.DISABLED).setGuildOnly(true);
     }
 
@@ -28,6 +28,5 @@ public class CommandLink extends BaseCommand {
 
     @Override
     public void onCheckedCommand(SlashCommandInteractionEvent event) {
-
     }
 }
