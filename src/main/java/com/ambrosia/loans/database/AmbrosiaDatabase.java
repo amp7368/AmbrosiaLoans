@@ -3,6 +3,7 @@ package com.ambrosia.loans.database;
 import apple.lib.ebean.database.AppleEbeanDatabase;
 import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
 import apple.lib.ebean.database.config.AppleEbeanPostgresConfig;
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
@@ -13,6 +14,8 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterUndoHistory;
 import com.ambrosia.loans.database.bank.DBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
@@ -38,6 +41,9 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.add(AccountEvent.class);
         entities.addAll(List.of(DLoan.class, DLoanSection.class, DLoanPayment.class, DCollateral.class));
         entities.addAll(List.of(DInvestment.class, DWithdrawal.class, DAdjustBalance.class, DAdjustLoan.class));
+
+        // alter
+        entities.addAll(List.of(DAlterChangeRecord.class, DAlterUndoHistory.class));
 
         // message
         entities.add(DCheckInMessage.class);
@@ -87,6 +93,11 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
         public boolean isExample() {
             return this.createExampleData;
+        }
+
+        @Override
+        public boolean isStrictMode() {
+            return Ambrosia.isProduction();
         }
     }
 

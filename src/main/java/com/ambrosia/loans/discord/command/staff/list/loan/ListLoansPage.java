@@ -138,12 +138,10 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         AmbrosiaEmoji statusEmoji = loan.getStatus().getEmoji();
         String line1 = "%2d. **%s** %s `%s` %s %s".formatted(index, client, statusEmoji, status, AmbrosiaEmoji.LOAN_RATE,
             formatPercentage(rate));
-        String line2 = "%s %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, totalLoan, paid, totalOwed);
-        return """
-            %s
-            %s
-            %s %s - %s
-            """.formatted(line1, line2, AmbrosiaEmoji.DATE, startDate, endDate);
+        String line2 = AmbrosiaEmoji.ID.spaced() + loan.getId();
+        String line3 = "%s %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, totalLoan, paid, totalOwed);
+        String line4 = "%s %s - %s".formatted(AmbrosiaEmoji.DATE, startDate, endDate);
+        return String.join("\n", List.of(line1, line2, line3, line4));
     }
 
     private Collection<LayoutComponent> components() {

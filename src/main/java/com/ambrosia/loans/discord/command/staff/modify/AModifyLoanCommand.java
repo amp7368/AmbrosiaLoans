@@ -4,19 +4,17 @@ import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
-import com.ambrosia.loans.discord.request.loan.BaseModifyLoanRequest;
-import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.request.loan.BaseModifyLoanRequest;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,17 +32,18 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
     }
 
     private ModifyRequestMsg setDate(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
-        String startDateString = findOption(event, "start_date", OptionMapping::getAsString);
-        if (startDateString == null) return null;
+        Instant startDate = CommandOption.LOAN_START_DATE.getOptional(event);
+        if (startDate == null) return null;
         try {
-            TemporalAccessor parsed = SIMPLE_DATE_FORMATTER.parse(startDateString);
-            Instant startDate = Instant.from(parsed);
             if (startDate.isAfter(Instant.now()))
                 return ModifyRequestMsg.error("Cannot set the start date in the future");
+
             loan.getData().setStartDate(startDate);
-            return ModifyRequestMsg.info("Set the start date to %s".formatted(SIMPLE_DATE_FORMATTER.format(parsed)));
+            return ModifyRequestMsg.info("Set the start date to %s".formatted(SIMPLE_DATE_FORMATTER.format(startDate)));
         } catch (DateTimeParseException e) {
-            return ModifyRequestMsg.error("Failed to parse date. Please use format MM/dd/yy");
+            String startDateString = CommandOption.LOAN_START_DATE.getMap1(event);
+            String msg = ErrorMessages.dateParseError(startDateString, "MM/DD/YY").toString();
+            return ModifyRequestMsg.error(msg);
         }
     }
 
@@ -71,10 +70,8 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
         SubcommandData command = new SubcommandData("loan", "[Staff] Modify a loan request");
         CommandOptionList.of(
             List.of(CommandOption.REQUEST),
-            List.of(CommandOption.RATE, CommandOption.VOUCH)
+            List.of(CommandOption.RATE, CommandOption.VOUCH, CommandOption.LOAN_START_DATE)
         ).addToCommand(command);
-        command.addOption(OptionType.STRING, "start_date",
-            "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
 
         return command;
     }

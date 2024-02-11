@@ -146,7 +146,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return this;
     }
 
-
     @Override
     public DClient getEntity() {
         return this;

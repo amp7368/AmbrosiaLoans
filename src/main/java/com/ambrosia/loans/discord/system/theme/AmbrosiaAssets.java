@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.discord.DiscordBot;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 public class AmbrosiaAssets {
@@ -8,6 +9,7 @@ public class AmbrosiaAssets {
     public static final String ACTIVE = png("active");
     public static final String SUCCESS = png("check");
     public static final String ERROR = png("error");
+    public static final String WARNING = png("pending");
     public static final String FOOTER_ACCEPTED = gif("loanacceptedfooter");
     public static final String FOOTER_PROMOTE = gif("ambrosiacreditsfooter");
     public static final String FOOTER_PENDING_LOAN = gif("loanpendingfooter");
@@ -28,6 +30,7 @@ public class AmbrosiaAssets {
     }
 
     public enum AmbrosiaEmoji {
+        ID("\uD83D\uDD11"),
         LOAN_ACTIVE(1201671148870574130L),
         LOAN_FROZEN(1201671145124790312L),
         LOAN_PAID(1201671141027217458L),
@@ -68,7 +71,7 @@ public class AmbrosiaAssets {
 
         AmbrosiaEmoji(String emojiStr) {
             this.emojiId = 0;
-            this.emojiStr = emojiStr;
+            this.emojiStr = Emoji.fromUnicode(emojiStr).getFormatted();
         }
 
         public RichCustomEmoji getEmoji() {

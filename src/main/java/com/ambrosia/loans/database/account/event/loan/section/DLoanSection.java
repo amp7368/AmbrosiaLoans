@@ -45,6 +45,11 @@ public class DLoanSection extends Model implements HasDateRange {
         return endDate != null && endDate.isBefore(date);
     }
 
+    public boolean isEndBeforeOrEq(Instant date) {
+        Instant endDate = this.getEndDate();
+        return endDate != null && !date.isBefore(endDate);
+    }
+
     @NotNull
     public Instant getStartDate() {
         return this.startDate.toInstant();
@@ -60,7 +65,8 @@ public class DLoanSection extends Model implements HasDateRange {
     }
 
     public DLoanSection setEndDate(Instant endDate) {
-        this.endDate = Timestamp.from(endDate);
+        if (endDate == null) this.endDate = null;
+        else this.endDate = Timestamp.from(endDate);
         return this;
     }
 

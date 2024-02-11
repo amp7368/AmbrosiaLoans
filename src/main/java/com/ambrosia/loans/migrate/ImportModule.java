@@ -184,8 +184,7 @@ public class ImportModule extends AppleModule {
     }
 
     public boolean isProduction() {
-        // todo
-        return false;
+        return Ambrosia.isProduction();
     }
 
     public boolean isQuick() {

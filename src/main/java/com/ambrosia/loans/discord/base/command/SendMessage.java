@@ -2,20 +2,25 @@ package com.ambrosia.loans.discord.base.command;
 
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
-import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import org.jetbrains.annotations.Nullable;
 
 public interface SendMessage {
 
     static SendMessage get() {
         return new SendMessage() {
         };
+    }
+
+
+    default String title(String title) {
+        return title;
+    }
+
+    default String title(String title, int page, int maxPage) {
+        return "%s (%d/%d)".formatted(title, page + 1, maxPage + 1);
     }
 
     default EmbedBuilder success() {
@@ -28,12 +33,8 @@ public interface SendMessage {
         return success().setDescription(msg).build();
     }
 
-    default String title(String title) {
-        return title;
-    }
-
-    default String title(String title, int page, int maxPage) {
-        return "%s (%d/%d)".formatted(title, page + 1, maxPage + 1);
+    default void replySuccess(CommandInteraction event, String msg) {
+        event.replyEmbeds(success(msg)).queue();
     }
 
     default EmbedBuilder error() {
@@ -44,24 +45,6 @@ public interface SendMessage {
 
     default MessageEmbed error(String msg) {
         return error().setDescription(msg).build();
-    }
-
-    @Nullable
-    default <T> T findOption(CommandInteraction event, String optionName, Function<OptionMapping, T> getAs) {
-        return findOption(event, optionName, getAs, false);
-    }
-
-    @Nullable
-    default <T> T findOption(CommandInteraction event, String optionName, Function<OptionMapping, T> getAs,
-        boolean isRequired) {
-        OptionMapping option = event.getOption(optionName);
-        if (option == null || getAs.apply(option) == null) {
-            if (isRequired)
-                ErrorMessages.missingOption(optionName)
-                    .replyError(event);
-            return null;
-        }
-        return getAs.apply(option);
     }
 
     default void replyError(CommandInteraction event, String msg) {
@@ -76,8 +59,21 @@ public interface SendMessage {
             .queue();
     }
 
-    default void replySuccess(CommandInteraction event, String msg) {
-        event.replyEmbeds(success(msg)).queue();
+    default EmbedBuilder warning() {
+        return new EmbedBuilder()
+            .setAuthor("Completed with warnings..", null, AmbrosiaAssets.WARNING)
+            .setColor(AmbrosiaColor.YELLOW);
     }
 
+    default MessageEmbed warning(String msg) {
+        return warning().setDescription(msg).build();
+    }
+
+    default void replyWarning(CommandInteraction event, String msg) {
+        event.replyEmbeds(warning(msg)).queue();
+    }
+
+    default void replyWarning(CommandInteraction event, MessageCreateData msg) {
+        event.reply(msg).queue();
+    }
 }

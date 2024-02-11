@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.alter.undo.AUndoCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
 import com.ambrosia.loans.discord.command.staff.history.AHistoryCommand;
@@ -91,18 +92,20 @@ public class DiscordModule extends AppleModule {
         ActiveRequestDatabase.load();
 
         DCFCommandManager commands = dcf.commands();
-        // employee commands
-        commands.addCommand(new ACommandLink(),
+        // employee client commands
+        commands.addCommand(
+            new ACommandLink(),
             new AProfileCreateCommand(),
             new ABlacklistCommand());
-        commands.addCommand(new AProfileCommand(),
-            new AHistoryCommand());
+        // employee alter commands
         commands.addCommand(new ALoanCommand());
+        // employee view commands
+        commands.addCommand(new AProfileCommand(), new AHistoryCommand());
         commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());
-
-        // manager commands
+        // employee alter commands
+        commands.addCommand(new AUndoCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),

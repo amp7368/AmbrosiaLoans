@@ -180,6 +180,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             .toList();
     }
 
+    public void setSections(List<DLoanSection> sections) {
+        this.sections = sections;
+    }
+
     public Emeralds getTotalOwed() {
         return getTotalOwed(getStartDate(), Instant.now());
     }

@@ -30,9 +30,9 @@ public class DAccountSnapshot extends Model implements Comparable<DAccountSnapsh
     @Column(nullable = false)
     private Timestamp date;
     @Column(nullable = false)
-    private long InvestDelta;
+    private long investDelta;
     @Column(nullable = false)
-    private long InvestBalance;
+    private long investBalance;
     @Column(nullable = false)
     private long loanDelta;
     @Column(nullable = false)
@@ -40,21 +40,21 @@ public class DAccountSnapshot extends Model implements Comparable<DAccountSnapsh
     @Column(nullable = false)
     private AccountEventType event;
 
-    public DAccountSnapshot(DClient client, Instant date, long InvestBalance, long loanBalance, long delta,
+    public DAccountSnapshot(DClient client, Instant date, long investBalance, long loanBalance, long delta,
         AccountEventType event) {
         this.date = Timestamp.from(date);
         this.client = client;
-        this.InvestBalance = InvestBalance;
+        this.investBalance = investBalance;
         this.loanBalance = loanBalance;
 
         if (event.isLoanLike()) loanDelta = delta;
-        else InvestDelta = delta;
+        else investDelta = delta;
 
         this.event = event;
     }
 
     public Emeralds getAccountBalance() {
-        return Emeralds.of(this.InvestBalance + this.loanBalance);
+        return Emeralds.of(this.investBalance + this.loanBalance);
     }
 
     @NotNull
@@ -68,7 +68,7 @@ public class DAccountSnapshot extends Model implements Comparable<DAccountSnapsh
     }
 
     public Emeralds getDelta() {
-        return Emeralds.of(this.InvestDelta + this.loanDelta);
+        return Emeralds.of(this.investDelta + this.loanDelta);
     }
 
     @Override

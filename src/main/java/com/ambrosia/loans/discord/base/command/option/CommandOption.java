@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.base.command.option;
 
-import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
-
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
+import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -12,8 +12,6 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -36,9 +34,9 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
 
     // common
-    CommandOptionMulti<String, Instant> DATE = multi("date", "Date (MM/DD/YY)", OptionType.STRING, OptionMapping::getAsString,
-        CommandOption::parseDate);
-
+    CommandOptionMulti<String, Instant> DATE = new CommandOptionDate();
+    CommandOptionMulti<String, Instant> LOAN_START_DATE = new CommandOptionDate("start_date",
+        "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
 
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
@@ -55,6 +53,8 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
+
+
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
@@ -62,9 +62,16 @@ public interface CommandOption<R> {
         OptionMapping::getAsLong, LoanQueryApi::findById);
     CommandOptionMulti<Long, DLoan> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
+
+
+    // undo/redo
+    CommandOptionMulti<Long, DAlterChangeRecord> MODIFICATION_ID = multi("modification_id", "The modification target",
+        OptionType.INTEGER, OptionMapping::getAsLong, AlterQueryApi::findById);
+
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
+
 
     @NotNull
     static CommandOption<Boolean> full(String verb) {
@@ -78,15 +85,6 @@ public interface CommandOption<R> {
         String desc = "The amount to %s. Expressed in STX. (Enter 0.5 for 32LE)".formatted(type);
         return multi("amount", desc, OptionType.NUMBER,
             OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
-    }
-
-    private static Instant parseDate(String dateString) {
-        try {
-            TemporalAccessor date = SIMPLE_DATE_FORMATTER.parse(dateString);
-            return Instant.from(date);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
     }
 
 

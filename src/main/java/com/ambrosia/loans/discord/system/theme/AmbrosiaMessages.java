@@ -53,7 +53,7 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage registerWithStaff() {
             return error("To register your account use **/request account** and fill in your Minecraft "
-                + "username.");
+                         + "username.");
         }
 
         public static AmbrosiaMessage missingOption(String option) {
@@ -129,6 +129,16 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage blacklisted() {
             String msg = "You're blacklisted and can no longer interact with the bot";
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage alteredAlready(String action) {
+            String msg = "Action is already %s".formatted(action);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage dateParseError(String given, String expected) {
+            String msg = "Failed to parse date. %s is not in the format %s".formatted(given, expected);
             return error(msg);
         }
     }

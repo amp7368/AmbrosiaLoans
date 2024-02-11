@@ -1,9 +1,15 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.entity.client.alter.AlterClientCreate;
+import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import io.ebean.DB;
+import io.ebean.Transaction;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -30,7 +36,7 @@ public interface ClientApi {
 
         static DClient findByDiscord(long discordId) {
             return new QDClient().where()
-                .discord.discordId.eq(discordId)
+                .discord.id.eq(discordId)
                 .findOne();
         }
 
@@ -48,6 +54,18 @@ public interface ClientApi {
 
     }
 
+    interface ClientAlterApi {
+
+        static void setBlacklisted(DStaffConductor staff, DClient client, boolean blacklisted) {
+            try (Transaction transaction = DB.beginTransaction()) {
+                AlterClientBlacklisted change = new AlterClientBlacklisted(client, blacklisted);
+                AlterCreateApi.change(staff, change, transaction);
+                client.setBlacklisted(blacklisted).save(transaction);
+                transaction.commit();
+            }
+        }
+    }
+
     interface ClientCreateApi {
 
         static DClient createClient(String clientName, String minecraft, Member discord) throws CreateEntityException {
@@ -56,7 +74,11 @@ public interface ClientApi {
             if (client.getMinecraft() == null)
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             client.setDiscord(ClientDiscordDetails.fromMember(discord));
-            client.save();
+            try (Transaction transaction = DB.beginTransaction()) {
+                client.save(transaction);
+                AlterCreateApi.create(new AlterClientCreate(client), transaction);
+                transaction.commit();
+            }
             return client;
         }
     }

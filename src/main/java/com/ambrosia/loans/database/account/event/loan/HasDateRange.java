@@ -32,6 +32,14 @@ public interface HasDateRange {
         return Duration.between(constrainedStart, constrainedEnd);
     }
 
+    default boolean isDateDuring(Instant date) {
+        Instant startDate = this.getStartDate();
+        if (startDate.isAfter(date)) return false;
+        Instant endDate = this.getEndDate();
+        if (endDate == null) return true;
+        return date.isBefore(endDate);
+    }
+
     default Duration getTotalDuration() {
         return Duration.between(this.getStartDate(), this.getEndDate(Instant.now()));
     }

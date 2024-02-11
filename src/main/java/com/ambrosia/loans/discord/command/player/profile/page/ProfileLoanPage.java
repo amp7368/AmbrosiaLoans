@@ -46,18 +46,20 @@ public class ProfileLoanPage extends ProfilePage {
         }
         DLoan loan = activeLoan.get();
         embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
-        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate(), true)), false);
+        embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate(), true)), true);
         String rateMsg = AmbrosiaEmoji.LOAN_RATE.spaced() + formatPercentage(loan.getLastSection().getRate());
-        embed.addField("Rate", rateMsg, false);
+        embed.addField("Rate", rateMsg, true);
         List<String> collateral = loan.getCollateral().stream()
             .map(c -> c.link)
             .toList();
         String collateralMsg = AmbrosiaEmoji.COLLATERAL.spaced() + String.join("\n", collateral);
-        embed.addField("Collateral", collateralMsg, false);
+        embed.addField("Collateral", collateralMsg, true);
         String initialAmountMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getInitialAmount();
-        embed.addField("Initial Amount", initialAmountMsg, false);
+        embed.addField("Initial Amount", initialAmountMsg, true);
         String currentBalanceMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getTotalOwed();
-        embed.addField("Current Balance", currentBalanceMsg, false);
+        embed.addField("Current Balance", currentBalanceMsg, true);
+        String interestMsg = AmbrosiaEmoji.INTEREST.spaced() + loan.getAccumulatedInterest();
+        embed.addField("Total Interest", interestMsg, true);
 
         List<DLoanPayment> payments = loan.getPayments();
         if (payments.isEmpty()) {
