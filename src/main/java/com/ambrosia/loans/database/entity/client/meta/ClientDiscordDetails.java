@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.entity.client.meta;
 
+import io.ebean.annotation.Index;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -9,11 +10,13 @@ import net.dv8tion.jda.api.entities.User;
 @Embeddable()
 public class ClientDiscordDetails {
 
+    @Index
     @EmbeddedId
     @Column(unique = true)
     public Long id;
     @Column
     public String avatarUrl;
+    @Index
     @Column
     public String username;
 

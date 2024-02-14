@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.player.history.transaction;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.SendMessageClient;
@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAccountSnapshot> implements SendMessageClient {
+public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DClientSnapshot> implements SendMessageClient {
 
     public TransactionHistoryMessage(ClientGui gui) {
         super(gui);
@@ -30,8 +30,8 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAcc
     }
 
     @Override
-    protected Comparator<? super DAccountSnapshot> entriesComparator() {
-        return Comparator.comparing(DAccountSnapshot::getEventType);
+    protected Comparator<? super DClientSnapshot> entriesComparator() {
+        return Comparator.comparing(DClientSnapshot::getEventType);
     }
 
     @Override
@@ -51,9 +51,9 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAcc
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
 
         embed.setTitle(title("Transactions History", entryPage, getMaxPage()));
-        List<DCFEntry<DAccountSnapshot>> entries = getCurrentPageEntries();
+        List<DCFEntry<DClientSnapshot>> entries = getCurrentPageEntries();
         for (int i = 0; i < entries.size(); i++) {
-            DCFEntry<DAccountSnapshot> entry = entries.get(i);
+            DCFEntry<DClientSnapshot> entry = entries.get(i);
             Field field = snapshotToString(entry.entry());
             embed.addField(field);
             if (i % 2 == 0)
@@ -72,7 +72,7 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DAcc
             .build();
     }
 
-    private Field snapshotToString(DAccountSnapshot snapshot) {
+    private Field snapshotToString(DClientSnapshot snapshot) {
         String date = AmbrosiaEmoji.DATE.spaced() + formatDate(snapshot.getDate());
         AccountEventType event = snapshot.getEventType();
         AmbrosiaEmoji eventEmoji = event.getEmoji();

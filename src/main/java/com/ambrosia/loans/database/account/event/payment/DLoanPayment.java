@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
+import io.ebean.annotation.Index;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -31,6 +32,7 @@ public class DLoanPayment extends Model implements Commentable {
     private UUID id;
     @ManyToOne
     private DLoan loan;
+    @Index
     @Column(nullable = false)
     private Timestamp date;
     @Column

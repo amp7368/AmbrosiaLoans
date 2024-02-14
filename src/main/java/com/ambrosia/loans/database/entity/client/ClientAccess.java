@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.entity.client;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
@@ -23,13 +23,13 @@ import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
-    private DAccountSnapshot newSnapshot(Instant timestamp,
+    private DClientSnapshot newSnapshot(Instant timestamp,
         long newInvestBalance, long newLoanBalance, long interest,
         AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
         client.setBalance(newInvestBalance, newLoanBalance, timestamp);
 
-        DAccountSnapshot snapshot = new DAccountSnapshot(client, timestamp,
+        DClientSnapshot snapshot = new DClientSnapshot(client, timestamp,
             newInvestBalance, newLoanBalance, interest,
             eventType);
         client.addAccountSnapshot(snapshot);
@@ -74,15 +74,15 @@ public interface ClientAccess {
         return discord != null && discord == user.getIdLong();
     }
 
-    default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
+    default DClientSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
         try (Transaction transaction = DB.beginTransaction()) {
-            DAccountSnapshot snapshot = updateBalance(delta, timestamp, eventType, transaction);
+            DClientSnapshot snapshot = updateBalance(delta, timestamp, eventType, transaction);
             transaction.commit();
             return snapshot;
         }
     }
 
-    default DAccountSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
+    default DClientSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
@@ -97,7 +97,7 @@ public interface ClientAccess {
         if (eventType.isLoanLike()) newLoanBalance += delta;
         else newInvestBalance += delta;
 
-        DAccountSnapshot snapshot = newSnapshot(timestamp, newInvestBalance, newLoanBalance, delta, eventType, transaction);
+        DClientSnapshot snapshot = newSnapshot(timestamp, newInvestBalance, newLoanBalance, delta, eventType, transaction);
         client.save(transaction);
 
         // mark past loans as paid
@@ -122,7 +122,7 @@ public interface ClientAccess {
         return gui;
     }
 
-    default List<DAccountSnapshot> getAccountSnapshots(Predicate<AccountEventType> test) {
+    default List<DClientSnapshot> getAccountSnapshots(Predicate<AccountEventType> test) {
         return getEntity().getAccountSnapshots()
             .stream()
             .filter(snap -> test.test(snap.getEventType()))

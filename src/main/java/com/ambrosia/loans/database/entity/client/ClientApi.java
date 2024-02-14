@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import io.ebean.CacheMode;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.util.List;
@@ -37,6 +38,9 @@ public interface ClientApi {
         static DClient findByDiscord(long discordId) {
             return new QDClient().where()
                 .discord.id.eq(discordId)
+                .setUseCache(true)
+                .setBeanCacheMode(CacheMode.ON)
+                .setReadOnly(false)
                 .findOne();
         }
 
@@ -52,6 +56,12 @@ public interface ClientApi {
                 .findList();
         }
 
+        static List<DClient> findAllReadOnly() {
+            return new QDClient()
+                .setUseQueryCache(true)
+                .setReadOnly(true)
+                .findList();
+        }
     }
 
     interface ClientAlterApi {

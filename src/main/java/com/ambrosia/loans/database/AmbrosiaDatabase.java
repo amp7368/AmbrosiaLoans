@@ -4,7 +4,7 @@ import apple.lib.ebean.database.AppleEbeanDatabase;
 import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
 import apple.lib.ebean.database.config.AppleEbeanPostgresConfig;
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
@@ -24,6 +24,10 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DCheckInMessage;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.version.DApiVersion;
+import io.ebean.config.AutoTuneConfig;
+import io.ebean.config.AutoTuneMode;
+import io.ebean.config.DatabaseConfig;
+import io.ebean.datasource.DataSourceConfig;
 import java.util.Collection;
 import java.util.List;
 
@@ -50,7 +54,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.add(DComment.class);
 
         // simulation
-        entities.add(DAccountSnapshot.class);
+        entities.add(DClientSnapshot.class);
 
         // misc
         entities.add(DApiVersion.class);
@@ -70,6 +74,16 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected AppleEbeanDatabaseConfig getConfig() {
         return AmbrosiaDatabaseConfig.get();
+    }
+
+    @Override
+    protected DatabaseConfig configureDatabase(DataSourceConfig dataSourceConfig) {
+        DatabaseConfig databaseConfig = super.configureDatabase(dataSourceConfig);
+        AutoTuneConfig autoTune = databaseConfig.getAutoTuneConfig();
+        autoTune.setProfiling(true);
+        autoTune.setQueryTuning(true);
+        autoTune.setMode(AutoTuneMode.DEFAULT_ON);
+        return databaseConfig;
     }
 
     @Override

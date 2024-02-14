@@ -25,7 +25,7 @@ public class AlterLoanRate extends AlterLoan<Double> {
     }
 
     @Override
-    public boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
+    protected boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
         if (dependency instanceof AlterLoanRate depend) {
             // am I after or on dependency date?
             return !depend.effectiveDate.isBefore(this.effectiveDate);

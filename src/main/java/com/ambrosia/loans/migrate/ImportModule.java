@@ -85,7 +85,7 @@ public class ImportModule extends AppleModule {
         if (shouldReset()) ExampleData.resetData();
 
         ImportRawData rawData = ImportRawData.loadData();
-        List<DClient> clients = toDBClients(rawData);
+        toDBClients(rawData);
 
         List<ImportedLoan> loans = toDBLoans(rawData);
         List<DLoan> loansDB = loans.stream().map(ImportedLoan::toDB).toList();

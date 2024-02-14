@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.system.service;
 
 import com.ambrosia.loans.Bank;
-import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.query.QDClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
@@ -165,7 +165,7 @@ public class RunBankSimulation {
     private static void resetSimulationFromDate(Instant fromDateInstant, SimulationOptions options) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
 
-        new QDAccountSnapshot().where()
+        new QDClientSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
         new QDBankSnapshot().where()

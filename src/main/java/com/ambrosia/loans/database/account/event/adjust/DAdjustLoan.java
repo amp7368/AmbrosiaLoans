@@ -32,6 +32,7 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
     protected UUID id;
     @Column(nullable = false)
     protected DStaffConductor conductor;
+    @Index
     @Column(nullable = false)
     protected Timestamp date;
     @Index

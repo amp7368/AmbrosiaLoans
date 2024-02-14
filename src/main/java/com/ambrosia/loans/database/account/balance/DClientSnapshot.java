@@ -18,10 +18,10 @@ import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "client_snapshot")
-public class DAccountSnapshot extends Model implements Comparable<DAccountSnapshot> {
+public class DClientSnapshot extends Model implements Comparable<DClientSnapshot> {
 
-    private static final Comparator<DAccountSnapshot> COMPARATOR = Comparator.comparing(DAccountSnapshot::getDate)
-        .thenComparing(DAccountSnapshot::getEventType, AccountEventType.ORDER);
+    private static final Comparator<DClientSnapshot> COMPARATOR = Comparator.comparing(DClientSnapshot::getDate)
+        .thenComparing(DClientSnapshot::getEventType, AccountEventType.ORDER);
     @Id
     private UUID id;
     @ManyToOne(optional = false)
@@ -31,16 +31,18 @@ public class DAccountSnapshot extends Model implements Comparable<DAccountSnapsh
     private Timestamp date;
     @Column(nullable = false)
     private long investDelta;
+    @Index
     @Column(nullable = false)
     private long investBalance;
     @Column(nullable = false)
     private long loanDelta;
+    @Index
     @Column(nullable = false)
     private long loanBalance;
     @Column(nullable = false)
     private AccountEventType event;
 
-    public DAccountSnapshot(DClient client, Instant date, long investBalance, long loanBalance, long delta,
+    public DClientSnapshot(DClient client, Instant date, long investBalance, long loanBalance, long delta,
         AccountEventType event) {
         this.date = Timestamp.from(date);
         this.client = client;
@@ -72,7 +74,7 @@ public class DAccountSnapshot extends Model implements Comparable<DAccountSnapsh
     }
 
     @Override
-    public int compareTo(@NotNull DAccountSnapshot o) {
+    public int compareTo(@NotNull DClientSnapshot o) {
         return COMPARATOR.compare(this, o);
     }
 }

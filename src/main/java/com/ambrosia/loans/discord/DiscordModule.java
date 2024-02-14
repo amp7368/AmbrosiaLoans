@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.alter.undo.ARedoCommand;
 import com.ambrosia.loans.discord.command.staff.alter.undo.AUndoCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
@@ -105,7 +106,7 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());
         // employee alter commands
-        commands.addCommand(new AUndoCommand());
+        commands.addCommand(new AUndoCommand(), new ARedoCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),

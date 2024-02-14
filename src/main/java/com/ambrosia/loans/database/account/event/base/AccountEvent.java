@@ -26,6 +26,7 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
     protected DClient client;
     @Column(nullable = false)
     protected DStaffConductor conductor;
+    @Index
     @Column(nullable = false)
     protected Timestamp date;
     @Index

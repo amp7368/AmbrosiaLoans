@@ -21,6 +21,7 @@ import io.ebean.Model;
 import io.ebean.Transaction;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.Index;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -59,8 +60,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     private List<DCollateral> collateral;
     @Column
     private long initialAmount; // positive
+    @Index
     @Column(nullable = false)
     private Timestamp startDate;
+    @Index
     @Column
     private Timestamp endDate;
     @Column(nullable = false)

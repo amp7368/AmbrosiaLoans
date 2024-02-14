@@ -5,30 +5,45 @@ import com.ambrosia.loans.database.alter.base.AlterDBCreate;
 import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
 import com.ambrosia.loans.database.alter.db.DAlterUndoHistory;
 import com.ambrosia.loans.database.alter.db.query.QDAlterChangeRecord;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import io.ebean.DB;
 import io.ebean.Transaction;
-import java.time.Instant;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public interface AlterRecordApi {
 
+    @Nullable
     static DAlterUndoHistory undo(DStaffConductor conductor, DAlterChangeRecord record) {
+        return apply(conductor, record, false);
+    }
+
+    @Nullable
+    static DAlterUndoHistory redo(DStaffConductor conductor, DAlterChangeRecord record) {
+        return apply(conductor, record, true);
+    }
+
+    @Nullable
+    private static DAlterUndoHistory apply(DStaffConductor conductor, DAlterChangeRecord record, boolean applied) {
         try (Transaction transaction = DB.beginTransaction()) {
-            DAlterUndoHistory history = undo(conductor, record, transaction);
+            DAlterUndoHistory history = apply(conductor, record, applied, transaction);
             transaction.commit();
+            record.refresh();
             return history;
         }
     }
 
-    static DAlterUndoHistory undo(DStaffConductor conductor, DAlterChangeRecord record, Transaction transaction) {
-        if (!record.isApplied()) return null;
+    @Nullable
+    private static DAlterUndoHistory apply(DStaffConductor conductor, DAlterChangeRecord record, boolean applied,
+        Transaction transaction) {
+        if (record.isApplied() == applied) return null;
 
-        record.getChangeObj().undo(transaction);
+        AlterDBChange<?, ?> obj = record.getChangeObj();
+        if (applied) obj.redo(transaction);
+        else obj.undo(transaction);
 
-        DAlterUndoHistory history = new DAlterUndoHistory(conductor, record, false);
-        record.setApplied(false);
+        DAlterUndoHistory history = new DAlterUndoHistory(conductor, record, applied);
+        record.setApplied(applied);
         record.addHistory(history);
         record.save(transaction);
         history.save(transaction);
@@ -37,20 +52,25 @@ public interface AlterRecordApi {
 
     interface AlterQueryApi {
 
-        static List<DAlterChangeRecord> findAppliedChangesOnObjAfter(DAlterChangeRecord alter) {
-            Instant date = alter.getEventDate();
+        static List<DAlterChangeRecord> findUnAppliedChangesBefore(DAlterChangeRecord alter) {
             AlterDBChange<?, ?> alterObj = alter.getChangeObj();
-            return findAppliedChangesOnObjAfter(alter.getEntityId(), alter.getAlterType())
-                .stream()
+            return findChangesOnObj(alter, false).stream()
+                .filter(o -> alterObj.isDependent(o.getChangeObj()))
+                .toList();
+        }
+
+        static List<DAlterChangeRecord> findAppliedChangesOnObjAfter(DAlterChangeRecord alter) {
+            AlterDBChange<?, ?> alterObj = alter.getChangeObj();
+            return findChangesOnObj(alter, true).stream()
                 .filter(o -> o.getChangeObj().isDependent(alterObj))
                 .toList();
         }
 
-        private static List<DAlterChangeRecord> findAppliedChangesOnObjAfter(long entityId, AlterRecordType type) {
+        private static List<DAlterChangeRecord> findChangesOnObj(DAlterChangeRecord alter, boolean filterApplied) {
             return new QDAlterChangeRecord().where()
-                .entityId.eq(entityId)
-                .type.eq(type)
-                .applied.isTrue()
+                .entityId.eq(alter.getEntityId())
+                .type.eq(alter.getAlterType())
+                .applied.eq(filterApplied)
                 .orderBy().eventDate.asc()
                 .findList();
         }
@@ -60,8 +80,6 @@ public interface AlterRecordApi {
                 .where().id.eq(id)
                 .findOne();
         }
-
-
     }
 
     interface AlterCreateApi {

@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.player.profile.page;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.discord.DiscordModule;
@@ -44,7 +44,7 @@ public class ProfileInvestPage extends ProfilePage {
     }
 
     public void recentProfits(EmbedBuilder embed) {
-        List<DAccountSnapshot> profits = new ArrayList<>(getClient().getAccountSnapshots(AccountEventType::isProfit));
+        List<DClientSnapshot> profits = new ArrayList<>(getClient().getAccountSnapshots(AccountEventType::isProfit));
         Collections.reverse(profits);
 
         StringBuilder desc = embed.getDescriptionBuilder();
@@ -54,7 +54,7 @@ public class ProfileInvestPage extends ProfilePage {
         int monthCount = 0;
         Month month = null;
         Emeralds profitsDelta = Emeralds.zero();
-        for (DAccountSnapshot profit : profits) {
+        for (DClientSnapshot profit : profits) {
             Month profitMonth = profit.getDate().atZone(DiscordModule.TIME_ZONE).getMonth();
             if (month == null) {
                 month = profitMonth;
@@ -91,7 +91,7 @@ public class ProfileInvestPage extends ProfilePage {
         Emeralds totalProfits = getClient()
             .getAccountSnapshots(AccountEventType::isProfit)
             .stream()
-            .map(DAccountSnapshot::getDelta)
+            .map(DClientSnapshot::getDelta)
             .reduce(Emeralds::add)
             .orElse(Emeralds.zero());
         String profitsMsg = "### Total Profits Earned\n%s %s\n".formatted(AmbrosiaEmoji.PROFITS, totalProfits);

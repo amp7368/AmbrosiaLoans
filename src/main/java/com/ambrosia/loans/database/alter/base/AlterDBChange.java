@@ -41,7 +41,7 @@ public abstract class AlterDBChange<Entity, T> extends AlterDB<Entity> {
         return thisIsAfter && isDependentInternal(dependency);
     }
 
-    public boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
+    protected boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
         return false;
     }
 }

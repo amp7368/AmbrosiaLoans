@@ -52,13 +52,7 @@ public interface LoanAccess {
             }
         }
 
-        newSections.removeIf(section -> {
-            if (section.getEndDate() != null && section.getTotalDuration().isZero()) {
-                System.out.println(section.getTotalDuration());
-                return true;
-            }
-            return false;
-        });
+        newSections.removeIf(section -> section.getEndDate() != null && section.getTotalDuration().isZero());
         fixDuplicateRates(newSections);
 
         oldSections.stream()
@@ -79,7 +73,6 @@ public interface LoanAccess {
         for (Iterator<DLoanSection> iterator = sections.iterator(); iterator.hasNext(); ) {
             DLoanSection section = iterator.next();
             if (lastSection != null && lastSection.getRate() == section.getRate()) {
-                System.out.println(lastSection.getRate() + " " + section.getRate());
                 lastSection.setEndDate(section.getEndDate());
                 iterator.remove();
                 changesMade = true;
