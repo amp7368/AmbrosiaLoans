@@ -127,7 +127,7 @@ public class ImportedLoan implements LoanBuilder {
             long amount = 30L * Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
-        } else if (this.id == 110) {
+        } else if (this.id == 109) {
             Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("02/04/24"));
             long amount = 2L * Emeralds.STACK + 20 * Emeralds.LIQUID;
             additionalPayment(transaction, date, amount);

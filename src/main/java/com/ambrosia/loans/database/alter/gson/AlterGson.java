@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.alter.gson;
 import apple.utilities.json.gson.GsonBuilderDynamic;
 import com.ambrosia.loans.database.alter.base.AlterDB;
 import com.ambrosia.loans.util.InstantGsonSerializing;
+import com.ambrosia.loans.util.emerald.EmeraldsGsonSerializing;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -23,9 +24,11 @@ public class AlterGson {
                 return Collection.class.isAssignableFrom(aClass);
             }
         });
-        GsonBuilderDynamic gson = InstantGsonSerializing.registerGson(new GsonBuilderDynamic().withBaseBuilder(() -> gsonBuilder));
-        AlterRecordType.register(gson);
+        GsonBuilderDynamic gson = new GsonBuilderDynamic().withBaseBuilder(() -> gsonBuilder);
+        InstantGsonSerializing.registerGson(gson);
+        EmeraldsGsonSerializing.registerGson(gson);
 
+        AlterRecordType.register(gson);
         return gson.create();
     }
 

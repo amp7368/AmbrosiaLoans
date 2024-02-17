@@ -14,6 +14,10 @@ public abstract class AlterDBCreate<Entity> extends AlterDB<Entity> {
         this.entity = gson().toJson(entity);
     }
 
+    @Override
+    public String getEntityTypeName() {
+        return "Client";
+    }
 
     /**
      * Be very careful using this deserialization.

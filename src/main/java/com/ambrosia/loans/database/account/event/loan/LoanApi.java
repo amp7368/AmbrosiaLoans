@@ -1,9 +1,11 @@
 package com.ambrosia.loans.database.account.event.loan;
 
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
@@ -33,13 +35,14 @@ public interface LoanApi {
 
     interface LoanAlterApi {
 
-        static void setRate(DStaffConductor staff, DLoan loan, Double rate, Instant date) {
-            try (Transaction transaction = DB.beginTransaction()) {
-                AlterLoanRate change = new AlterLoanRate(loan, date, rate);
-                AlterCreateApi.change(staff, change, transaction);
-                loan.changeToNewRate(rate, date, transaction);
-                transaction.commit();
-            }
+        static DAlterChangeRecord setRate(DStaffConductor staff, DLoan loan, Double rate, Instant date) {
+            AlterLoanRate change = new AlterLoanRate(loan, date, rate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChangeRecord setInitialAmount(DStaffConductor staff, DLoan loan, Emeralds amount) {
+            AlterLoanInitialAmount change = new AlterLoanInitialAmount(loan, amount);
+            return AlterCreateApi.applyChange(staff, change);
         }
     }
 

@@ -16,7 +16,7 @@ public class DiscordBot {
     }
 
     public static Guild getAmbrosiaServer() {
-        return jda().getGuildById(923749890104885271L);
+        return jda().getGuildById(DiscordConfig.get().mainServer);
     }
 
     public static User getSelfUser() {

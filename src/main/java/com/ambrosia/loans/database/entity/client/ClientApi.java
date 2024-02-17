@@ -67,12 +67,8 @@ public interface ClientApi {
     interface ClientAlterApi {
 
         static void setBlacklisted(DStaffConductor staff, DClient client, boolean blacklisted) {
-            try (Transaction transaction = DB.beginTransaction()) {
-                AlterClientBlacklisted change = new AlterClientBlacklisted(client, blacklisted);
-                AlterCreateApi.change(staff, change, transaction);
-                client.setBlacklisted(blacklisted).save(transaction);
-                transaction.commit();
-            }
+            AlterClientBlacklisted change = new AlterClientBlacklisted(client, blacklisted);
+            AlterCreateApi.applyChange(staff, change);
         }
     }
 

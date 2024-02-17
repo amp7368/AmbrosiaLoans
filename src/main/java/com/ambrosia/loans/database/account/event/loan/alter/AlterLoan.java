@@ -18,4 +18,10 @@ public abstract class AlterLoan<T> extends AlterDBChange<DLoan, T> {
     public DLoan getEntity() {
         return LoanQueryApi.findById(this.getEntityId());
     }
+
+    @Override
+    public String getEntityTypeName() {
+        return "Loan";
+    }
+
 }

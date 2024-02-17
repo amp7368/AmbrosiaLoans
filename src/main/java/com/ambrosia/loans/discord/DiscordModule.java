@@ -9,7 +9,8 @@ import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
-import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestSetCommand;
+import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanSetCommand;
 import com.ambrosia.loans.discord.command.staff.alter.undo.ARedoCommand;
 import com.ambrosia.loans.discord.command.staff.alter.undo.AUndoCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
@@ -60,8 +61,8 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public List<AppleConfigLike> getConfigs() {
-        return List.of(configFolder("Config", configJson(DiscordConfig.class, "Discord.config"),
-            configJson(DiscordPermissions.class, "Permissions.config")));
+        return List.of(configJson(DiscordConfig.class, "DiscordConfig"),
+            configJson(DiscordPermissions.class, "PermissionsConfig"));
     }
 
     @Override
@@ -99,14 +100,15 @@ public class DiscordModule extends AppleModule {
             new AProfileCreateCommand(),
             new ABlacklistCommand());
         // employee alter commands
-        commands.addCommand(new ALoanCommand());
+        commands.addCommand(new ALoanSetCommand());
+        commands.addCommand(new AInvestSetCommand());
+        // employee undo redo
+        commands.addCommand(new AUndoCommand(), new ARedoCommand());
         // employee view commands
         commands.addCommand(new AProfileCommand(), new AHistoryCommand());
         commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());
-        // employee alter commands
-        commands.addCommand(new AUndoCommand(), new ARedoCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),

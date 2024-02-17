@@ -43,7 +43,7 @@ public abstract class AlterDB<Entity> {
     }
 
     @NotNull
-    public String serialize() {
+    public String toJson() {
         return gson().toJson(this);
     }
 
@@ -53,4 +53,5 @@ public abstract class AlterDB<Entity> {
 
     public abstract Entity getEntity();
 
+    public abstract String getEntityTypeName();
 }

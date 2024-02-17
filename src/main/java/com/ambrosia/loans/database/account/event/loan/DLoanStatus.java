@@ -4,10 +4,10 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.annotation.DbEnumValue;
 
 public enum DLoanStatus {
-    ACTIVE(AmbrosiaEmoji.LOAN_ACTIVE),
-    FROZEN(AmbrosiaEmoji.LOAN_FROZEN),
-    PAID(AmbrosiaEmoji.LOAN_PAID),
-    DEFAULTED(AmbrosiaEmoji.LOAN_DEFAULTED);
+    ACTIVE(AmbrosiaEmoji.STATUS_ACTIVE),
+    FROZEN(AmbrosiaEmoji.STATUS_PENDING),
+    PAID(AmbrosiaEmoji.STATUS_COMPLETE),
+    DEFAULTED(AmbrosiaEmoji.STATUS_ERROR);
 
     private final AmbrosiaEmoji emoji;
 

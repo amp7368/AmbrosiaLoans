@@ -26,7 +26,7 @@ public class ProfileOverviewPage extends ProfilePage {
         balance(embed);
 
         String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
-        String minecraftMsg = AmbrosiaEmoji.MINECRAFT.spaced() + Objects.requireNonNullElse(minecraft, "None");
+        String minecraftMsg = AmbrosiaEmoji.CLIENT_MINECRAFT.spaced() + Objects.requireNonNullElse(minecraft, "None");
         embed.addField("Minecraft", minecraftMsg, true);
 
         Optional<DLoan> activeLoan = client.getActiveLoan();

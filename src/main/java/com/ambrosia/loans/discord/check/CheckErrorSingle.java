@@ -29,8 +29,8 @@ public record CheckErrorSingle(String msg, CheckErrorLevel level) {
         if (!includeEmoji) return msg;
 
         AmbrosiaEmoji prefix = switch (level) {
-            case FATAL, ERROR, WARNING -> AmbrosiaEmoji.ERROR;
-            case INFO -> AmbrosiaEmoji.SUCCESS;
+            case FATAL, ERROR, WARNING -> AmbrosiaEmoji.CHECK_ERROR;
+            case INFO -> AmbrosiaEmoji.CHECK_SUCCESS;
         };
         return "- " + prefix.spaced() + msg;
     }

@@ -73,7 +73,7 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DCli
     }
 
     private Field snapshotToString(DClientSnapshot snapshot) {
-        String date = AmbrosiaEmoji.DATE.spaced() + formatDate(snapshot.getDate());
+        String date = AmbrosiaEmoji.ANY_DATE.spaced() + formatDate(snapshot.getDate());
         AccountEventType event = snapshot.getEventType();
         AmbrosiaEmoji eventEmoji = event.getEmoji();
         Emeralds balance = snapshot.getAccountBalance();

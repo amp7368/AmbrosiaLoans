@@ -7,7 +7,7 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
@@ -32,7 +32,7 @@ public class CommandOptionDate extends CommandOptionMulti<String, Instant> {
     }
 
     @Override
-    public Instant getRequired(SlashCommandInteractionEvent event) {
+    public Instant getRequired(CommandInteraction event) {
         AmbrosiaMessage errorMsg = ErrorMessages.dateParseError(getMap1(event), "MM/DD/YY");
         return super.getRequired(event, errorMsg);
     }

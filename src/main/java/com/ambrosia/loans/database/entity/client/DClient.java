@@ -170,6 +170,17 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.minecraft = minecraft;
     }
 
+
+    public ClientDiscordDetails getDiscord() {
+        if (this.discord != null) this.discord.hookUpdate(this);
+        return this.discord;
+    }
+
+    public DClient setDiscord(ClientDiscordDetails discord) {
+        this.discord = discord;
+        return this;
+    }
+
     public DClient addAccountSnapshot(DClientSnapshot snapshot) {
         this.accountSnapshots.add(snapshot);
         return this;
@@ -181,14 +192,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .toList();
     }
 
-    public ClientDiscordDetails getDiscord() {
-        return this.discord;
-    }
-
-    public DClient setDiscord(ClientDiscordDetails discord) {
-        this.discord = discord;
-        return this;
-    }
 
     @Override
     public String getDisplayName() {

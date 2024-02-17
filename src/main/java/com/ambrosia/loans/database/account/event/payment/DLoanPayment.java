@@ -16,7 +16,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,7 +28,7 @@ import javax.persistence.Table;
 public class DLoanPayment extends Model implements Commentable {
 
     @Id
-    private UUID id;
+    private long id;
     @ManyToOne
     private DLoan loan;
     @Index

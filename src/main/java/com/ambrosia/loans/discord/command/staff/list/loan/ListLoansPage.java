@@ -33,21 +33,21 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
     private final StringSelectMenu FILTER_MENU = StringSelectMenu.create("filter")
         .setPlaceholder("Filter")
         .setRequiredRange(1, 1)
-        .addOption("All", "all", "Show all loans", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
-        .addOption("Active", "active", "Show only active loans", AmbrosiaEmoji.LOAN_ACTIVE.getEmoji())
-        .addOption("Paid", "paid", "Show only paid loans", AmbrosiaEmoji.LOAN_PAID.getEmoji())
-        .addOption("Frozen", "frozen", "Show only frozen loans", AmbrosiaEmoji.LOAN_FROZEN.getEmoji())
-        .addOption("Defaulted", "defaulted", "Show only defaulted loans", AmbrosiaEmoji.LOAN_DEFAULTED.getEmoji())
+        .addOption("All", "all", "Show all loans", AmbrosiaEmoji.STATUS_OFFLINE.getEmoji())
+        .addOption("Active", "active", "Show only active loans", AmbrosiaEmoji.STATUS_ACTIVE.getEmoji())
+        .addOption("Paid", "paid", "Show only paid loans", AmbrosiaEmoji.STATUS_COMPLETE.getEmoji())
+        .addOption("Frozen", "frozen", "Show only frozen loans", AmbrosiaEmoji.STATUS_PENDING.getEmoji())
+        .addOption("Defaulted", "defaulted", "Show only defaulted loans", AmbrosiaEmoji.STATUS_ERROR.getEmoji())
         .build();
     private final StringSelectMenu SORT_BY_MENU = StringSelectMenu.create("sort")
         .setPlaceholder("Sort by")
         .setRequiredRange(1, 1)
-        .addOption("Start date", "start_date", "Sort by the start date", AmbrosiaEmoji.DATE.getEmoji())
-        .addOption("End date", "end_date", "Sort by the end date", AmbrosiaEmoji.DATE.getEmoji())
+        .addOption("Start date", "start_date", "Sort by the start date", AmbrosiaEmoji.ANY_DATE.getEmoji())
+        .addOption("End date", "end_date", "Sort by the end date", AmbrosiaEmoji.ANY_DATE.getEmoji())
         .addOption("Rate", "rate", "Sort by the current interest rate", AmbrosiaEmoji.LOAN_RATE.getEmoji())
-        .addOption("Duration", "duration", "Sort by duration", AmbrosiaEmoji.PAYMENT_REMINDER.getEmoji())
+        .addOption("Duration", "duration", "Sort by duration", AmbrosiaEmoji.UNUSED_PAYMENT_REMINDER.getEmoji())
         .addOption("Initial Amount", "initial_amount", "Sort by initial amount", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
-        .addOption("Interest Accumulated", "interest", "Sort by interest accumulated", AmbrosiaEmoji.PROFITS.getEmoji())
+        .addOption("Interest Accumulated", "interest", "Sort by interest accumulated", AmbrosiaEmoji.INVESTMENT_PROFITS.getEmoji())
         .build();
 
     private Comparator<? super DLoan> comparator = COMPARE_START_DATE;
@@ -138,9 +138,9 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         AmbrosiaEmoji statusEmoji = loan.getStatus().getEmoji();
         String line1 = "%2d. **%s** %s `%s` %s %s".formatted(index, client, statusEmoji, status, AmbrosiaEmoji.LOAN_RATE,
             formatPercentage(rate));
-        String line2 = AmbrosiaEmoji.ID.spaced() + loan.getId();
+        String line2 = AmbrosiaEmoji.KEY_ID.spaced() + loan.getId();
         String line3 = "%s %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, totalLoan, paid, totalOwed);
-        String line4 = "%s %s - %s".formatted(AmbrosiaEmoji.DATE, startDate, endDate);
+        String line4 = "%s %s - %s".formatted(AmbrosiaEmoji.ANY_DATE, startDate, endDate);
         return String.join("\n", List.of(line1, line2, line3, line4));
     }
 

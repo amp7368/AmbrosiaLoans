@@ -2,10 +2,9 @@ package com.ambrosia.loans.discord.check.rate;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.discord.check.CheckError;
 import com.ambrosia.loans.discord.check.CheckErrorList;
 
-public class CheckRate extends CheckError {
+public class CheckRate {
 
 
     public static void checkAll(CheckErrorList error, double rate) {
@@ -20,10 +19,5 @@ public class CheckRate extends CheckError {
             String msg = "Set rate as %s. Are you sure you want to set it more than 10%%?".formatted(formatPercentage(rate / 100));
             error.addWarning(msg);
         }
-    }
-
-    @Override
-    public String getName() {
-        return "Rate";
     }
 }

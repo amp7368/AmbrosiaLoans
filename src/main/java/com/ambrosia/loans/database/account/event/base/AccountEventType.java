@@ -10,19 +10,20 @@ import java.util.function.Function;
 public enum AccountEventType {
     // in order of transaction
     LOAN(0, AmbrosiaEmoji.LOAN_BALANCE),
-    INTEREST(4, AmbrosiaEmoji.INTEREST),
-    ADJUST_LOAN(8, AmbrosiaEmoji.ERROR),
+    INTEREST(4, AmbrosiaEmoji.LOAN_INTEREST),
+    ADJUST_LOAN(8, AmbrosiaEmoji.CHECK_ERROR),
     PAYMENT(2, AmbrosiaEmoji.LOAN_PAYMENT),
     INVEST(1, AmbrosiaEmoji.INVESTMENT_BALANCE),
-    ADJUST_DOWN(6, AmbrosiaEmoji.ERROR),
-    ADJUST_UP(7, AmbrosiaEmoji.ERROR),
-    PROFIT(5, AmbrosiaEmoji.PROFITS),
-    WITHDRAWAL(3, AmbrosiaEmoji.WITHDRAWAL),
+    ADJUST_DOWN(6, AmbrosiaEmoji.CHECK_ERROR),
+    ADJUST_UP(7, AmbrosiaEmoji.CHECK_ERROR),
+    PROFIT(5, AmbrosiaEmoji.INVESTMENT_PROFITS),
+    WITHDRAWAL(3, AmbrosiaEmoji.ANY_WITHDRAWAL),
     TRADE_GIVE(9, AmbrosiaEmoji.TRADE),
     TRADE_GET(10, AmbrosiaEmoji.TRADE);
 
+    public static final String DEFINITION = "event_type";
     public static final Comparator<? super AccountEventType> ORDER = Comparator.comparing(Function.identity());
-    private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, PAYMENT, ADJUST_LOAN);
+    private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, INTEREST, PAYMENT, ADJUST_LOAN);
     private final int id;
     private final AmbrosiaEmoji emoji;
 
@@ -31,8 +32,8 @@ public enum AccountEventType {
         this.emoji = emoji;
     }
 
-    @DbEnumValue
-    public String getId() {
+    @DbEnumValue(withConstraint = false)
+    public String getDBValue() {
         return name();
     }
 

@@ -341,6 +341,11 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return Emeralds.of(this.initialAmount);
     }
 
+    public DLoan setInitialAmount(Emeralds amount) {
+        this.initialAmount = amount.amount();
+        return this;
+    }
+
     @Override
     public List<DComment> getComments() {
         return this.comments;

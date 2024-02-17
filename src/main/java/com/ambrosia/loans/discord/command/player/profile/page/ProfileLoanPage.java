@@ -52,13 +52,13 @@ public class ProfileLoanPage extends ProfilePage {
         List<String> collateral = loan.getCollateral().stream()
             .map(c -> c.link)
             .toList();
-        String collateralMsg = AmbrosiaEmoji.COLLATERAL.spaced() + String.join("\n", collateral);
+        String collateralMsg = AmbrosiaEmoji.LOAN_COLLATERAL.spaced() + String.join("\n", collateral);
         embed.addField("Collateral", collateralMsg, true);
         String initialAmountMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getInitialAmount();
         embed.addField("Initial Amount", initialAmountMsg, true);
         String currentBalanceMsg = AmbrosiaEmoji.LOAN_BALANCE.spaced() + loan.getTotalOwed();
         embed.addField("Current Balance", currentBalanceMsg, true);
-        String interestMsg = AmbrosiaEmoji.INTEREST.spaced() + loan.getAccumulatedInterest();
+        String interestMsg = AmbrosiaEmoji.LOAN_INTEREST.spaced() + loan.getAccumulatedInterest();
         embed.addField("Total Interest", interestMsg, true);
 
         List<DLoanPayment> payments = loan.getPayments();

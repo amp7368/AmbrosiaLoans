@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.base.command.option;
 
 import java.util.function.Function;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -29,7 +29,7 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
     }
 
     @Override
-    public R getOptional(SlashCommandInteractionEvent event, R fallback) {
+    public R getOptional(CommandInteraction event, R fallback) {
         return event.getOption(name, fallback, this.getOption);
     }
 

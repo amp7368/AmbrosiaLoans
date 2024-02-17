@@ -43,7 +43,7 @@ public class ARedoCommand extends BaseStaffCommand {
             replyError(event, msg);
             return;
         }
-        String msg = "Change %s #%d has been reapplied".formatted(AmbrosiaEmoji.ID, redo.getRecord().getId());
+        String msg = "Change %s #%d has been reapplied".formatted(AmbrosiaEmoji.KEY_ID, redo.getRecord().getId());
         replySuccess(event, msg);
     }
 

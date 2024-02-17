@@ -15,6 +15,11 @@ public abstract class AlterClient<T> extends AlterDBChange<DClient, T> {
     }
 
     @Override
+    public String getEntityTypeName() {
+        return "Client";
+    }
+
+    @Override
     public DClient getEntity() {
         return ClientQueryApi.findById(this.getEntityId());
     }

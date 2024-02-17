@@ -43,7 +43,7 @@ public class DAlterChangeRecord extends Model {
         this.applied = true;
         this.entityId = change.getEntityId();
         this.type = change.getType();
-        this.obj = change.serialize();
+        this.obj = change.toJson();
     }
 
     public long getId() {
@@ -79,5 +79,9 @@ public class DAlterChangeRecord extends Model {
         this.objDeserialized = (AlterDBChange<?, ?>) AlterGson.alterDBFromJson(this.obj);
         this.objDeserialized.init(this);
         return this.objDeserialized;
+    }
+
+    public String getEntityName() {
+        return this.getChangeObj().getEntityTypeName();
     }
 }

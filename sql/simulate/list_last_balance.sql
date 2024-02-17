@@ -1,19 +1,18 @@
-SELECT *
+SELECT (SUM(loan_le) - 95) / 64 total_loaned,
+       SUM(invest_le) / 64      total_invested
 FROM (
      SELECT DISTINCT ON (c.id) c.id,
                                c.minecraft_username,
                                ss.invest_balance / 4096                  invest_le,
+                               ss.loan_balance / 4096                    loan_le,
                                (ss.invest_balance + loan_balance) / 4096 balance_le,
                                ss.date
      FROM client c
               LEFT JOIN client_snapshot ss ON c.id = ss.client_id
      ORDER BY c.id,
-              ss.date DESC) q
-WHERE NOT EXISTS(
-                SELECT 1
-                FROM loan
-                WHERE loan.client_id = q.id)
-ORDER BY q.balance_le;
+              ss.date DESC,
+              event DESC) q;
+
 
 SELECT q1.client_id, q1.event, q1.delta_le, COUNT(q2.delta_le) total_change
 FROM (
@@ -65,22 +64,21 @@ SELECT ROUND((loan_delta + invest_delta) / 4096.0, 2)     delta_le,
        event,
        date
 FROM client_snapshot
-WHERE client_id = 236
+WHERE client_id = 108
 ORDER BY date;
 
 SELECT *
-FROM loan_section
-WHERE loan_id = 139;
+FROM (
+     SELECT DISTINCT ON (c.id) c.id,
+                               c.minecraft_username,
+                               ss.invest_balance / 4096                  invest_le,
+                               ss.loan_balance / 4096                    loan_le,
+                               (ss.invest_balance + loan_balance) / 4096 balance_le,
+                               ss.date
+     FROM client c
+              LEFT JOIN client_snapshot ss ON c.id = ss.client_id
+     ORDER BY c.id,
+              ss.date DESC,
+              event DESC) q
+ORDER BY balance_le;
 
-SELECT *, amount / 4096
-FROM investment
-WHERE event_type = 'ADJUST_UP'
-  AND client_id = 225;
-
-SELECT *
-FROM loan
-WHERE id = 115;
-
-SELECT *
-FROM loan_payment
-WHERE loan_id = 115;

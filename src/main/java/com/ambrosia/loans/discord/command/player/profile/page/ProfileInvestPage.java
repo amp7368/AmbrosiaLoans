@@ -77,13 +77,13 @@ public class ProfileInvestPage extends ProfilePage {
     private String profitsMsg(Month month, Emeralds profitsDelta) {
         String monthDisplay = month.getDisplayName(TextStyle.FULL, Locale.getDefault());
         double profits = profitsDelta.toLiquids();
-        return "%s +%.2fLE %s %s\n".formatted(AmbrosiaEmoji.PROFITS, profits, AmbrosiaEmoji.DATE, monthDisplay);
+        return "%s +%.2fLE %s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_PROFITS, profits, AmbrosiaEmoji.ANY_DATE, monthDisplay);
     }
 
     public void stakePercentage(EmbedBuilder embed) {
         double stakePercentage = InvestQueryApi.getInvestorStake(getClient())
             .multiply(BigDecimal.valueOf(100)).doubleValue();
-        String stakeMsg = "### Investor's Stake\n%s %.3f%%\n".formatted(AmbrosiaEmoji.INVESTOR_STAKE, stakePercentage);
+        String stakeMsg = "### Investor's Stake\n%s %.3f%%\n".formatted(AmbrosiaEmoji.INVESTMENT_STAKE, stakePercentage);
         embed.appendDescription(stakeMsg);
     }
 
@@ -94,7 +94,7 @@ public class ProfileInvestPage extends ProfilePage {
             .map(DClientSnapshot::getDelta)
             .reduce(Emeralds::add)
             .orElse(Emeralds.zero());
-        String profitsMsg = "### Total Profits Earned\n%s %s\n".formatted(AmbrosiaEmoji.PROFITS, totalProfits);
+        String profitsMsg = "### Total Profits Earned\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_PROFITS, totalProfits);
         embed.appendDescription(profitsMsg);
     }
 }

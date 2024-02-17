@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
+import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
@@ -24,14 +25,36 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DCheckInMessage;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.version.DApiVersion;
+import io.ebean.DB;
 import io.ebean.config.AutoTuneConfig;
 import io.ebean.config.AutoTuneMode;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
+import io.ebean.dbmigration.DbMigration;
+import io.ebean.migration.MigrationConfig;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AmbrosiaDatabase extends AppleEbeanDatabase {
+
+    private static final String ACCOUNT_EVENT_ENUM;
+
+    static {
+        String enumValues = Arrays.stream(AccountEventType.values())
+            .map(AccountEventType::getDBValue)
+            .map("'%s'"::formatted)
+            .collect(Collectors.joining(", "));
+        ACCOUNT_EVENT_ENUM = """
+            DO $$ BEGIN
+                CREATE TYPE %s AS ENUM (%s);
+                CREATE CAST (VARCHAR AS EVENT_TYPE) WITH INOUT AS IMPLICIT;
+            EXCEPTION
+                WHEN duplicate_object THEN null;
+            END $$;
+            """.formatted(AccountEventType.DEFINITION, enumValues);
+    }
 
     @Override
     protected void addEntities(List<Class<?>> entities) {
@@ -41,6 +64,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         // staff
         entities.add(DStaffConductor.class);
 
+        entities.add(AccountEventType.class);
         // log
         entities.add(AccountEvent.class);
         entities.addAll(List.of(DLoan.class, DLoanSection.class, DLoanPayment.class, DCollateral.class));
@@ -84,6 +108,11 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         autoTune.setQueryTuning(true);
         autoTune.setMode(AutoTuneMode.DEFAULT_ON);
         return databaseConfig;
+    }
+
+    @Override
+    protected void configureMigration(DbMigration migration, MigrationConfig config) {
+        DB.sqlUpdate(ACCOUNT_EVENT_ENUM).executeNow();
     }
 
     @Override

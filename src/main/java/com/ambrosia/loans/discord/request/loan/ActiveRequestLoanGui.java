@@ -31,7 +31,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     @NotNull
     private Field discounts() {
         String discount = Objects.requireNonNullElse(data.getDiscount(), AmbrosiaMessages.NULL_MSG);
-        String discountMsg = AmbrosiaEmoji.DISCOUNT.spaced(discount);
+        String discountMsg = AmbrosiaEmoji.LOAN_DISCOUNT.spaced(discount);
         return new Field("Discounts", discountMsg, true);
     }
 
@@ -40,14 +40,14 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         String vouch = Optional.ofNullable(data.getVouchClient())
             .map(DClient::getEffectiveName)
             .orElse(AmbrosiaMessages.NULL_MSG);
-        String vouchMsg = AmbrosiaEmoji.ACCOUNT.spaced(vouch);
+        String vouchMsg = AmbrosiaEmoji.CLIENT_ACCOUNT.spaced(vouch);
         return new Field("Reputable Vouch", vouchMsg, true);
     }
 
     @NotNull
     private Field collateral() {
         String collateral = String.join("\n", data.getCollateral());
-        String collateralMsg = AmbrosiaEmoji.COLLATERAL.spaced(collateral);
+        String collateralMsg = AmbrosiaEmoji.LOAN_COLLATERAL.spaced(collateral);
         return new Field("Collateral", collateralMsg, true);
     }
 
@@ -68,7 +68,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @NotNull
     private Field reason() {
-        String reasonMsg = AmbrosiaEmoji.FILTER.spaced(data.getReason());
+        String reasonMsg = AmbrosiaEmoji.LOAN_REASON.spaced(data.getReason());
         return new Field("Reason for Loan", reasonMsg, true);
     }
 
@@ -76,7 +76,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected String clientDescription() {
         if (!this.hasClaimButton()) return null;
         return "You can optionally add %s **Discount Codes** and a %s **Reputable Vouch** to verify your trustworthiness."
-            .formatted(AmbrosiaEmoji.DISCOUNT, AmbrosiaEmoji.ACCOUNT);
+            .formatted(AmbrosiaEmoji.LOAN_DISCOUNT, AmbrosiaEmoji.CLIENT_ACCOUNT);
     }
 
     @Override
@@ -92,8 +92,8 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     @Override
     protected String staffDescription() {
         if (this.hasApproveButton()) return null;
-        return "%sSet the interest rate of the loan before approving this loan!"
-            .formatted(AmbrosiaEmoji.ERROR);
+        return "%sPlease set the interest rate of the loan before approving this loan!"
+            .formatted(AmbrosiaEmoji.CHECK_ERROR);
     }
 
     @Override

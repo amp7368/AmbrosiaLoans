@@ -39,7 +39,7 @@ public class DClientSnapshot extends Model implements Comparable<DClientSnapshot
     @Index
     @Column(nullable = false)
     private long loanBalance;
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "event_type")
     private AccountEventType event;
 
     public DClientSnapshot(DClient client, Instant date, long investBalance, long loanBalance, long delta,

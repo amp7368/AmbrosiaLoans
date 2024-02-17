@@ -87,12 +87,17 @@ public interface AlterRecordApi {
         static void create(AlterDBCreate<?> create, Transaction transaction) {
         }
 
-        static void change(DStaffConductor staff, AlterDBChange<?, ?> change, Transaction transaction) {
+        static DAlterChangeRecord applyChange(DStaffConductor staff, AlterDBChange<?, ?> change) {
             DAlterChangeRecord record = new DAlterChangeRecord(change);
             DAlterUndoHistory history = new DAlterUndoHistory(staff, record, true);
             record.addHistory(history);
-            record.save(transaction);
-            history.save(transaction);
+            try (Transaction transaction = DB.beginTransaction()) {
+                record.save(transaction);
+                history.save(transaction);
+                change.redo(transaction);
+                transaction.commit();
+            }
+            return record;
         }
     }
 }

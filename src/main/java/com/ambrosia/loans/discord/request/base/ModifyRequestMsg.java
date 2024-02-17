@@ -19,9 +19,9 @@ public record ModifyRequestMsg(String msg, boolean error, boolean warning) {
     @Override
     public String toString() {
         AmbrosiaEmoji prefix;
-        if (error) prefix = AmbrosiaEmoji.ERROR;
-        else if (warning) prefix = AmbrosiaEmoji.ERROR;
-        else prefix = AmbrosiaEmoji.SUCCESS;
+        if (error) prefix = AmbrosiaEmoji.CHECK_ERROR;
+        else if (warning) prefix = AmbrosiaEmoji.CHECK_ERROR;
+        else prefix = AmbrosiaEmoji.CHECK_SUCCESS;
         return "- " + prefix.spaced() + msg;
     }
 }

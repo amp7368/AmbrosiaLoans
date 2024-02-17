@@ -33,3 +33,5 @@ ORDER BY client.minecraft_username, date;
 
 SELECT *
 FROM client;
+
+

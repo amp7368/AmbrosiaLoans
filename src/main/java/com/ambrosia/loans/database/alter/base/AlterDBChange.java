@@ -35,7 +35,7 @@ public abstract class AlterDBChange<Entity, T> extends AlterDB<Entity> {
     }
 
     protected abstract void apply(Entity entity, T value, Transaction transaction);
-
+    
     public boolean isDependent(AlterDBChange<?, ?> dependency) {
         boolean thisIsAfter = dependency.getAppliedDate().isBefore(this.getAppliedDate());
         return thisIsAfter && isDependentInternal(dependency);
@@ -44,4 +44,5 @@ public abstract class AlterDBChange<Entity, T> extends AlterDB<Entity> {
     protected boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
         return false;
     }
+
 }

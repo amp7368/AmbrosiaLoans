@@ -4,6 +4,7 @@ public class DiscordConfig {
 
     private static DiscordConfig instance;
     public String token = "token";
+    public long mainServer = 923749890104885271L;
     public long logChannel = 0;
     public long requestChannel = 0;
 

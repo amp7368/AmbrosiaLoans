@@ -67,7 +67,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         AmbrosiaEmoji statusEmoji = status.getEmoji();
         embed.appendDescription("### Loan [#%d] - %s %s\n".formatted(loan.getId(), statusEmoji, status));
 
-        embed.appendDescription("**%s Start:** %s\n".formatted(AmbrosiaEmoji.DATE, formatDate(loan.getStartDate())));
+        embed.appendDescription("**%s Start:** %s\n".formatted(AmbrosiaEmoji.ANY_DATE, formatDate(loan.getStartDate())));
         String rateMsg = formatPercentage(loan.getLastSection().getRate());
         embed.appendDescription("**%s Current Rate:** %s\n".formatted(AmbrosiaEmoji.LOAN_RATE, rateMsg));
         embed.appendDescription("**%s Initial Amount:** %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()));
@@ -75,7 +75,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
             .map(c -> c.link)
             .collect(Collectors.joining(", "));
         String collateralMsg = collateral.isBlank() ? "None" : collateral;
-        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.COLLATERAL, collateralMsg));
+        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.LOAN_COLLATERAL, collateralMsg));
 
         List<LoanEventMsg> history = new ArrayList<>();
         findChangeRateEvents(loan, history);

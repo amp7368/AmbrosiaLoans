@@ -63,7 +63,6 @@ public interface LoanAccess {
         entity.setSections(newSections);
         entity.checkIsFrozen(false);
         entity.save(transaction);
-
     }
 
     private void fixDuplicateRates(List<DLoanSection> sections) {

@@ -27,7 +27,7 @@ public class AmbrosiaMessages {
 
     public static String formatDate(Instant date, boolean emoji) {
         String dateFormatted = DATE_FORMATTER.format(date);
-        if (emoji) return AmbrosiaEmoji.DATE + " " + dateFormatted;
+        if (emoji) return AmbrosiaEmoji.ANY_DATE + " " + dateFormatted;
         return dateFormatted;
     }
 

@@ -40,8 +40,12 @@ public record CheckErrorList(List<CheckErrorSingle> errors) {
         return errors.stream().anyMatch(error -> error.level().isError());
     }
 
-    private boolean hasWarning() {
+    public boolean hasWarning() {
         return errors.stream().anyMatch(error -> error.level().isWarning());
+    }
+
+    public boolean hasMessage() {
+        return !this.errors.isEmpty();
     }
 
     public void reply(CommandInteraction event) {
@@ -49,11 +53,7 @@ public record CheckErrorList(List<CheckErrorSingle> errors) {
     }
 
     public void reply(CommandInteraction event, String desc) {
-        String msg = errors.stream()
-            .map(CheckErrorSingle::toString)
-            .collect(Collectors.joining("\n"));
-
-        if (desc != null) msg = desc + "\n" + msg;
+        String msg = desc == null ? toString() : desc + "\n" + this;
 
         if (hasError()) {
             SendMessage.get().replyError(event, msg);
@@ -62,7 +62,16 @@ public record CheckErrorList(List<CheckErrorSingle> errors) {
         } else {
             SendMessage.get().replySuccess(event, msg);
         }
-
     }
 
+    @Override
+    public String toString() {
+        return errors.stream()
+            .map(CheckErrorSingle::toString)
+            .collect(Collectors.joining("\n"));
+    }
+
+    public void addAll(CheckErrorList list) {
+        this.errors.addAll(list.errors);
+    }
 }

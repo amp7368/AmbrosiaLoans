@@ -16,6 +16,7 @@ import com.ambrosia.loans.database.account.event.loan.collateral.query.QDCollate
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSection;
 import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi;
 import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.alter.db.query.QDAlterChangeRecord;
 import com.ambrosia.loans.database.alter.db.query.QDAlterUndoHistory;
@@ -162,8 +163,8 @@ public class ExampleData {
 
     private static void withdrawals() {
         Instant bitAgo = Instant.now().minus(30, DAYS);
-        InvestApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19));
-        InvestApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256));
+        WithdrawalApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19), true);
+        WithdrawalApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256), true);
     }
 
     private static void insertInvestments() {

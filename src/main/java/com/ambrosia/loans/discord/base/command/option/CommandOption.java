@@ -1,7 +1,11 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi.WithdrawalQueryApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
 import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
@@ -14,7 +18,7 @@ import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Instant;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -43,6 +47,7 @@ public interface CommandOption<R> {
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
@@ -58,10 +63,10 @@ public interface CommandOption<R> {
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
-    CommandOptionMulti<Long, DLoan> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
-        OptionMapping::getAsLong, LoanQueryApi::findById);
-    CommandOptionMulti<Long, DLoan> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
-        OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DWithdrawal> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
+        OptionMapping::getAsLong, WithdrawalQueryApi::findById);
+    CommandOptionMulti<Long, DInvestment> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
+        OptionMapping::getAsLong, InvestQueryApi::findById);
 
 
     // undo/redo
@@ -97,17 +102,17 @@ public interface CommandOption<R> {
         return new CommandOptionBasic<>(name, description, type, getOption);
     }
 
-    R getOptional(SlashCommandInteractionEvent event, R fallback);
+    R getOptional(CommandInteraction event, R fallback);
 
-    default R getOptional(SlashCommandInteractionEvent event) {
+    default R getOptional(CommandInteraction event) {
         return this.getOptional(event, null);
     }
 
-    default R getRequired(SlashCommandInteractionEvent event) {
+    default R getRequired(CommandInteraction event) {
         return getRequired(event, ErrorMessages.missingOption(getOptionName()));
     }
 
-    default R getRequired(SlashCommandInteractionEvent event, AmbrosiaMessage errorMsg) {
+    default R getRequired(CommandInteraction event, AmbrosiaMessage errorMsg) {
         R result = getOptional(event);
         if (result == null) errorMsg.replyError(event);
         return result;
@@ -126,4 +131,5 @@ public interface CommandOption<R> {
     void addOption(SubcommandData command, boolean required);
 
     void addOption(SlashCommandData command, boolean required);
+
 }
