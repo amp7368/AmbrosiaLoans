@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.check.rate;
+package com.ambrosia.loans.discord.check.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 

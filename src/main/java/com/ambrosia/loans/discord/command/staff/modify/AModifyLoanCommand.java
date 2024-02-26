@@ -70,7 +70,7 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
         SubcommandData command = new SubcommandData("loan", "[Staff] Modify a loan request");
         CommandOptionList.of(
             List.of(CommandOption.REQUEST),
-            List.of(CommandOption.RATE, CommandOption.VOUCH, CommandOption.LOAN_START_DATE)
+            List.of(CommandOption.RATE, CommandOption.LOAN_VOUCH, CommandOption.LOAN_START_DATE)
         ).addToCommand(command);
 
         return command;

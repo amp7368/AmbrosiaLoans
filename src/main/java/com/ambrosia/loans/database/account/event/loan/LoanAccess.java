@@ -110,7 +110,7 @@ public interface LoanAccess {
         payment.refresh();
         loan.refresh();
         loan.getClient().refresh();
-        RunBankSimulation.simulate(payment.getDate());
+        RunBankSimulation.simulateAsync(payment.getDate());
         return payment;
     }
 

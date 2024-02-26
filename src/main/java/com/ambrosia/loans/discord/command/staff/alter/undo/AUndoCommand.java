@@ -30,10 +30,11 @@ public class AUndoCommand extends BaseStaffCommand {
         }
         List<DAlterChangeRecord> changesSince = AlterQueryApi.findAppliedChangesOnObjAfter(record);
         if (!changesSince.isEmpty()) {
-            String changesSinceMessage = changesSince.stream().map(change -> "- Change #" + change.getId())
+            String changesSinceMessage = changesSince.stream()
+                .map(change -> "- Change #" + change.getId())
                 .collect(Collectors.joining("\n"));
-            String msg = "There have been changes since %s. Undo the following changes first:\n%s".formatted(
-                formatDate(record.getEventDate()), changesSinceMessage);
+            String msg = "There have been changes since %s. Undo the following changes first:\n%s"
+                .formatted(formatDate(record.getEventDate()), changesSinceMessage);
             replyError(event, msg);
             return;
         }

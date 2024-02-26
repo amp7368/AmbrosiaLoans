@@ -1,7 +1,9 @@
 package com.ambrosia.loans.database.account.event.loan;
 
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanDefaulted;
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanRate;
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanStartDate;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
@@ -44,6 +46,16 @@ public interface LoanApi {
             AlterLoanInitialAmount change = new AlterLoanInitialAmount(loan, amount);
             return AlterCreateApi.applyChange(staff, change);
         }
+
+        static DAlterChangeRecord setStartDate(DStaffConductor staff, DLoan loan, Instant startDate) {
+            AlterLoanStartDate change = new AlterLoanStartDate(loan, startDate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChangeRecord setDefaulted(DStaffConductor staff, DLoan loan, Instant date) {
+            AlterLoanDefaulted change = new AlterLoanDefaulted(loan, true, date);
+            return AlterCreateApi.applyChange(staff, change);
+        }
     }
 
     interface LoanCreateApi {
@@ -73,7 +85,7 @@ public interface LoanApi {
             }
             loan.refresh();
             client.refresh();
-            RunBankSimulation.simulate(loan.getStartDate());
+            RunBankSimulation.simulateAsync(loan.getStartDate());
             return loan;
         }
 

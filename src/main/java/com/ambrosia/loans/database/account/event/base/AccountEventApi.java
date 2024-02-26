@@ -46,7 +46,7 @@ public interface AccountEventApi {
         event.refresh();
         event.getClient().refresh();
 
-        RunBankSimulation.simulate(event.getDate());
+        RunBankSimulation.simulateAsync(event.getDate());
         return event;
     }
 }

@@ -40,7 +40,9 @@ public interface CommandOption<R> {
     // common
     CommandOptionMulti<String, Instant> DATE = new CommandOptionDate();
     CommandOptionMulti<String, Instant> LOAN_START_DATE = new CommandOptionDate("start_date",
-        "The start date (MM/DD/YY) for the loan. (Defaults to approval date if not specified)");
+        "The start date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
+    CommandOptionMulti<String, Instant> LOAN_END_DATE = new CommandOptionDate("end_date",
+        "The end date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
 
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
@@ -51,13 +53,15 @@ public interface CommandOption<R> {
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
-    // loan request
-    CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
+    // loan
+    CommandOptionMulti<String, DClient> LOAN_VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
         OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
     CommandOption<Double> RATE = basic("rate", "The interest rate expressed as a percent. (Enter 5.2 for 5.2%)", OptionType.NUMBER,
         OptionMapping::getAsDouble);
-    CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
+    CommandOption<String> LOAN_DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
+    CommandOption<Boolean> LOAN_DEFAULTED = basic("defaulted", "True if the loan has been defaulted", OptionType.BOOLEAN,
+        OptionMapping::getAsBoolean);
 
 
     // staff query
@@ -76,7 +80,6 @@ public interface CommandOption<R> {
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
-
 
     @NotNull
     static CommandOption<Boolean> full(String verb) {
@@ -108,8 +111,12 @@ public interface CommandOption<R> {
         return this.getOptional(event, null);
     }
 
+    default AmbrosiaMessage getErrorMessage(CommandInteraction event) {
+        return ErrorMessages.missingOption(getOptionName());
+    }
+
     default R getRequired(CommandInteraction event) {
-        return getRequired(event, ErrorMessages.missingOption(getOptionName()));
+        return getRequired(event, getErrorMessage(event));
     }
 
     default R getRequired(CommandInteraction event, AmbrosiaMessage errorMsg) {

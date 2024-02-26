@@ -1,11 +1,11 @@
-SELECT TO_CHAR(profits.ptimespan, '''YYMM') period,
+SELECT TO_CHAR(loans.date, 'MM/DD/YY')          period,
        loans.active_loans,
        total_investors,
-       CONCAT(rate_of_return, '%')          returns,
+       CONCAT(COALESCE(rate_of_return, 0), '%') returns,
        CONCAT(ROUND(AVG(rate_of_return)
                     OVER (ORDER BY ptimespan ROWS BETWEEN 11 PRECEDING AND CURRENT ROW),
-                    2), '%')                returns_moving_avg,
-       total_profits
+                    2), '%')                    returns_moving_avg,
+       COALESCE(profits.total_profits, 0)       total_profits
 FROM (
      SELECT ROUND(SUM(delta) / 4096 / 64, 2)          total_profits,
             ROUND(MIN(balance) / 4096 / 64, 2)        total_investors,
@@ -41,7 +41,7 @@ FROM (
               GROUP BY date
               ORDER BY date DESC) loans
               ON profits.ptimespan = loans.date
-ORDER BY profits.ptimespan DESC;
+ORDER BY loans.date DESC;
 
 SELECT SUM(invest_delta)                                                             delta,
        MIN(invest_balance) - MIN(invest_delta)                                       balance,

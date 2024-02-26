@@ -32,8 +32,7 @@ public class CommandOptionDate extends CommandOptionMulti<String, Instant> {
     }
 
     @Override
-    public Instant getRequired(CommandInteraction event) {
-        AmbrosiaMessage errorMsg = ErrorMessages.dateParseError(getMap1(event), "MM/DD/YY");
-        return super.getRequired(event, errorMsg);
+    public AmbrosiaMessage getErrorMessage(CommandInteraction event) {
+        return ErrorMessages.dateParseError(getMap1(event), "MM/DD/YY");
     }
 }

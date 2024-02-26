@@ -136,9 +136,8 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         else endDate = DiscordModule.SIMPLE_DATE_FORMATTER.format(loan.getEndDate());
         DLoanStatus status = loan.getStatus();
         AmbrosiaEmoji statusEmoji = loan.getStatus().getEmoji();
-        String line1 = "%2d. **%s** %s `%s` %s %s".formatted(index, client, statusEmoji, status, AmbrosiaEmoji.LOAN_RATE,
-            formatPercentage(rate));
-        String line2 = AmbrosiaEmoji.KEY_ID.spaced() + loan.getId();
+        String line1 = "%2d. **%s** %s `%s` %s %s".formatted(index, client, statusEmoji, status, AmbrosiaEmoji.KEY_ID, loan.getId());
+        String line2 = AmbrosiaEmoji.LOAN_RATE.spaced() + formatPercentage(rate);
         String line3 = "%s %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, totalLoan, paid, totalOwed);
         String line4 = "%s %s - %s".formatted(AmbrosiaEmoji.ANY_DATE, startDate, endDate);
         return String.join("\n", List.of(line1, line2, line3, line4));

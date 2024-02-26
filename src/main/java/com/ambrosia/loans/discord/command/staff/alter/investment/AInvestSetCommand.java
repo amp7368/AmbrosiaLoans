@@ -15,11 +15,11 @@ public class AInvestSetCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new InvestSetAmountCommand(), new InvestSetDateCommand());
+        return List.of(new InvestAlterCommand());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("aset_investment", "Modify anything about an investment");
+        return Commands.slash("ainvestment", "Modify anything about an investment");
     }
 }

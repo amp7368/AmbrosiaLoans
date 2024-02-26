@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class ALoanSetCommand extends BaseCommand {
+public class ALoanCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -15,11 +15,11 @@ public class ALoanSetCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new LoanSetRateCommand(), new LoanSetInitialCommand());
+        return List.of(new LoanSetRateCommand(), new LoanAlterCommand(), new LoanDefaultCommand());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("aset_loan", "Modify anything about a loan");
+        return Commands.slash("aloan", "Modify anything about a loan");
     }
 }

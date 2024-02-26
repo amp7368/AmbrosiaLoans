@@ -15,9 +15,9 @@ public interface BaseModifyLoanRequest extends BaseModifyRequest {
     }
 
     default ModifyRequestMsg setVouch(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
-        String vouch = CommandOption.VOUCH.getMap1(event);
+        String vouch = CommandOption.LOAN_VOUCH.getMap1(event);
         if (vouch == null) return null;
-        DClient vouchClient = CommandOption.VOUCH.getOptional(event);
+        DClient vouchClient = CommandOption.LOAN_VOUCH.getOptional(event);
         if (vouchClient == null)
             return ModifyRequestMsg.error("Cannot find client '%s'".formatted(vouch));
         loan.getData().setVouchClient(vouchClient.getEntity());

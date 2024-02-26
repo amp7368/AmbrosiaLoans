@@ -9,7 +9,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.check.CheckErrorList;
-import com.ambrosia.loans.discord.check.rate.CheckRate;
+import com.ambrosia.loans.discord.check.loan.CheckRate;
 import com.ambrosia.loans.discord.command.staff.alter.BaseAlterCommand;
 import java.time.Instant;
 import java.util.List;

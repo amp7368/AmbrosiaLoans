@@ -60,7 +60,7 @@ public class ImportedLoan implements LoanBuilder {
         try {
             this.db = new DLoan(this);
             this.db.setVersion(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY.getDB());
-            if (raw.isDefaulted()) this.db.setDefaulted();
+            if (raw.isDefaulted()) this.db.setDefaulted(raw.getEndDate(), true);
         } catch (CreateEntityException | InvalidStaffConductorException e) {
             throw new RuntimeException(e);
         }

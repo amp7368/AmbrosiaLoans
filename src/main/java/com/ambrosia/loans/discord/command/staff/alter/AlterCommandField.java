@@ -3,8 +3,8 @@ package com.ambrosia.loans.discord.command.staff.alter;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.check.CheckError;
 import com.ambrosia.loans.discord.check.CheckErrorList;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.util.List;
+import java.util.Objects;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 
 public final class AlterCommandField<T> {
@@ -31,13 +31,14 @@ public final class AlterCommandField<T> {
         this.value = this.commandOption.getOptional(event);
     }
 
-    public CheckErrorList checkError() {
+    public CheckErrorList checkError(CommandInteraction event) {
         CheckErrorList error = CheckErrorList.of();
         if (this.isRequired && value == null) {
-            String msg = ErrorMessages.missingOption(commandOption.getOptionName()).toString();
-            error.addError(msg);
+            String errorMsg = commandOption.getErrorMessage(event).toString();
+            error.addError(errorMsg);
             return error;
         }
+        if (value == null) return error;
         for (CheckError<T> check : checks)
             check.checkAll(value, error);
         return error;
@@ -54,5 +55,13 @@ public final class AlterCommandField<T> {
     @Override
     public String toString() {
         return value.toString();
+    }
+
+    public boolean exists() {
+        return value != null;
+    }
+
+    public T getOrDefault(T defaultIfNull) {
+        return Objects.requireNonNullElse(value, defaultIfNull);
     }
 }
