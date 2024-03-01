@@ -2,9 +2,9 @@ package com.ambrosia.loans.database.account.event.loan.alter.variant;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.alter.AlterLoan;
-import com.ambrosia.loans.database.alter.base.AlterDBChange;
+import com.ambrosia.loans.database.alter.base.AlterDB;
 import com.ambrosia.loans.database.alter.base.AlterImpactedField;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.Collection;
@@ -18,7 +18,7 @@ public class AlterLoanRate extends AlterLoan<Double> {
     }
 
     public AlterLoanRate(DLoan loan, Instant effectiveDate, double current) {
-        super(AlterRecordType.LOAN_RATE, loan, loan.getRateAt(effectiveDate), current);
+        super(AlterChangeType.LOAN_RATE, loan, loan.getRateAt(effectiveDate), current);
         this.effectiveDate = effectiveDate;
     }
 
@@ -33,7 +33,7 @@ public class AlterLoanRate extends AlterLoan<Double> {
     }
 
     @Override
-    protected boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
+    protected boolean isDependentInternal(AlterDB<?> dependency) {
         if (dependency instanceof AlterLoanRate depend) {
             // true if am I after or on dependency date?
             return !depend.effectiveDate.isBefore(this.effectiveDate);

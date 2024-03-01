@@ -28,7 +28,7 @@ public class AlterGson {
         InstantGsonSerializing.registerGson(gson);
         EmeraldsGsonSerializing.registerGson(gson);
 
-        AlterRecordType.register(gson);
+        AlterChangeType.register(gson);
         return gson.create();
     }
 

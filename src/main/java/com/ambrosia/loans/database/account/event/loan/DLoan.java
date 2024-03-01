@@ -20,6 +20,7 @@ import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
 import java.math.BigDecimal;
@@ -41,6 +42,7 @@ import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@History
 @Entity
 @Table(name = "loan")
 public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange, Commentable {

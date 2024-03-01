@@ -7,6 +7,7 @@ import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -15,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+@History
 @MappedSuperclass
 public abstract class AccountEvent extends Model implements Commentable, IAccountChange {
 

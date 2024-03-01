@@ -7,7 +7,8 @@ import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi.WithdrawalQueryApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -16,8 +17,11 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -60,8 +64,6 @@ public interface CommandOption<R> {
         OptionMapping::getAsDouble);
     CommandOption<String> LOAN_DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
-    CommandOption<Boolean> LOAN_DEFAULTED = basic("defaulted", "True if the loan has been defaulted", OptionType.BOOLEAN,
-        OptionMapping::getAsBoolean);
 
 
     // staff query
@@ -74,12 +76,24 @@ public interface CommandOption<R> {
 
 
     // undo/redo
-    CommandOptionMulti<Long, DAlterChangeRecord> MODIFICATION_ID = multi("modification_id", "The modification target",
-        OptionType.INTEGER, OptionMapping::getAsLong, AlterQueryApi::findById);
+    CommandOptionMulti<Long, DAlterChange> MODIFICATION_ID = multi("modification_id", "The modification target",
+        OptionType.INTEGER, OptionMapping::getAsLong, AlterQueryApi::findChangeById);
+    CommandOption<Long> DELETE_ENTITY_ID = basic("entity_id", "The id of the entity to delete", OptionType.STRING,
+        OptionMapping::getAsLong);
+    CommandOption<AlterCreateType> DELETE_ENTITY_TYPE = deleteEntity();
 
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
+
+    static CommandOptionBasic<AlterCreateType> deleteEntity() {
+        CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
+            OptionType.STRING, OptionMapping::getAsString, name -> AlterCreateType.valueOf(name.toUpperCase()));
+        List<Choice> choices = Arrays.stream(AlterCreateType.values())
+            .map(s -> new Choice(s.displayName(), s.name().toLowerCase()))
+            .toList();
+        return option.addChoices(choices);
+    }
 
     @NotNull
     static CommandOption<Boolean> full(String verb) {

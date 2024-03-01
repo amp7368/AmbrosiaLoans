@@ -9,14 +9,12 @@ import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanDef
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanStartDate;
-import com.ambrosia.loans.database.alter.base.AlterDB;
-import com.ambrosia.loans.database.entity.client.alter.AlterClientCreate;
+import com.ambrosia.loans.database.alter.base.AlterDBChange;
 import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import io.ebean.annotation.DbEnumValue;
 
-public enum AlterRecordType implements GsonEnumTypeHolder<AlterDB<?>> {
+public enum AlterChangeType implements GsonEnumTypeHolder<AlterDBChange<?, ?>> {
 
-    CLIENT_CREATE(AlterClientCreate.class),
     CLIENT_BLACKLISTED(AlterClientBlacklisted.class),
     LOAN_RATE(AlterLoanRate.class),
     LOAN_INITIAL_AMOUNT(AlterLoanInitialAmount.class),
@@ -25,14 +23,14 @@ public enum AlterRecordType implements GsonEnumTypeHolder<AlterDB<?>> {
     LOAN_START_DATE(AlterLoanStartDate.class),
     LOAN_DEFAULTED(AlterLoanDefaulted.class);
 
-    private final Class<? extends AlterDB<?>> typeClass;
+    private final Class<? extends AlterDBChange<?, ?>> typeClass;
 
-    AlterRecordType(Class<? extends AlterDB<?>> typeClass) {
+    AlterChangeType(Class<? extends AlterDBChange<?, ?>> typeClass) {
         this.typeClass = typeClass;
     }
 
     public static GsonBuilderDynamic register(GsonBuilderDynamic gson) {
-        return GsonEnumTypeAdapter.register(values(), gson, AlterDB.class);
+        return GsonEnumTypeAdapter.register(values(), gson, AlterDBChange.class);
     }
 
     @DbEnumValue
@@ -46,7 +44,7 @@ public enum AlterRecordType implements GsonEnumTypeHolder<AlterDB<?>> {
     }
 
     @Override
-    public Class<? extends AlterDB<?>> getTypeClass() {
+    public Class<? extends AlterDBChange<?, ?>> getTypeClass() {
         return typeClass;
     }
 

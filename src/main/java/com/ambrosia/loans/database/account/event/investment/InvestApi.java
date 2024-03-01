@@ -5,7 +5,7 @@ import com.ambrosia.loans.database.account.event.base.AccountEventType;
 import com.ambrosia.loans.database.account.event.investment.alter.AlterInvestmentAmount;
 import com.ambrosia.loans.database.account.event.investment.alter.AlterInvestmentDate;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -45,12 +45,12 @@ public interface InvestApi {
 
     interface InvestAlterApi {
 
-        static DAlterChangeRecord setAmount(DStaffConductor staff, DInvestment investment, Emeralds amount) {
+        static DAlterChange setAmount(DStaffConductor staff, DInvestment investment, Emeralds amount) {
             AlterInvestmentAmount change = new AlterInvestmentAmount(investment, amount);
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChangeRecord setDate(DStaffConductor staff, DInvestment investment, Instant date) {
+        static DAlterChange setDate(DStaffConductor staff, DInvestment investment, Instant date) {
             AlterInvestmentDate change = new AlterInvestmentDate(investment, date);
             return AlterCreateApi.applyChange(staff, change);
         }

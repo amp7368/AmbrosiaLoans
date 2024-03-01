@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
-import com.ambrosia.loans.database.entity.client.alter.AlterClientCreate;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
@@ -9,8 +9,6 @@ import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import io.ebean.CacheMode;
-import io.ebean.DB;
-import io.ebean.Transaction;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -80,11 +78,8 @@ public interface ClientApi {
             if (client.getMinecraft() == null)
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             client.setDiscord(ClientDiscordDetails.fromMember(discord));
-            try (Transaction transaction = DB.beginTransaction()) {
-                client.save(transaction);
-                AlterCreateApi.create(new AlterClientCreate(client), transaction);
-                transaction.commit();
-            }
+            client.save();
+            AlterCreateApi.create(DStaffConductor.SYSTEM, AlterCreateType.CLIENT, client.getId());
             return client;
         }
     }

@@ -16,6 +16,7 @@ import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Cache;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 
 @Cache(enableQueryCache = true, naturalKey = {"discord.id"})
+@History
 @Entity
 @Table(name = "client")
 public class DClient extends Model implements ClientAccess, Commentable {

@@ -2,6 +2,8 @@ package com.ambrosia.loans.database.account.event.loan;
 
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -109,6 +111,7 @@ public interface LoanAccess {
         }
         payment.refresh();
         loan.refresh();
+        AlterCreateApi.create(request.getConductor(), AlterCreateType.PAYMENT, payment.getId());
         loan.getClient().refresh();
         RunBankSimulation.simulateAsync(payment.getDate());
         return payment;

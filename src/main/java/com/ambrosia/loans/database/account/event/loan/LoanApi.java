@@ -7,7 +7,8 @@ import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanSta
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
@@ -37,22 +38,22 @@ public interface LoanApi {
 
     interface LoanAlterApi {
 
-        static DAlterChangeRecord setRate(DStaffConductor staff, DLoan loan, Double rate, Instant date) {
+        static DAlterChange setRate(DStaffConductor staff, DLoan loan, Double rate, Instant date) {
             AlterLoanRate change = new AlterLoanRate(loan, date, rate);
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChangeRecord setInitialAmount(DStaffConductor staff, DLoan loan, Emeralds amount) {
+        static DAlterChange setInitialAmount(DStaffConductor staff, DLoan loan, Emeralds amount) {
             AlterLoanInitialAmount change = new AlterLoanInitialAmount(loan, amount);
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChangeRecord setStartDate(DStaffConductor staff, DLoan loan, Instant startDate) {
+        static DAlterChange setStartDate(DStaffConductor staff, DLoan loan, Instant startDate) {
             AlterLoanStartDate change = new AlterLoanStartDate(loan, startDate);
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChangeRecord setDefaulted(DStaffConductor staff, DLoan loan, Instant date) {
+        static DAlterChange setDefaulted(DStaffConductor staff, DLoan loan, Instant date) {
             AlterLoanDefaulted change = new AlterLoanDefaulted(loan, true, date);
             return AlterCreateApi.applyChange(staff, change);
         }
@@ -74,7 +75,6 @@ public interface LoanApi {
         static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
             DLoan loan = new DLoan(request);
             DClient client = loan.getClient();
-
             try (Transaction transaction = DB.beginTransaction()) {
                 loan.save(transaction);
                 for (String link : request.getCollateral())
@@ -85,6 +85,7 @@ public interface LoanApi {
             }
             loan.refresh();
             client.refresh();
+            AlterCreateApi.create(request.getConductor(), AlterCreateType.LOAN, loan.getId());
             RunBankSimulation.simulateAsync(loan.getStartDate());
             return loan;
         }

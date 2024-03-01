@@ -4,7 +4,7 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestAlterApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -35,13 +35,13 @@ public class InvestAlterCommand extends BaseAlterCommand {
 
         ReplyAlterMessage message = new ReplyAlterMessage();
         if (amount.exists()) {
-            DAlterChangeRecord alter = InvestAlterApi.setAmount(staff, investment.get(), amount.get());
+            DAlterChange alter = InvestAlterApi.setAmount(staff, investment.get(), amount.get());
             Instant investDate = investment.get().getDate();
             String successMsg = "Set investment on %s to %s".formatted(formatDate(investDate), amount.get());
             message.add(alter, successMsg);
         }
         if (date.exists()) {
-            DAlterChangeRecord alter = InvestAlterApi.setDate(staff, investment.get(), date.get());
+            DAlterChange alter = InvestAlterApi.setDate(staff, investment.get(), date.get());
             String successMsg = "Set start date to %s".formatted(formatDate(date.get()));
             message.add(alter, successMsg);
         }

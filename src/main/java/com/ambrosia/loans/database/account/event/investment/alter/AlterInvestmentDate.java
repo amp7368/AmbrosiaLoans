@@ -2,7 +2,7 @@ package com.ambrosia.loans.database.account.event.investment.alter;
 
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.alter.base.AlterImpactedField;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.Collection;
@@ -14,7 +14,7 @@ public class AlterInvestmentDate extends AlterInvestment<Instant> {
     }
 
     public AlterInvestmentDate(DInvestment investment, Instant current) {
-        super(AlterRecordType.INVESTMENT_INSTANT, investment, investment.getDate(), current);
+        super(AlterChangeType.INVESTMENT_INSTANT, investment, investment.getDate(), current);
     }
 
     @Override

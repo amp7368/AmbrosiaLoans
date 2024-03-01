@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.alter.db;
 
 import com.ambrosia.loans.database.alter.base.AlterDBChange;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import com.ambrosia.loans.database.alter.gson.AlterGson;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
 import io.ebean.Model;
 import io.ebean.annotation.DbJson;
 import java.sql.Timestamp;
@@ -11,21 +11,22 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "alter_change_record")
-public class DAlterChangeRecord extends Model {
+@Table(name = "alter_change")
+public class DAlterChange extends Model {
 
     @Id
     private long id;
 
-    @Column(nullable = false)
-    private long entityId;
-    @Column(nullable = false)
-    private AlterRecordType type;
+    @ManyToOne(optional = false)
+    private DAlterCreate entity;
 
+    @Column(nullable = false)
+    private AlterChangeType type;
     @Column(nullable = false)
     private Timestamp eventDate;
     @Column(nullable = false)
@@ -35,13 +36,14 @@ public class DAlterChangeRecord extends Model {
     private String obj;
 
     @OneToMany
-    private List<DAlterUndoHistory> history;
+    private List<DAlterChangeUndoHistory> history;
+
     private transient AlterDBChange<?, ?> objDeserialized;
 
-    public DAlterChangeRecord(AlterDBChange<?, ?> change) {
+    public DAlterChange(AlterDBChange<?, ?> change, DAlterCreate entity) {
         this.eventDate = Timestamp.from(change.getAppliedDate());
         this.applied = true;
-        this.entityId = change.getEntityId();
+        this.entity = entity;
         this.type = change.getType();
         this.obj = change.toJson();
     }
@@ -55,10 +57,14 @@ public class DAlterChangeRecord extends Model {
     }
 
     public long getEntityId() {
-        return this.entityId;
+        return this.entity.getId();
     }
 
-    public AlterRecordType getAlterType() {
+    public String getEntityType() {
+        return this.entity.getEntityType();
+    }
+
+    public AlterChangeType getAlterType() {
         return this.type;
     }
 
@@ -70,18 +76,15 @@ public class DAlterChangeRecord extends Model {
         this.applied = applied;
     }
 
-    public void addHistory(DAlterUndoHistory undo) {
+    public void addHistory(DAlterChangeUndoHistory undo) {
         this.history.add(undo);
     }
 
-    public AlterDBChange<?, ?> getChangeObj() {
-        if (this.objDeserialized != null) return this.objDeserialized;
+    public AlterDBChange<?, ?> getObj() {
+        if (this.objDeserialized != null)
+            return this.objDeserialized;
         this.objDeserialized = (AlterDBChange<?, ?>) AlterGson.alterDBFromJson(this.obj);
         this.objDeserialized.init(this);
         return this.objDeserialized;
-    }
-
-    public String getEntityName() {
-        return this.getChangeObj().getEntityTypeName();
     }
 }

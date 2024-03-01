@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.staff.alter.loan;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanAlterApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -34,12 +34,12 @@ public class LoanAlterCommand extends BaseAlterCommand {
 
         ReplyAlterMessage message = new ReplyAlterMessage();
         if (startDate.exists()) {
-            DAlterChangeRecord change = LoanAlterApi.setStartDate(staff, loan.get(), startDate.get());
+            DAlterChange change = LoanAlterApi.setStartDate(staff, loan.get(), startDate.get());
             String successMsg = "Set start date to %s".formatted(AmbrosiaMessages.formatDate(startDate.get()));
             message.add(change, successMsg);
         }
         if (initialAmount.exists()) {
-            DAlterChangeRecord change = LoanAlterApi.setInitialAmount(staff, loan.get(), initialAmount.get());
+            DAlterChange change = LoanAlterApi.setInitialAmount(staff, loan.get(), initialAmount.get());
             String successMsg = "Set initial amount to %s".formatted(initialAmount);
             message.add(change, successMsg);
         }

@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.alter.base;
 
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import com.ambrosia.loans.database.alter.gson.AlterGson;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
 import com.google.gson.Gson;
 import java.time.Instant;
 import java.util.Collection;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class AlterDB<Entity> {
 
-    private AlterRecordType typeId;
+    private AlterChangeType typeId;
 
     private transient long entityId;
 
@@ -23,13 +23,13 @@ public abstract class AlterDB<Entity> {
     public AlterDB() {
     }
 
-    public AlterDB(AlterRecordType typeId, long entityId) {
+    public AlterDB(AlterChangeType typeId, long entityId) {
         this.typeId = typeId;
         this.appliedDate = Instant.now();
         this.entityId = entityId;
     }
 
-    public void init(DAlterChangeRecord record) {
+    public void init(DAlterChange record) {
         this.entityId = record.getEntityId();
         this.appliedDate = record.getEventDate();
     }
@@ -42,7 +42,7 @@ public abstract class AlterDB<Entity> {
         return appliedDate;
     }
 
-    public AlterRecordType getType() {
+    public AlterChangeType getType() {
         return this.typeId;
     }
 
@@ -57,7 +57,7 @@ public abstract class AlterDB<Entity> {
 
     public abstract Entity getEntity();
 
-    public boolean isDependent(AlterDBChange<?, ?> dependency) {
+    public boolean isDependent(AlterDB<?> dependency) {
         boolean thisIsAfter = dependency.getAppliedDate().isBefore(this.getAppliedDate());
 
         boolean hasOverlappingFields = false;
@@ -75,9 +75,9 @@ public abstract class AlterDB<Entity> {
 
     protected abstract Collection<AlterImpactedField> initImpactedFields();
 
-    protected boolean isDependentInternal(AlterDBChange<?, ?> dependency) {
+    protected boolean isDependentInternal(AlterDB<?> dependency) {
         return true;
     }
 
-    public abstract String getEntityTypeName();
+    public abstract String getEntityType();
 }

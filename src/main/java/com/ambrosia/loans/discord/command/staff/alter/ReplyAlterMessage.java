@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.staff.alter;
 
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +10,11 @@ public class ReplyAlterMessage {
 
     private final List<ReplyAlterOneMessage> changes = new ArrayList<>();
 
-    public static ReplyAlterMessage of(DAlterChangeRecord change, String successMsg) {
+    public static ReplyAlterMessage of(DAlterChange change, String successMsg) {
         return new ReplyAlterMessage().add(change, successMsg);
     }
 
-    public ReplyAlterMessage add(DAlterChangeRecord change, String successMsg) {
+    public ReplyAlterMessage add(DAlterChange change, String successMsg) {
         changes.add(new ReplyAlterOneMessage(change, successMsg));
         return this;
     }
@@ -25,7 +25,7 @@ public class ReplyAlterMessage {
             embed.appendDescription(title);
 
             String entityId = "### %s %s %s\n".formatted(
-                change.record.getEntityName(),
+                change.record.getEntityType(),
                 AmbrosiaEmoji.KEY_ID,
                 change.record.getEntityId());
             embed.appendDescription(entityId);
@@ -33,7 +33,7 @@ public class ReplyAlterMessage {
         }
     }
 
-    private record ReplyAlterOneMessage(DAlterChangeRecord record, String successMsg) {
+    private record ReplyAlterOneMessage(DAlterChange record, String successMsg) {
 
     }
 }

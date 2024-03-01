@@ -18,8 +18,10 @@ import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSectio
 import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi;
 import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
-import com.ambrosia.loans.database.alter.db.query.QDAlterChangeRecord;
-import com.ambrosia.loans.database.alter.db.query.QDAlterUndoHistory;
+import com.ambrosia.loans.database.alter.db.query.QDAlterChange;
+import com.ambrosia.loans.database.alter.db.query.QDAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.db.query.QDAlterCreate;
+import com.ambrosia.loans.database.alter.db.query.QDAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
@@ -76,8 +78,10 @@ public class ExampleData {
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
-        new QDAlterUndoHistory().delete();
-        new QDAlterChangeRecord().delete();
+        new QDAlterCreateUndoHistory().delete();
+        new QDAlterChangeUndoHistory().delete();
+        new QDAlterChange().delete();
+        new QDAlterCreate().delete();
         new QDStaffConductor().delete();
         new QDClient().delete();
         InitDatabase.init();

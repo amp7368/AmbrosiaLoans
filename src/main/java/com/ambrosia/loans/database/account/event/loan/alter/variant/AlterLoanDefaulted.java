@@ -3,7 +3,7 @@ package com.ambrosia.loans.database.account.event.loan.alter.variant;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.alter.AlterLoan;
 import com.ambrosia.loans.database.alter.base.AlterImpactedField;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.Collection;
@@ -17,7 +17,7 @@ public class AlterLoanDefaulted extends AlterLoan<Boolean> {
     }
 
     public AlterLoanDefaulted(DLoan loan, boolean isDefaulted, Instant date) {
-        super(AlterRecordType.LOAN_DEFAULTED, loan, loan.isDefaulted(), isDefaulted);
+        super(AlterChangeType.LOAN_DEFAULTED, loan, loan.isDefaulted(), isDefaulted);
         this.date = date;
     }
 

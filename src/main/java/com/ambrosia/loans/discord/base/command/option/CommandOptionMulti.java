@@ -1,6 +1,8 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import java.util.List;
 import java.util.function.Function;
+import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -28,6 +30,12 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
     @Override
     public CommandOptionMulti<V, R> setAutocomplete() {
         super.setAutocomplete();
+        return this;
+    }
+
+    @Override
+    public CommandOptionBasic<R> addChoices(List<Choice> choices) {
+        super.addChoices(choices);
         return this;
     }
 

@@ -7,6 +7,7 @@ import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
 import io.avaje.lang.Nullable;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -19,6 +20,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 
+@History
 @Entity
 @Table(name = "loan_section")
 public class DLoanSection extends Model implements HasDateRange {

@@ -6,20 +6,15 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 
-@Entity
-@Table(name = "alter_change_undo_history")
-public class DAlterUndoHistory extends Model {
+@MappedSuperclass
+public class UndoHistory extends Model {
 
     @Id
     private UUID id;
-
-    @ManyToOne(optional = false)
-    private final DAlterChangeRecord alterRecord;
 
     @Column(nullable = false)
     private final Timestamp completedAt = Timestamp.from(Instant.now());
@@ -28,18 +23,12 @@ public class DAlterUndoHistory extends Model {
     @ManyToOne(optional = false)
     private final DStaffConductor conductor;
 
-    public DAlterUndoHistory(DStaffConductor conductor, DAlterChangeRecord alterRecord, boolean applied) {
-        this.alterRecord = alterRecord;
+    public UndoHistory(DStaffConductor conductor, boolean applied) {
         this.applied = applied;
         this.conductor = conductor;
-    }
-
-    public DAlterChangeRecord getRecord() {
-        return alterRecord;
     }
 
     public Instant getCompletedAt() {
         return completedAt.toInstant();
     }
-
 }

@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import io.ebean.annotation.History;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+@History
 @Entity
 @Table(name = "investment")
 public class DInvestment extends AccountEvent implements IAccountChange {

@@ -11,8 +11,6 @@ import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestSetCommand;
 import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
-import com.ambrosia.loans.discord.command.staff.alter.undo.ARedoCommand;
-import com.ambrosia.loans.discord.command.staff.alter.undo.AUndoCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
 import com.ambrosia.loans.discord.command.staff.history.AHistoryCommand;
@@ -21,6 +19,9 @@ import com.ambrosia.loans.discord.command.staff.modify.AModifyRequestCommand;
 import com.ambrosia.loans.discord.command.staff.profile.ACommandLink;
 import com.ambrosia.loans.discord.command.staff.profile.AProfileCommand;
 import com.ambrosia.loans.discord.command.staff.profile.AProfileCreateCommand;
+import com.ambrosia.loans.discord.command.staff.undo.ADeleteCommand;
+import com.ambrosia.loans.discord.command.staff.undo.ARedoCommand;
+import com.ambrosia.loans.discord.command.staff.undo.AUndoCommand;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.DCF;
@@ -103,7 +104,7 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new ALoanCommand());
         commands.addCommand(new AInvestSetCommand());
         // employee undo redo
-        commands.addCommand(new AUndoCommand(), new ARedoCommand());
+        commands.addCommand(new AUndoCommand(), new ARedoCommand(), new ADeleteCommand());
         // employee view commands
         commands.addCommand(new AProfileCommand(), new AHistoryCommand());
         commands.addCommand(new ACommentCommand());

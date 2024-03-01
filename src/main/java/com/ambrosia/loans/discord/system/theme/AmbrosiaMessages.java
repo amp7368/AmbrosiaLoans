@@ -53,7 +53,7 @@ public class AmbrosiaMessages {
 
         public static AmbrosiaMessage registerWithStaff() {
             return error("To register your account use **/request account** and fill in your Minecraft "
-                         + "username.");
+                + "username.");
         }
 
         public static AmbrosiaMessage missingOption(String option) {

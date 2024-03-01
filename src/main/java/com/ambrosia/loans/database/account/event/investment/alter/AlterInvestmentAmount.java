@@ -2,7 +2,7 @@ package com.ambrosia.loans.database.account.event.investment.alter;
 
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
 import com.ambrosia.loans.database.alter.base.AlterImpactedField;
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Transaction;
@@ -15,7 +15,7 @@ public class AlterInvestmentAmount extends AlterInvestment<Emeralds> {
     }
 
     public AlterInvestmentAmount(DInvestment investment, Emeralds amount) {
-        super(AlterRecordType.INVESTMENT_AMOUNT, investment, investment.getDeltaAmount(), amount);
+        super(AlterChangeType.INVESTMENT_AMOUNT, investment, investment.getDeltaAmount(), amount);
     }
 
     @Override

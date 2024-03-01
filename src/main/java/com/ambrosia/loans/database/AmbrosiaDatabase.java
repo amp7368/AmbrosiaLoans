@@ -15,8 +15,10 @@ import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
-import com.ambrosia.loans.database.alter.db.DAlterUndoHistory;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.db.DAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.db.DAlterCreate;
+import com.ambrosia.loans.database.alter.db.DAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.DBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
@@ -71,7 +73,8 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.addAll(List.of(DInvestment.class, DWithdrawal.class, DAdjustBalance.class, DAdjustLoan.class));
 
         // alter
-        entities.addAll(List.of(DAlterChangeRecord.class, DAlterUndoHistory.class));
+        entities.addAll(List.of(DAlterChange.class, DAlterChangeUndoHistory.class));
+        entities.addAll(List.of(DAlterCreate.class, DAlterCreateUndoHistory.class));
 
         // message
         entities.add(DCheckInMessage.class);

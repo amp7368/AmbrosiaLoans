@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.alter.base;
 
-import com.ambrosia.loans.database.alter.gson.AlterRecordType;
+import com.ambrosia.loans.database.alter.gson.AlterChangeType;
 import io.ebean.Transaction;
 
 public abstract class AlterDBChange<Entity, T> extends AlterDB<Entity> {
@@ -11,7 +11,7 @@ public abstract class AlterDBChange<Entity, T> extends AlterDB<Entity> {
     public AlterDBChange() {
     }
 
-    public AlterDBChange(AlterRecordType typeId, long entityId,
+    public AlterDBChange(AlterChangeType typeId, long entityId,
         T previous, T current) {
         super(typeId, entityId);
         this.previous = previous;

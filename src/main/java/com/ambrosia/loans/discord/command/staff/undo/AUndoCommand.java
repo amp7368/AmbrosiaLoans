@@ -1,11 +1,11 @@
-package com.ambrosia.loans.discord.command.staff.alter.undo;
+package com.ambrosia.loans.discord.command.staff.undo;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
 import com.ambrosia.loans.database.alter.AlterRecordApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
-import com.ambrosia.loans.database.alter.db.DAlterChangeRecord;
-import com.ambrosia.loans.database.alter.db.DAlterUndoHistory;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.db.DAlterChangeUndoHistory;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -22,13 +22,13 @@ public class AUndoCommand extends BaseStaffCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
-        DAlterChangeRecord record = CommandOption.MODIFICATION_ID.getRequired(event);
+        DAlterChange record = CommandOption.MODIFICATION_ID.getRequired(event);
         if (record == null) return;
         if (!record.isApplied()) {
             ErrorMessages.alteredAlready("undone").replyError(event);
             return;
         }
-        List<DAlterChangeRecord> changesSince = AlterQueryApi.findAppliedChangesOnObjAfter(record);
+        List<DAlterChange> changesSince = AlterQueryApi.findAppliedChangesOnObjAfter(record);
         if (!changesSince.isEmpty()) {
             String changesSinceMessage = changesSince.stream()
                 .map(change -> "- Change #" + change.getId())
@@ -38,7 +38,7 @@ public class AUndoCommand extends BaseStaffCommand {
             replyError(event, msg);
             return;
         }
-        DAlterUndoHistory undo = AlterRecordApi.undo(staff, record);
+        DAlterChangeUndoHistory undo = AlterRecordApi.undo(staff, record);
         if (undo == null) {
             String msg = "There was some error undoing %s".formatted(record.getId());
             replyError(event, msg);
