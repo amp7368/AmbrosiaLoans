@@ -1,7 +1,7 @@
 package com.ambrosia.loans.migrate.loan;
 
-import com.ambrosia.loans.database.account.event.adjust.AdjustApi;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.adjust.AdjustApi;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.migrate.RawMakeAdjustment;
 import com.ambrosia.loans.util.emerald.Emeralds;

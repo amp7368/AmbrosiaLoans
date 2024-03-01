@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
-import com.ambrosia.loans.database.alter.gson.AlterCreateType;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;

@@ -2,9 +2,9 @@ package com.ambrosia.loans.discord.command.staff.alter.investment;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.database.account.event.investment.DInvestment;
-import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestAlterApi;
-import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.account.investment.DInvestment;
+import com.ambrosia.loans.database.account.investment.InvestApi.InvestAlterApi;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;

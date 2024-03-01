@@ -39,7 +39,7 @@ public class DatabaseModule extends AppleModule {
 
     @Override
     public List<AppleConfigLike> getConfigs() {
-        return List.of(configJson(AmbrosiaDatabaseConfig.class, "DatabaseConfig", "Config"));
+        return List.of(configJson(AmbrosiaDatabaseConfig.class, "DatabaseConfig"));
     }
 
     @Override

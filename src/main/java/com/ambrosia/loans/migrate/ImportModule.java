@@ -2,18 +2,19 @@ package com.ambrosia.loans.migrate;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
-import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
+import com.ambrosia.loans.AmbrosiaConfig;
+import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
-import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
-import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
-import com.ambrosia.loans.database.alter.gson.AlterCreateType;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -219,7 +220,7 @@ public class ImportModule extends AppleModule {
     }
 
     public boolean isProduction() {
-        return Ambrosia.isProduction();
+        return AmbrosiaConfig.get().isProduction();
     }
 
     public boolean isQuick() {

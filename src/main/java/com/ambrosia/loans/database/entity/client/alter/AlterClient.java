@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.entity.client.alter;
 
-import com.ambrosia.loans.database.alter.base.AlterDBChange;
-import com.ambrosia.loans.database.alter.gson.AlterChangeType;
+import com.ambrosia.loans.database.alter.change.AlterDBChange;
+import com.ambrosia.loans.database.alter.type.AlterChangeType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 

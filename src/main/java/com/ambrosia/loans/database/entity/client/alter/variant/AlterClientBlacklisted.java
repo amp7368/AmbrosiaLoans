@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.entity.client.alter.variant;
 
-import com.ambrosia.loans.database.alter.base.AlterImpactedField;
-import com.ambrosia.loans.database.alter.gson.AlterChangeType;
+import com.ambrosia.loans.database.alter.change.AlterImpactedField;
+import com.ambrosia.loans.database.alter.type.AlterChangeType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.alter.AlterClient;
 import io.ebean.Transaction;

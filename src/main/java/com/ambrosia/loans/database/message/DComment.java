@@ -1,11 +1,11 @@
 package com.ambrosia.loans.database.message;
 
-import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
-import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
-import com.ambrosia.loans.database.account.event.investment.DInvestment;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
-import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
+import com.ambrosia.loans.database.account.investment.DInvestment;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import io.ebean.Model;

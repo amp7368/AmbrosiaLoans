@@ -4,8 +4,8 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 
 import com.ambrosia.loans.database.alter.AlterRecordApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
-import com.ambrosia.loans.database.alter.db.DAlterChange;
-import com.ambrosia.loans.database.alter.db.DAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
+import com.ambrosia.loans.database.alter.change.DAlterChangeUndoHistory;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;

@@ -2,15 +2,13 @@ package com.ambrosia.loans;
 
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.ApplePlugin;
+import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
 import java.util.List;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import org.jetbrains.annotations.NotNull;
 
 public class Ambrosia extends ApplePlugin {
 
-    public static final String DISCORD_INVITE_LINK = "https://discord.gg/tEAy2dGXWF";
     private static Ambrosia instance;
 
     public Ambrosia() {
@@ -25,20 +23,17 @@ public class Ambrosia extends ApplePlugin {
         return instance;
     }
 
-    @NotNull
-    public static Button inviteButton() {
-        return Button.link(Ambrosia.DISCORD_INVITE_LINK, "Ambrosia Discord Server");
-    }
-
-    public static boolean isProduction() {
-        return false;
-    }
 
     @Override
     public List<AppleModule> createModules() {
         return List.of(new DatabaseModule(), new DiscordModule()
 //            , new ImportModule()
         );
+    }
+
+    @Override
+    public List<AppleConfigLike> getConfigs() {
+        return List.of(configJson(AmbrosiaConfig.class, "AmbrosiaConfig"));
     }
 
     @Override

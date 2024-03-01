@@ -1,14 +1,14 @@
 package com.ambrosia.loans.discord.base.command.option;
 
-import com.ambrosia.loans.database.account.event.investment.DInvestment;
-import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
-import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
-import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi.WithdrawalQueryApi;
+import com.ambrosia.loans.database.account.investment.DInvestment;
+import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi.WithdrawalQueryApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
-import com.ambrosia.loans.database.alter.db.DAlterChange;
-import com.ambrosia.loans.database.alter.gson.AlterCreateType;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;

@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.command.player.profile.page;
 
-import com.ambrosia.loans.database.account.balance.DClientSnapshot;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
+import com.ambrosia.loans.database.account.DClientSnapshot;
+import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;

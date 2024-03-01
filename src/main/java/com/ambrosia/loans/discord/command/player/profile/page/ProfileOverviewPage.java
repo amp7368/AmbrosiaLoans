@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.player.profile.page;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
