@@ -1,6 +1,6 @@
 package com.ambrosia.loans.migrate.loan;
 
-import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
+import com.ambrosia.loans.database.account.loan.DLoanStatus;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.migrate.ImportModule;
 import com.ambrosia.loans.migrate.client.ImportedClient;

@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.check.loan;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.discord.check.CheckError;
 import com.ambrosia.loans.discord.check.CheckErrorList;
 import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;

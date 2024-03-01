@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.command.staff.alter.loan;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanAlterApi;
-import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.LoanApi.LoanAlterApi;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;

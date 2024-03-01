@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.staff.alter;
 
-import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.util.ArrayList;
 import java.util.List;

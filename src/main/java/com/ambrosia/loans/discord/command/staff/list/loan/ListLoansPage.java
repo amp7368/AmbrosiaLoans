@@ -2,9 +2,9 @@ package com.ambrosia.loans.discord.command.staff.list.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
-import com.ambrosia.loans.database.account.event.loan.LoanAccess;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoanStatus;
+import com.ambrosia.loans.database.account.loan.LoanAccess;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;

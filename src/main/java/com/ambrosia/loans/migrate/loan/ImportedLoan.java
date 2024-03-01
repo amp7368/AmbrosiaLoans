@@ -1,10 +1,10 @@
 package com.ambrosia.loans.migrate.loan;
 
 import com.ambrosia.loans.Bank;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.LoanBuilder;
-import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.LoanBuilder;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.CommentApi;

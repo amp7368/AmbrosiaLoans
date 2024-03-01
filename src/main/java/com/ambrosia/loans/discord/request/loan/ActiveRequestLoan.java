@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.request.loan;
 
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanCreateApi;
-import com.ambrosia.loans.database.account.event.loan.LoanBuilder;
+import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.account.loan.LoanApi.LoanCreateApi;
+import com.ambrosia.loans.database.account.loan.LoanBuilder;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;

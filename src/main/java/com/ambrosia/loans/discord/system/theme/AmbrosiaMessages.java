@@ -1,7 +1,6 @@
 package com.ambrosia.loans.discord.system.theme;
 
-import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
@@ -65,7 +64,7 @@ public class AmbrosiaMessages {
             MessageEmbed embedMsg = SendMessage.get().error("Can only be used in Ambrosia's Discord");
             MessageCreateData msg = new MessageCreateBuilder()
                 .setEmbeds(embedMsg)
-                .setActionRow(Ambrosia.inviteButton())
+                .setActionRow(DiscordModule.inviteButton())
                 .build();
             return error(msg);
         }

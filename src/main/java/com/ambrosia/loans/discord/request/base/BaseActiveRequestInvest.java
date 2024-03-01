@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.request.base;
 
-import com.ambrosia.loans.database.account.event.base.AccountEventApi;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
+import com.ambrosia.loans.database.account.base.AccountEventApi;
+import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;

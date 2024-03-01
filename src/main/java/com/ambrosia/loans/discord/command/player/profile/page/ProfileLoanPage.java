@@ -3,8 +3,8 @@ package com.ambrosia.loans.discord.command.player.profile.page;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;

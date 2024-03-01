@@ -1,14 +1,14 @@
 package com.ambrosia.loans.database.alter;
 
-import com.ambrosia.loans.database.alter.base.AlterDB;
-import com.ambrosia.loans.database.alter.base.AlterDBChange;
-import com.ambrosia.loans.database.alter.db.DAlterChange;
-import com.ambrosia.loans.database.alter.db.DAlterChangeUndoHistory;
-import com.ambrosia.loans.database.alter.db.DAlterCreate;
-import com.ambrosia.loans.database.alter.db.DAlterCreateUndoHistory;
-import com.ambrosia.loans.database.alter.db.query.QDAlterChange;
-import com.ambrosia.loans.database.alter.db.query.QDAlterCreate;
-import com.ambrosia.loans.database.alter.gson.AlterCreateType;
+import com.ambrosia.loans.database.alter.change.AlterDB;
+import com.ambrosia.loans.database.alter.change.AlterDBChange;
+import com.ambrosia.loans.database.alter.change.DAlterChange;
+import com.ambrosia.loans.database.alter.change.DAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.alter.create.DAlterCreateUndoHistory;
+import com.ambrosia.loans.database.alter.create.query.QDAlterChange;
+import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import io.ebean.DB;
 import io.ebean.Transaction;

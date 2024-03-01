@@ -3,10 +3,10 @@ package com.ambrosia.loans.discord.command.player.history.loan;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
-import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
-import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
-import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoanStatus;
+import com.ambrosia.loans.database.account.loan.section.DLoanSection;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;

@@ -1,7 +1,7 @@
 package com.ambrosia.loans.migrate.investment;
 
-import com.ambrosia.loans.database.account.event.investment.InvestApi;
-import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi;
+import com.ambrosia.loans.database.account.investment.InvestApi;
+import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;

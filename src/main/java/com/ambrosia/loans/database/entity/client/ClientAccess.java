@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
-import com.ambrosia.loans.database.account.balance.DClientSnapshot;
-import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.DClientSnapshot;
+import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;

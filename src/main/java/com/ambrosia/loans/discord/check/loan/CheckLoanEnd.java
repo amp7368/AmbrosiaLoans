@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.check.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.discord.check.CheckErrorList;
 import com.ambrosia.loans.discord.check.base.CheckDate;
 import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;
