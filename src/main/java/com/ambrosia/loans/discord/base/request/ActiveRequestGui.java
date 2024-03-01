@@ -4,6 +4,7 @@ import apple.utilities.util.Pretty;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.ArrayList;
 import java.util.List;
@@ -140,15 +141,21 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
 
     protected MessageCreateData makeMessage(String... extraDescription) {
-        MessageCreateBuilder message = new MessageCreateBuilder();
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(String.format("%s - (%s) [%d]", title(), stageName(), data.getRequestId()));
+
+        AmbrosiaEmoji statusEmoji = this.data.stage.getEmoji();
+        String title = String.format("### %s %s %s %s %d\n", title(),
+            statusEmoji, stageName(),
+            AmbrosiaEmoji.KEY_ID_CHANGES, data.getRequestId());
+        embed.appendDescription(title);
         embed.setColor(this.data.stage.getColor());
         data.sender.author(embed);
 
-        embed.setDescription(this.generateDescription(extraDescription));
+        embed.appendDescription(this.generateDescription(extraDescription));
 
         this.fields().forEach(embed::addField);
+
+        MessageCreateBuilder message = new MessageCreateBuilder();
         message.setEmbeds(embed.build());
         List<Button> components = getComponents();
         if (components.isEmpty()) message.setComponents();
@@ -184,7 +191,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         return switch (data.stage) {
             case ERROR -> List.of(BUTTON_RESET_STAGE);
             case DENIED, COMPLETED -> List.of();
-            case APPROVED -> List.of(BUTTON_COMPLETE);
+            case APPROVED -> List.of(BUTTON_BACK, BUTTON_COMPLETE);
             case CLAIMED -> this.getClaimedComponents();
             case CREATED, UNCLAIMED -> this.getInitialComponents();
         };

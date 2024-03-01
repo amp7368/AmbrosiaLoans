@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.account.event.loan.collateral;
 
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +12,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import net.dv8tion.jda.api.utils.FileUpload;
 
+@History
 @Entity
 @Table(name = "collateral")
 public class DCollateral extends Model {

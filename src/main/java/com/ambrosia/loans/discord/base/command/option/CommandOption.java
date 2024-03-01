@@ -1,9 +1,14 @@
 package com.ambrosia.loans.discord.base.command.option;
 
-import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
-
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.event.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
 import com.ambrosia.loans.database.account.event.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi.WithdrawalQueryApi;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -12,11 +17,12 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.Command.Choice;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -36,35 +42,58 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
 
     // common
-    CommandOptionMulti<String, Instant> DATE = multi("date", "Date (MM/DD/YY)", OptionType.STRING, OptionMapping::getAsString,
-        CommandOption::parseDate);
-
+    CommandOptionMulti<String, Instant> DATE = new CommandOptionDate();
+    CommandOptionMulti<String, Instant> LOAN_START_DATE = new CommandOptionDate("start_date",
+        "The start date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
+    CommandOptionMulti<String, Instant> LOAN_END_DATE = new CommandOptionDate("end_date",
+        "The end date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
 
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
-    // loan request
-    CommandOptionMulti<String, DClient> VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
+    // loan
+    CommandOptionMulti<String, DClient> LOAN_VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
         OptionType.STRING, OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
     CommandOption<Double> RATE = basic("rate", "The interest rate expressed as a percent. (Enter 5.2 for 5.2%)", OptionType.NUMBER,
         OptionMapping::getAsDouble);
-    CommandOption<String> DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
+    CommandOption<String> LOAN_DISCOUNT = basic("discount", "Vouchers & Referral Codes", OptionType.NUMBER,
         OptionMapping::getAsString);
+
+
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
-    CommandOptionMulti<Long, DLoan> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
-        OptionMapping::getAsLong, LoanQueryApi::findById);
-    CommandOptionMulti<Long, DLoan> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
-        OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DWithdrawal> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
+        OptionMapping::getAsLong, WithdrawalQueryApi::findById);
+    CommandOptionMulti<Long, DInvestment> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
+        OptionMapping::getAsLong, InvestQueryApi::findById);
+
+
+    // undo/redo
+    CommandOptionMulti<Long, DAlterChange> MODIFICATION_ID = multi("modification_id", "The modification target",
+        OptionType.INTEGER, OptionMapping::getAsLong, AlterQueryApi::findChangeById);
+    CommandOption<Long> DELETE_ENTITY_ID = basic("entity_id", "The id of the entity to delete", OptionType.STRING,
+        OptionMapping::getAsLong);
+    CommandOption<AlterCreateType> DELETE_ENTITY_TYPE = deleteEntity();
+
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
+
+    static CommandOptionBasic<AlterCreateType> deleteEntity() {
+        CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
+            OptionType.STRING, OptionMapping::getAsString, name -> AlterCreateType.valueOf(name.toUpperCase()));
+        List<Choice> choices = Arrays.stream(AlterCreateType.values())
+            .map(s -> new Choice(s.displayName(), s.name().toLowerCase()))
+            .toList();
+        return option.addChoices(choices);
+    }
 
     @NotNull
     static CommandOption<Boolean> full(String verb) {
@@ -80,15 +109,6 @@ public interface CommandOption<R> {
             OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
     }
 
-    private static Instant parseDate(String dateString) {
-        try {
-            TemporalAccessor date = SIMPLE_DATE_FORMATTER.parse(dateString);
-            return Instant.from(date);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
-    }
-
 
     static <V, R> CommandOptionMulti<V, R> multi(String name, String description, OptionType type,
         Function<OptionMapping, V> mapping1, Function<V, R> mapping2) {
@@ -99,17 +119,21 @@ public interface CommandOption<R> {
         return new CommandOptionBasic<>(name, description, type, getOption);
     }
 
-    R getOptional(SlashCommandInteractionEvent event, R fallback);
+    R getOptional(CommandInteraction event, R fallback);
 
-    default R getOptional(SlashCommandInteractionEvent event) {
+    default R getOptional(CommandInteraction event) {
         return this.getOptional(event, null);
     }
 
-    default R getRequired(SlashCommandInteractionEvent event) {
-        return getRequired(event, ErrorMessages.missingOption(getOptionName()));
+    default AmbrosiaMessage getErrorMessage(CommandInteraction event) {
+        return ErrorMessages.missingOption(getOptionName());
     }
 
-    default R getRequired(SlashCommandInteractionEvent event, AmbrosiaMessage errorMsg) {
+    default R getRequired(CommandInteraction event) {
+        return getRequired(event, getErrorMessage(event));
+    }
+
+    default R getRequired(CommandInteraction event, AmbrosiaMessage errorMsg) {
         R result = getOptional(event);
         if (result == null) errorMsg.replyError(event);
         return result;
@@ -128,4 +152,5 @@ public interface CommandOption<R> {
     void addOption(SubcommandData command, boolean required);
 
     void addOption(SlashCommandData command, boolean required);
+
 }

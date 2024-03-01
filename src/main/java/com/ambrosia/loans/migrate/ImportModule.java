@@ -2,14 +2,24 @@ package com.ambrosia.loans.migrate;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
+import com.ambrosia.loans.database.account.event.investment.DInvestment;
+import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.event.loan.DLoan;
+import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
+import com.ambrosia.loans.database.account.event.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.discord.commands.player.profile.page.ProfileTransactionsPage;
-import com.ambrosia.loans.migrate.base.ImportedData;
-import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
+import com.ambrosia.loans.discord.command.player.profile.page.ProfileTransactionsPage;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.migrate.client.RawClient;
 import com.ambrosia.loans.migrate.investment.ImportedInvestment;
@@ -42,7 +52,7 @@ public class ImportModule extends AppleModule {
         rawData.investments().forEach(invest -> invest.setClient(clients));
 
         return clients.stream()
-            .map(ImportedData::toDB)
+            .map(ImportedClient::toDB)
             .toList();
     }
 
@@ -87,7 +97,7 @@ public class ImportModule extends AppleModule {
         if (shouldReset()) ExampleData.resetData();
 
         ImportRawData rawData = ImportRawData.loadData();
-        List<DClient> clients = toDBClients(rawData);
+        toDBClients(rawData);
 
         List<ImportedLoan> loans = toDBLoans(rawData);
         List<DLoan> loansDB = loans.stream().map(ImportedLoan::toDB).toList();
@@ -112,7 +122,31 @@ public class ImportModule extends AppleModule {
         RunBankSimulation.simulate(Instant.EPOCH);
 
         printLoans(loansDB, rawData, false);
+
+        logger().info("Inserting DAlterCreates");
+        insertCreationRecords();
         logger().info("Migration complete!");
+    }
+
+    private void insertCreationRecords() {
+        for (DClient client : new QDClient().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.CLIENT, client.getId());
+        }
+        for (DLoan loan : new QDLoan().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.LOAN, loan.getId());
+        }
+        for (DAdjustLoan adjustment : new QDAdjustLoan().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.ADJUST_LOAN, adjustment.getId());
+        }
+        for (DAdjustBalance adjustment : new QDAdjustBalance().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.ADJUST_BALANCE, adjustment.getId());
+        }
+        for (DInvestment investment : new QDInvestment().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.INVEST, investment.getId());
+        }
+        for (DWithdrawal withdrawal : new QDWithdrawal().findList()) {
+            AlterCreateApi.create(DStaffConductor.MIGRATION, AlterCreateType.WITHDRAWAL, withdrawal.getId());
+        }
     }
 
     public void printClients(List<DClient> clients) {
@@ -176,8 +210,7 @@ public class ImportModule extends AppleModule {
     }
 
     private boolean shouldReset() {
-        // todo
-        return true;
+        return false;
     }
 
     private boolean shouldEnable() {
@@ -186,8 +219,7 @@ public class ImportModule extends AppleModule {
     }
 
     public boolean isProduction() {
-        // todo
-        return false;
+        return Ambrosia.isProduction();
     }
 
     public boolean isQuick() {

@@ -20,7 +20,9 @@ import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
 import io.ebean.annotation.DbDefault;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.Index;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -40,6 +42,7 @@ import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@History
 @Entity
 @Table(name = "loan")
 public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange, Commentable {
@@ -59,8 +62,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     private List<DCollateral> collateral;
     @Column
     private long initialAmount; // positive
+    @Index
     @Column(nullable = false)
     private Timestamp startDate;
+    @Index
     @Column
     private Timestamp endDate;
     @Column(nullable = false)
@@ -178,6 +183,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.sections.stream()
             .sorted(Comparator.comparing(DLoanSection::getStartDate))
             .toList();
+    }
+
+    public void setSections(List<DLoanSection> sections) {
+        this.sections = sections;
     }
 
     public Emeralds getTotalOwed() {
@@ -334,6 +343,11 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return Emeralds.of(this.initialAmount);
     }
 
+    public DLoan setInitialAmount(Emeralds amount) {
+        this.initialAmount = amount.amount();
+        return this;
+    }
+
     @Override
     public List<DComment> getComments() {
         return this.comments;
@@ -364,7 +378,15 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         }
     }
 
-    public void setDefaulted() {
-        this.status = DLoanStatus.DEFAULTED;
+    public DLoan setDefaulted(Instant endDate, boolean defaulted) {
+        if (defaulted) {
+            this.status = DLoanStatus.DEFAULTED;
+            Instant endDateInstant = Objects.requireNonNullElseGet(endDate, Instant::now);
+            this.endDate = Timestamp.from(endDateInstant);
+        } else {
+            this.status = DLoanStatus.ACTIVE;
+            this.endDate = null;
+        }
+        return this;
     }
 }

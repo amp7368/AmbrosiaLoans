@@ -2,7 +2,7 @@ package com.ambrosia.loans.migrate.loan;
 
 import com.ambrosia.loans.database.account.event.loan.DLoanStatus;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.migrate.base.RawData;
+import com.ambrosia.loans.migrate.ImportModule;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public class RawLoan implements RawData<ImportedLoan> {
+public class RawLoan {
 
     private long id;
     private long clientId;
@@ -31,10 +31,9 @@ public class RawLoan implements RawData<ImportedLoan> {
     private String comments;
     private ImportedClient client;
 
-    @Override
     public ImportedLoan convert() {
         if (this.amount <= 0)
-            logger().warn("%d initial amount is negative: %d".formatted(id, amount));
+            ImportModule.get().logger().warn("%d initial amount is negative: %d".formatted(id, amount));
         return new ImportedLoan(this);
     }
 

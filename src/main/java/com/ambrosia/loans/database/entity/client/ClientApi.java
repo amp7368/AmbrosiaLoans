@@ -1,9 +1,14 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
+import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import io.ebean.CacheMode;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -30,7 +35,10 @@ public interface ClientApi {
 
         static DClient findByDiscord(long discordId) {
             return new QDClient().where()
-                .discord.discordId.eq(discordId)
+                .discord.id.eq(discordId)
+                .setUseCache(true)
+                .setBeanCacheMode(CacheMode.ON)
+                .setReadOnly(false)
                 .findOne();
         }
 
@@ -46,6 +54,20 @@ public interface ClientApi {
                 .findList();
         }
 
+        static List<DClient> findAllReadOnly() {
+            return new QDClient()
+                .setUseQueryCache(true)
+                .setReadOnly(true)
+                .findList();
+        }
+    }
+
+    interface ClientAlterApi {
+
+        static void setBlacklisted(DStaffConductor staff, DClient client, boolean blacklisted) {
+            AlterClientBlacklisted change = new AlterClientBlacklisted(client, blacklisted);
+            AlterCreateApi.applyChange(staff, change);
+        }
     }
 
     interface ClientCreateApi {
@@ -57,6 +79,7 @@ public interface ClientApi {
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             client.setDiscord(ClientDiscordDetails.fromMember(discord));
             client.save();
+            AlterCreateApi.create(DStaffConductor.SYSTEM, AlterCreateType.CLIENT, client.getId());
             return client;
         }
     }

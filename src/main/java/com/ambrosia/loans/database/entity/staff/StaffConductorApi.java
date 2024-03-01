@@ -9,7 +9,7 @@ public class StaffConductorApi {
 
     public static DStaffConductor findByDiscord(long discordId) {
         return new QDStaffConductor().where()
-            .client.discord.discordId.eq(discordId)
+            .client.discord.id.eq(discordId)
             .findOne();
     }
 

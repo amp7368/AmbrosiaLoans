@@ -1,7 +1,14 @@
 package com.ambrosia.loans.database.account.event.loan;
 
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanDefaulted;
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanInitialAmount;
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanRate;
+import com.ambrosia.loans.database.account.event.loan.alter.variant.AlterLoanStartDate;
 import com.ambrosia.loans.database.account.event.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.db.DAlterChange;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
@@ -13,33 +20,10 @@ import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 
 public interface LoanApi {
 
     interface LoanQueryApi {
-
-        static List<DLoan> findClientLoans(DClient client) {
-            return new QDLoan().where()
-                .client.eq(client)
-                .findList();
-        }
-
-        static List<DLoan> findClientActiveLoans(DClient client) {
-            return new QDLoan().where()
-                .client.eq(client)
-                .or()
-                .status.eq(DLoanStatus.ACTIVE)
-                .status.eq(DLoanStatus.FROZEN)
-                .findList();
-        }
-
-        static List<DLoan> findAllActiveLoans() {
-            return new QDLoan().where()
-                .status.eq(DLoanStatus.ACTIVE)
-                .status.eq(DLoanStatus.FROZEN)
-                .findList();
-        }
 
         static DLoan findById(long id) {
             return new QDLoan().where()
@@ -49,6 +33,29 @@ public interface LoanApi {
 
         static Collection<DLoan> findAllLoans() {
             return new QDLoan().findList();
+        }
+    }
+
+    interface LoanAlterApi {
+
+        static DAlterChange setRate(DStaffConductor staff, DLoan loan, Double rate, Instant date) {
+            AlterLoanRate change = new AlterLoanRate(loan, date, rate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange setInitialAmount(DStaffConductor staff, DLoan loan, Emeralds amount) {
+            AlterLoanInitialAmount change = new AlterLoanInitialAmount(loan, amount);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange setStartDate(DStaffConductor staff, DLoan loan, Instant startDate) {
+            AlterLoanStartDate change = new AlterLoanStartDate(loan, startDate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange setDefaulted(DStaffConductor staff, DLoan loan, Instant date) {
+            AlterLoanDefaulted change = new AlterLoanDefaulted(loan, true, date);
+            return AlterCreateApi.applyChange(staff, change);
         }
     }
 
@@ -68,7 +75,6 @@ public interface LoanApi {
         static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
             DLoan loan = new DLoan(request);
             DClient client = loan.getClient();
-
             try (Transaction transaction = DB.beginTransaction()) {
                 loan.save(transaction);
                 for (String link : request.getCollateral())
@@ -79,7 +85,8 @@ public interface LoanApi {
             }
             loan.refresh();
             client.refresh();
-            RunBankSimulation.simulate(loan.getStartDate());
+            AlterCreateApi.create(request.getConductor(), AlterCreateType.LOAN, loan.getId());
+            RunBankSimulation.simulateAsync(loan.getStartDate());
             return loan;
         }
 

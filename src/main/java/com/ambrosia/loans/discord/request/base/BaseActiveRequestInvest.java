@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.request.base;
 
+import com.ambrosia.loans.database.account.event.base.AccountEventApi;
 import com.ambrosia.loans.database.account.event.base.AccountEventType;
-import com.ambrosia.loans.database.account.event.investment.InvestApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
@@ -24,7 +24,7 @@ public abstract class BaseActiveRequestInvest<Gui extends ActiveRequestGui<?>> e
 
     @Override
     public void onComplete() throws Exception {
-        InvestApi.createInvestLike(this);
+        AccountEventApi.createInvestLike(this);
     }
 
     public Emeralds getAmount() {

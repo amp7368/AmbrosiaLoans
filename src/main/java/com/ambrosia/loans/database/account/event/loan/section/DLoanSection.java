@@ -7,6 +7,7 @@ import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
 import io.avaje.lang.Nullable;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -19,6 +20,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 
+@History
 @Entity
 @Table(name = "loan_section")
 public class DLoanSection extends Model implements HasDateRange {
@@ -45,6 +47,11 @@ public class DLoanSection extends Model implements HasDateRange {
         return endDate != null && endDate.isBefore(date);
     }
 
+    public boolean isEndBeforeOrEq(Instant date) {
+        Instant endDate = this.getEndDate();
+        return endDate != null && !date.isBefore(endDate);
+    }
+
     @NotNull
     public Instant getStartDate() {
         return this.startDate.toInstant();
@@ -60,7 +67,8 @@ public class DLoanSection extends Model implements HasDateRange {
     }
 
     public DLoanSection setEndDate(Instant endDate) {
-        this.endDate = Timestamp.from(endDate);
+        if (endDate == null) this.endDate = null;
+        else this.endDate = Timestamp.from(endDate);
         return this;
     }
 

@@ -13,7 +13,6 @@ import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.migrate.ImportModule;
-import com.ambrosia.loans.migrate.base.ImportedData;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -23,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
-public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
+public class ImportedLoan implements LoanBuilder {
 
     private final long id;
     private final DClient client;
@@ -56,13 +55,12 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
         return id;
     }
 
-    @Override
     public DLoan toDB() {
         if (this.db != null) throw new IllegalStateException("#toDB() was already called for client %d!".formatted(this.id));
         try {
             this.db = new DLoan(this);
             this.db.setVersion(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY.getDB());
-            if (raw.isDefaulted()) this.db.setDefaulted();
+            if (raw.isDefaulted()) this.db.setDefaulted(raw.getEndDate(), true);
         } catch (CreateEntityException | InvalidStaffConductorException e) {
             throw new RuntimeException(e);
         }
@@ -129,7 +127,7 @@ public class ImportedLoan implements ImportedData<DLoan>, LoanBuilder {
             long amount = 30L * Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
-        } else if (this.id == 110) {
+        } else if (this.id == 109) {
             Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("02/04/24"));
             long amount = 2L * Emeralds.STACK + 20 * Emeralds.LIQUID;
             additionalPayment(transaction, date, amount);

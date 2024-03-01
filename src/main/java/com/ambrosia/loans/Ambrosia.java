@@ -30,9 +30,15 @@ public class Ambrosia extends ApplePlugin {
         return Button.link(Ambrosia.DISCORD_INVITE_LINK, "Ambrosia Discord Server");
     }
 
+    public static boolean isProduction() {
+        return false;
+    }
+
     @Override
     public List<AppleModule> createModules() {
-        return List.of(new DatabaseModule(), new DiscordModule());
+        return List.of(new DatabaseModule(), new DiscordModule()
+//            , new ImportModule()
+        );
     }
 
     @Override

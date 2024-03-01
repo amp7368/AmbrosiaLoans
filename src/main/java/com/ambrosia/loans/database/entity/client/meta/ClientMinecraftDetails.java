@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.entity.client.meta;
 import apple.utilities.fileio.serializing.FileIOJoined;
 import apple.utilities.threading.service.queue.TaskHandlerQueue;
 import com.google.gson.JsonObject;
+import io.ebean.annotation.Index;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -18,9 +19,9 @@ public class ClientMinecraftDetails {
 
     private static final String MOJANG_API = "https://api.mojang.com/users/profiles/minecraft/";
     private static final TaskHandlerQueue rateLimited = new TaskHandlerQueue(100, 10 * 60 * 10000, 5000);
-
     @Column(unique = true)
     private UUID uuid;
+    @Index
     @Column(unique = true)
     private String username;
 
@@ -56,8 +57,7 @@ public class ClientMinecraftDetails {
     private static UUID toUUID(String uuidRaw) {
         long most = HexFormat.fromHexDigitsToLong(uuidRaw.substring(0, 16));
         long least = HexFormat.fromHexDigitsToLong(uuidRaw.substring(16, 32));
-        UUID uuid = new UUID(most, least);
-        return uuid;
+        return new UUID(most, least);
     }
 
     public String skinUrl() {

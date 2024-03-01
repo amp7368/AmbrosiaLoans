@@ -1,19 +1,21 @@
 package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.discord.DiscordBot;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 public class AmbrosiaAssets {
 
-    public static final String ACTIVE = png("active");
-    public static final String SUCCESS = png("check");
-    public static final String ERROR = png("error");
-    public static final String FOOTER_ACCEPTED = gif("loanacceptedfooter");
-    public static final String FOOTER_PROMOTE = gif("ambrosiacreditsfooter");
-    public static final String FOOTER_PENDING_LOAN = gif("loanpendingfooter");
-    public static final String FOOTER_REQUEST_LOAN = gif("loanrequestfooter");
-    public static final String FOOTER_ERROR = gif("boterrorfooter");
-    public static final String EMERALD = gif("emeraldembeddmark");
+    public static final String EMERALD = gif("Emerald.v1");
+    public static final String ERROR = png("CheckError.v1");
+    public static final String SUCCESS = png("CheckSuccess.v1");
+    public static final String WARNING = png("StatusPending.v1");
+    public static final String FOOTER_ACCEPTED = gif("FooterLoanAccepted.v1");
+    public static final String FOOTER_PROMOTE = gif("FooterAmbrosiaCredits.v1");
+    public static final String FOOTER_PENDING_LOAN = gif("FooterLoanPending.v1");
+    public static final String FOOTER_REQUEST_LOAN = gif("FooterLoanRequest.v1");
+    public static final String FOOTER_ERROR = gif("FooterError.v1");
+    public static final String JOKER = gif("Joker.v1");
 
     private static String gif(String file) {
         return img(file + ".gif");
@@ -28,35 +30,34 @@ public class AmbrosiaAssets {
     }
 
     public enum AmbrosiaEmoji {
-        LOAN_ACTIVE(1201671148870574130L),
-        LOAN_FROZEN(1201671145124790312L),
-        LOAN_PAID(1201671141027217458L),
-        LOAN_DEFAULTED(1201669303745650730L),
-        REQUEST_UNCLAIMED(1201669303745650730L),
-        REQUEST_CLAIMED(1201671145124790312L),
-        REQUEST_ACCEPTED(1201671148870574130L),
-        REQUEST_COMPLETED(1201671141027217458L),
-        ERROR(1202020940930621501L),
-        SUCCESS(1202020944147922944L),
-        LOAN_BALANCE(1201636693267193866L),
+        ANY_DATE(1208248441805738044L),
+        ANY_WITHDRAWAL(1202017229315784724L),
+        CHECK_SUCCESS(1208248444632965211L),
+        CHECK_ERROR(1208252574726357092L),
+        CLIENT_ACCOUNT(1208251350593314817L),
+        CLIENT_MINECRAFT(1208248447702933574L),
+        EMERALD(1201663071353839617L),
+        INVESTMENT_BALANCE(1208252575753834496L),
+        INVESTMENT_PROFITS(1208248451775594516L),
+        INVESTMENT_STAKE(1208252576810803250L),
+        KEY_ID(1208248576182853683L),
+        KEY_ID_CHANGES(1208248577181225000L),
+        STATUS_ACTIVE(1208248428992270376L),
+        STATUS_COMPLETE(1208248429994573854L),
+        STATUS_PENDING(1208248433023123517L),
+        STATUS_OFFLINE(1208248432028950598L),
+        STATUS_ERROR(1208248431076708433L),
+        LOAN_BALANCE(1208248640888512582L),
+        LOAN_COLLATERAL(1208248642583011339L),
+        LOAN_DISCOUNT(1208248876960587856L),
+        LOAN_INTEREST(1208252577901187179L),
         LOAN_PAYMENT(1202017326720090243L),
-        LOAN_REPAYMENT_PLAN(1202020919992909845L),
-        LOAN_RATE(LOAN_REPAYMENT_PLAN.emojiId),
-        COLLATERAL(1202020936883109928L),
-        INVESTMENT_BALANCE(1202020945506861067L),
-        DATE(1202020953991946241L),
-        PROFITS(1201636697650249748L),
-        INVESTOR_STAKE(1202020962359574568L),
-        AMBROSIA(1201663071353839617L),
-        MINECRAFT(1202020968462303262L),
-        INTEREST(PROFITS.emojiId),
-        WITHDRAWAL(1202017229315784724L),
+        LOAN_RATE(1208252573560209439L),
+        LOAN_REASON(1208248425750208572L),
+        LOAN_REPAYMENT_PLAN(1208248426836267078L),
         TRADE(LOAN_REPAYMENT_PLAN.emojiId),
-        FILTER(1202020928037601300L),
-        SORT(1202020933276012635L),
-        PAYMENT_REMINDER(1202020939592900618L),
-        DISCOUNT(1202020951131439205L),
-        ACCOUNT(1201636704507924480L);
+        UNUSED_PAYMENT_REMINDER(1208248436105678928L),
+        UNUSED_SORT(1208248437037076502L);
 
         private final long emojiId;
         private RichCustomEmoji emoji;
@@ -68,7 +69,7 @@ public class AmbrosiaAssets {
 
         AmbrosiaEmoji(String emojiStr) {
             this.emojiId = 0;
-            this.emojiStr = emojiStr;
+            this.emojiStr = Emoji.fromUnicode(emojiStr).getFormatted();
         }
 
         public RichCustomEmoji getEmoji() {

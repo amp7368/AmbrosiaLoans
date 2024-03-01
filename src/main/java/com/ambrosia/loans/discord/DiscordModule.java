@@ -3,20 +3,25 @@ package com.ambrosia.loans.discord;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.discord.autocomplete.AutoCompleteListener;
-import com.ambrosia.loans.discord.commands.player.help.HelpCommand;
-import com.ambrosia.loans.discord.commands.player.history.HistoryCommand;
-import com.ambrosia.loans.discord.commands.player.profile.ProfileCommand;
-import com.ambrosia.loans.discord.commands.player.request.CommandModifyRequest;
-import com.ambrosia.loans.discord.commands.player.request.CommandRequest;
-import com.ambrosia.loans.discord.commands.player.request.loan.RequestLoanModalType;
-import com.ambrosia.loans.discord.commands.staff.blacklist.BlacklistCommand;
-import com.ambrosia.loans.discord.commands.staff.comment.CommentCommand;
-import com.ambrosia.loans.discord.commands.staff.history.AHistoryCommand;
-import com.ambrosia.loans.discord.commands.staff.list.ListCommand;
-import com.ambrosia.loans.discord.commands.staff.modify.AModifyRequestCommand;
-import com.ambrosia.loans.discord.commands.staff.profile.AProfileCommand;
-import com.ambrosia.loans.discord.commands.staff.profile.CommandLink;
-import com.ambrosia.loans.discord.commands.staff.profile.CreateProfileCommand;
+import com.ambrosia.loans.discord.command.player.help.HelpCommand;
+import com.ambrosia.loans.discord.command.player.history.HistoryCommand;
+import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
+import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
+import com.ambrosia.loans.discord.command.player.request.CommandRequest;
+import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
+import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestSetCommand;
+import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
+import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
+import com.ambrosia.loans.discord.command.staff.history.AHistoryCommand;
+import com.ambrosia.loans.discord.command.staff.list.AListCommand;
+import com.ambrosia.loans.discord.command.staff.modify.AModifyRequestCommand;
+import com.ambrosia.loans.discord.command.staff.profile.ACommandLink;
+import com.ambrosia.loans.discord.command.staff.profile.AProfileCommand;
+import com.ambrosia.loans.discord.command.staff.profile.AProfileCreateCommand;
+import com.ambrosia.loans.discord.command.staff.undo.ADeleteCommand;
+import com.ambrosia.loans.discord.command.staff.undo.ARedoCommand;
+import com.ambrosia.loans.discord.command.staff.undo.AUndoCommand;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.DCF;
@@ -29,6 +34,8 @@ import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 
 public class DiscordModule extends AppleModule {
 
@@ -55,8 +62,8 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public List<AppleConfigLike> getConfigs() {
-        return List.of(configFolder("Config", configJson(DiscordConfig.class, "Discord.config"),
-            configJson(DiscordPermissions.class, "Permissions.config")));
+        return List.of(configJson(DiscordConfig.class, "DiscordConfig"),
+            configJson(DiscordPermissions.class, "PermissionsConfig"));
     }
 
     @Override
@@ -88,17 +95,21 @@ public class DiscordModule extends AppleModule {
         ActiveRequestDatabase.load();
 
         DCFCommandManager commands = dcf.commands();
-        // employee commands
-        commands.addCommand(new CommandLink(),
-            new CreateProfileCommand(),
-            new BlacklistCommand());
-        commands.addCommand(new AProfileCommand(),
-            new AHistoryCommand());
-        commands.addCommand(new CommentCommand());
+        // employee client commands
+        commands.addCommand(
+            new ACommandLink(),
+            new AProfileCreateCommand(),
+            new ABlacklistCommand());
+        // employee alter commands
+        commands.addCommand(new ALoanCommand());
+        commands.addCommand(new AInvestSetCommand());
+        // employee undo redo
+        commands.addCommand(new AUndoCommand(), new ARedoCommand(), new ADeleteCommand());
+        // employee view commands
+        commands.addCommand(new AProfileCommand(), new AHistoryCommand());
+        commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
-        commands.addCommand(new ListCommand());
-
-        // manager commands
+        commands.addCommand(new AListCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),
@@ -112,7 +123,11 @@ public class DiscordModule extends AppleModule {
     @Override
     public void onEnablePost() {
         DiscordLog.load(DiscordBot.dcf);
-        DiscordBot.dcf.commands().updateCommands();
+        CommandData viewProfileCommand = Commands.user("view_profile");
+        DiscordBot.dcf.commands().updateCommands(
+            action -> action.addCommands(viewProfileCommand),
+            commands -> {}
+        );
     }
 
     @Override

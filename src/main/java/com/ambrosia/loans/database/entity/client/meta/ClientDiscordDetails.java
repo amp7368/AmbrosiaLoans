@@ -1,5 +1,11 @@
 package com.ambrosia.loans.database.entity.client.meta;
 
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.DiscordBot;
+import io.ebean.annotation.Index;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -9,16 +15,21 @@ import net.dv8tion.jda.api.entities.User;
 @Embeddable()
 public class ClientDiscordDetails {
 
+    private static final int HOURS_TILL_UPDATE = 12;
+    @Index
     @EmbeddedId
     @Column(unique = true)
-    public Long discordId;
+    public Long id;
     @Column
     public String avatarUrl;
+    @Index
     @Column
     public String username;
+    @Column
+    private Timestamp lastUpdated;
 
-    private ClientDiscordDetails(Long discordId, String avatarUrl, String username) {
-        this.discordId = discordId;
+    private ClientDiscordDetails(Long id, String avatarUrl, String username) {
+        this.id = id;
         this.avatarUrl = avatarUrl;
         this.username = username;
     }
@@ -42,6 +53,36 @@ public class ClientDiscordDetails {
     }
 
 
+    public void hookUpdate(DClient client) {
+        Instant last = lastUpdated == null ? Instant.EPOCH : lastUpdated.toInstant();
+
+        Duration timeSince = Duration.between(last, Instant.now());
+        if (timeSince.minusHours(HOURS_TILL_UPDATE).isNegative()) return;
+
+        Member cachedMember = DiscordBot.getAmbrosiaServer().getMemberById(this.getDiscordId());
+        if (cachedMember != null) {
+            updateAmbrosiaMember(client, cachedMember);
+            return;
+        }
+
+        DiscordBot.getAmbrosiaServer().retrieveMemberById(this.getDiscordId())
+            .queue(member -> updateAmbrosiaMember(client, member),
+                fail -> updateAmbrosiaMemberFailed(client));
+    }
+
+    private void updateAmbrosiaMember(DClient client, Member cachedMember) {
+        client.setDiscord(ClientDiscordDetails.fromMember(cachedMember)).save();
+    }
+
+    private void updateAmbrosiaMemberFailed(DClient client) {
+        DiscordBot.jda().retrieveUserById(getDiscordId())
+            .queue(user -> updateFromUser(client, user));
+    }
+
+    private void updateFromUser(DClient client, User user) {
+        client.setDiscord(ClientDiscordDetails.fromUser(user)).save();
+    }
+
     public String getUsername() {
         return this.username;
     }
@@ -51,6 +92,8 @@ public class ClientDiscordDetails {
     }
 
     public Long getDiscordId() {
-        return discordId;
+        return id;
     }
+
+
 }

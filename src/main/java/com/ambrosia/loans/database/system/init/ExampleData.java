@@ -4,7 +4,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.query.QDClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
@@ -16,7 +16,12 @@ import com.ambrosia.loans.database.account.event.loan.collateral.query.QDCollate
 import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSection;
 import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.event.withdrawal.WithdrawalApi;
 import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
+import com.ambrosia.loans.database.alter.db.query.QDAlterChange;
+import com.ambrosia.loans.database.alter.db.query.QDAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.db.query.QDAlterCreate;
+import com.ambrosia.loans.database.alter.db.query.QDAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
@@ -69,10 +74,14 @@ public class ExampleData {
         new QDAdjustBalance().delete();
         new QDAdjustLoan().delete();
         new QDLoan().delete();
-        new QDAccountSnapshot().delete();
+        new QDClientSnapshot().delete();
         new QDBankSnapshot().delete();
         new QDCollateral().delete();
         new QDCheckInMessage().delete();
+        new QDAlterCreateUndoHistory().delete();
+        new QDAlterChangeUndoHistory().delete();
+        new QDAlterChange().delete();
+        new QDAlterCreate().delete();
         new QDStaffConductor().delete();
         new QDClient().delete();
         InitDatabase.init();
@@ -158,8 +167,8 @@ public class ExampleData {
 
     private static void withdrawals() {
         Instant bitAgo = Instant.now().minus(30, DAYS);
-        InvestApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19));
-        InvestApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256));
+        WithdrawalApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19), true);
+        WithdrawalApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256), true);
     }
 
     private static void insertInvestments() {

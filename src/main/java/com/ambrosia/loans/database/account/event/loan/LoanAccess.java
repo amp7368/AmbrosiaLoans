@@ -2,6 +2,8 @@ package com.ambrosia.loans.database.account.event.loan;
 
 import com.ambrosia.loans.database.account.event.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.event.payment.DLoanPayment;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
+import com.ambrosia.loans.database.alter.gson.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
@@ -11,6 +13,8 @@ import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -18,16 +22,27 @@ import java.util.function.Predicate;
 public interface LoanAccess {
 
     default void changeToNewRate(double newRate, Instant startDate) {
+        try (Transaction transaction = DB.beginTransaction()) {
+            changeToNewRate(newRate, startDate, transaction);
+            transaction.commit();
+        }
+    }
+
+    default void changeToNewRate(double newRate, Instant startDate, Transaction transaction) {
         DLoan entity = getEntity();
         List<DLoanSection> oldSections = entity.getSections();
         List<DLoanSection> newSections = new ArrayList<>();
         boolean isPassedDate = false;
         for (int i = 0, size = oldSections.size(); i < size; i++) {
             DLoanSection section = oldSections.get(i);
-            if (isPassedDate || section.isEndBefore(startDate)) {
+            if (isPassedDate || section.isEndBeforeOrEq(startDate)) {
                 // Either: add the new sections back
                 // or keep old sections the same
                 newSections.add(section);
+            } else if (section.getStartDate().equals(startDate)) {
+                section.setRate(newRate);
+                newSections.add(section);
+                isPassedDate = true;
             } else {
                 section.setEndDate(startDate);
                 newSections.add(section);
@@ -38,16 +53,34 @@ public interface LoanAccess {
                 isPassedDate = true;
             }
         }
-        try (Transaction transaction = DB.beginTransaction()) {
-            oldSections.stream()
-                .filter(Predicate.not(newSections::contains))
-                .forEach(section -> section.delete(transaction));
 
-            newSections.forEach(section -> section.save(transaction));
-            transaction.commit();
+        newSections.removeIf(section -> section.getEndDate() != null && section.getTotalDuration().isZero());
+        fixDuplicateRates(newSections);
+
+        oldSections.stream()
+            .filter(Predicate.not(newSections::contains))
+            .forEach(section -> section.delete(transaction));
+
+        newSections.forEach(section -> section.save(transaction));
+        entity.setSections(newSections);
+        entity.checkIsFrozen(false);
+        entity.save(transaction);
+    }
+
+    private void fixDuplicateRates(List<DLoanSection> sections) {
+        sections.sort(Comparator.comparing(DLoanSection::getStartDate));
+        DLoanSection lastSection = null;
+        boolean changesMade = false;
+        for (Iterator<DLoanSection> iterator = sections.iterator(); iterator.hasNext(); ) {
+            DLoanSection section = iterator.next();
+            if (lastSection != null && lastSection.getRate() == section.getRate()) {
+                lastSection.setEndDate(section.getEndDate());
+                iterator.remove();
+                changesMade = true;
+            }
+            lastSection = section;
         }
-        entity.refresh();
-        entity.checkIsFrozen(true);
+        if (changesMade) fixDuplicateRates(sections);
     }
 
     DLoan getEntity();
@@ -78,8 +111,9 @@ public interface LoanAccess {
         }
         payment.refresh();
         loan.refresh();
+        AlterCreateApi.create(request.getConductor(), AlterCreateType.PAYMENT, payment.getId());
         loan.getClient().refresh();
-        RunBankSimulation.simulate(payment.getDate());
+        RunBankSimulation.simulateAsync(payment.getDate());
         return payment;
     }
 
@@ -120,7 +154,18 @@ public interface LoanAccess {
     }
 
     default Emeralds getAccumulatedInterest() {
-        DLoan interest = getEntity();
-        return interest.getTotalOwed().add(interest.getTotalPaid());
+        DLoan loan = getEntity();
+        return loan.getTotalOwed()
+            .minus(loan.getInitialAmount())
+            .add(loan.getTotalPaid());
+    }
+
+    default Double getRateAt(Instant effectiveDate) {
+        return getEntity().getSections()
+            .stream()
+            .filter(s -> s.isDateDuring(effectiveDate))
+            .findAny()
+            .map(DLoanSection::getRate)
+            .orElse(null);
     }
 }

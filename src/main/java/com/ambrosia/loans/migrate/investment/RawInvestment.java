@@ -1,8 +1,8 @@
 package com.ambrosia.loans.migrate.investment;
 
-import com.ambrosia.loans.database.account.event.investment.InvestApi;
+import com.ambrosia.loans.database.account.event.adjust.AdjustApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.migrate.base.RawMakeAdjustment;
+import com.ambrosia.loans.migrate.RawMakeAdjustment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
@@ -31,7 +31,7 @@ public class RawInvestment implements RawMakeAdjustment {
 
     @Override
     public void createAdjustment(Emeralds difference, Instant date) {
-        InvestApi.createAdjustment(difference, this.client(), date, false);
+        AdjustApi.createAdjustment(difference, this.client(), date, false);
     }
 
     public long getClientId() {

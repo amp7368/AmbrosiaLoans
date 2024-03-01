@@ -13,5 +13,10 @@ public abstract class BaseStaffSubCommand extends BaseSubCommand {
         this.onStaffCommand(event, staff);
     }
 
+    @Override
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
     protected abstract void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff);
 }

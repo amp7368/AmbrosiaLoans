@@ -11,7 +11,7 @@ import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
@@ -27,7 +27,7 @@ public class AmbrosiaMessages {
 
     public static String formatDate(Instant date, boolean emoji) {
         String dateFormatted = DATE_FORMATTER.format(date);
-        if (emoji) return AmbrosiaEmoji.DATE + " " + dateFormatted;
+        if (emoji) return AmbrosiaEmoji.ANY_DATE + " " + dateFormatted;
         return dateFormatted;
     }
 
@@ -45,7 +45,7 @@ public class AmbrosiaMessages {
             return new AmbrosiaCreateMessage(msg);
         }
 
-        public static AmbrosiaMessage badRole(String requiredRole, SlashCommandInteractionEvent event) {
+        public static AmbrosiaMessage badRole(String requiredRole, CommandInteraction event) {
             String commandName = event.getFullCommandName();
             return error(String.format("You must be a %s to run '/%s'", requiredRole, commandName));
         }
@@ -131,12 +131,22 @@ public class AmbrosiaMessages {
             String msg = "You're blacklisted and can no longer interact with the bot";
             return error(msg);
         }
+
+        public static AmbrosiaMessage alteredAlready(String action) {
+            String msg = "Action is already %s".formatted(action);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage dateParseError(String given, String expected) {
+            String msg = "Failed to parse date. %s is not in the format %s".formatted(given, expected);
+            return error(msg);
+        }
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {
 
         @Override
-        public void replyError(SlashCommandInteractionEvent event) {
+        public void replyError(CommandInteraction event) {
             replyError(event, msg);
         }
 
@@ -149,7 +159,7 @@ public class AmbrosiaMessages {
     private record AmbrosiaCreateMessage(MessageCreateData msg) implements AmbrosiaMessage, SendMessage {
 
         @Override
-        public void replyError(SlashCommandInteractionEvent event) {
+        public void replyError(CommandInteraction event) {
             replyError(event, msg);
             msg.close();
         }

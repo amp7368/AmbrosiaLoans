@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.system.service;
 
 import com.ambrosia.loans.Bank;
-import com.ambrosia.loans.database.account.balance.query.QDAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.query.QDClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
@@ -33,6 +33,8 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.jetbrains.annotations.NotNull;
 
 public class RunBankSimulation {
@@ -62,6 +64,26 @@ public class RunBankSimulation {
         DLoanStatus.ACTIVE,
         DLoanStatus.PAID));
 
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final List<Runnable> simulations = new ArrayList<>();
+    private static boolean isRunning = false;
+
+    public static void simulateAsync(Instant simulateStartDate) {
+        synchronized (simulations) {
+            simulations.add(() -> simulate(simulateStartDate));
+            if (!isRunning) checkSimulationQueue();
+        }
+    }
+
+    private static void checkSimulationQueue() {
+        synchronized (simulations) {
+            isRunning = !simulations.isEmpty();
+            if (!isRunning) return;
+            Runnable run = simulations.remove(0);
+            executor.submit(run);
+        }
+    }
+
     public static void simulate(Instant simulateStartDate) {
         simulate(simulateStartDate, SimulationOptions.options());
     }
@@ -80,9 +102,10 @@ public class RunBankSimulation {
         for (DLoan loan : LoanQueryApi.findAllLoans()) {
             loan.checkIsFrozen(true);
         }
+        checkSimulationQueue();
     }
 
-    public static int simulatePayment(DLoanPayment loanPayment, int index, List<IAccountChange> accountChanges) {
+    private static int simulatePayment(DLoanPayment loanPayment, int index, List<IAccountChange> accountChanges) {
         Instant currentDate = loanPayment.getDate();
         index = doRelevantAccountChange(accountChanges, index, currentDate);
         loanPayment.updateSimulation();
@@ -165,7 +188,7 @@ public class RunBankSimulation {
     private static void resetSimulationFromDate(Instant fromDateInstant, SimulationOptions options) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
 
-        new QDAccountSnapshot().where()
+        new QDClientSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
         new QDBankSnapshot().where()

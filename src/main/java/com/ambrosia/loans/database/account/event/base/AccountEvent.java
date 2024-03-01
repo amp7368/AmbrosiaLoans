@@ -7,32 +7,34 @@ import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+@History
 @MappedSuperclass
 public abstract class AccountEvent extends Model implements Commentable, IAccountChange {
 
     @Id
-    protected UUID id;
+    protected long id;
     @Column(nullable = false)
     @ManyToOne(optional = false)
     protected DClient client;
     @Column(nullable = false)
     protected DStaffConductor conductor;
+    @Index
     @Column(nullable = false)
     protected Timestamp date;
     @Index
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = AccountEventType.DEFINITION)
     protected AccountEventType eventType;
     @Column(nullable = false)
-    private long amount;
+    protected long amount;
 
 
     public AccountEvent(DClient client, Instant date, DStaffConductor conductor, Emeralds amount, AccountEventType eventType) {
@@ -53,6 +55,10 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
         return this.date.toInstant();
     }
 
+    public void setDate(Instant value) {
+        this.date = Timestamp.from(value);
+    }
+
     @Override
     public void updateSimulation() {
         this.client.updateBalance(this.amount, this.getDate(), getEventType());
@@ -67,6 +73,13 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
         return Emeralds.of(this.amount);
     }
 
+    public void setDeltaAmount(Emeralds amount) {
+        this.amount = amount.amount();
+    }
+
+    public long getId() {
+        return this.id;
+    }
 
     public DClient getClient() {
         return client;

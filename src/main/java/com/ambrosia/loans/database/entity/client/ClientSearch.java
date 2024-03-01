@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.entity.client.query.QDClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -14,7 +14,8 @@ public class ClientSearch {
 
     public static List<DClient> autoComplete(String match) {
         List<ClientName> byName = new ArrayList<>();
-        List<DClient> clients = new QDClient().findList();
+
+        List<DClient> clients = ClientQueryApi.findAllReadOnly();
         for (DClient client : clients) {
             String displayName = client.getDisplayName();
             String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
@@ -23,6 +24,7 @@ public class ClientSearch {
         }
 
         byName.forEach(c -> c.match(match));
+
         byName.sort(Comparator.comparing(ClientName::score).reversed());
         return byName.stream().map(ClientName::getClient).toList();
     }

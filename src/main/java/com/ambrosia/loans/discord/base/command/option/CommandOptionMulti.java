@@ -1,7 +1,9 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import java.util.List;
 import java.util.function.Function;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.Command.Choice;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +33,13 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
         return this;
     }
 
-    public V getMap1(SlashCommandInteractionEvent event) {
+    @Override
+    public CommandOptionBasic<R> addChoices(List<Choice> choices) {
+        super.addChoices(choices);
+        return this;
+    }
+
+    public V getMap1(CommandInteraction event) {
         return event.getOption(this.name, this.mapping1);
     }
 }

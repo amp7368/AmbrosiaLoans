@@ -11,12 +11,12 @@ import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -24,14 +24,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+@History
 @Entity
 @Table(name = "adjust_loan")
 public class DAdjustLoan extends Model implements Commentable, IAccountChange {
 
     @Id
-    protected UUID id;
+    protected long id;
     @Column(nullable = false)
     protected DStaffConductor conductor;
+    @Index
     @Column(nullable = false)
     protected Timestamp date;
     @Index
@@ -92,5 +94,9 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
 
     public Emeralds getAmount() {
         return Emeralds.of(amount);
+    }
+
+    public long getId() {
+        return this.id;
     }
 }

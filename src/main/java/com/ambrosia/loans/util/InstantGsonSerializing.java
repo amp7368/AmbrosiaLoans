@@ -1,5 +1,6 @@
 package com.ambrosia.loans.util;
 
+import apple.utilities.json.gson.GsonBuilderDynamic;
 import apple.utilities.json.gson.serialize.JsonSerializing;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -13,6 +14,10 @@ import java.time.Instant;
 public class InstantGsonSerializing implements JsonSerializing<Instant> {
 
     public static GsonBuilder registerGson(GsonBuilder gson) {
+        return gson.registerTypeAdapter(Instant.class, new InstantGsonSerializing());
+    }
+
+    public static GsonBuilderDynamic registerGson(GsonBuilderDynamic gson) {
         return gson.registerTypeAdapter(Instant.class, new InstantGsonSerializing());
     }
 

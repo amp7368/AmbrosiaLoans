@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.entity.client;
 
-import com.ambrosia.loans.database.account.balance.DAccountSnapshot;
+import com.ambrosia.loans.database.account.balance.DClientSnapshot;
 import com.ambrosia.loans.database.account.event.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.event.base.AccountEvent;
 import com.ambrosia.loans.database.account.event.investment.DInvestment;
@@ -15,7 +15,10 @@ import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
+import io.ebean.annotation.Cache;
+import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
+import io.ebean.annotation.Index;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
@@ -31,6 +34,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 
+@Cache(enableQueryCache = true, naturalKey = {"discord.id"})
+@History
 @Entity
 @Table(name = "client")
 public class DClient extends Model implements ClientAccess, Commentable {
@@ -45,6 +50,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Column
     @Embedded(prefix = "discord_")
     private ClientDiscordDetails discord;
+    @Index
     @Column(unique = true)
     private String displayName;
     @Column(nullable = false)
@@ -59,7 +65,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Embedded(prefix = "balance_")
     private final ClientBalance balance = new ClientBalance();
     @OneToMany
-    private final List<DAccountSnapshot> accountSnapshots = new ArrayList<>();
+    private final List<DClientSnapshot> accountSnapshots = new ArrayList<>();
 
     @OneToMany(mappedBy = "client")
     private final List<DLoan> loans = new ArrayList<>();
@@ -146,7 +152,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return this;
     }
 
-
     @Override
     public DClient getEntity() {
         return this;
@@ -167,18 +172,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.minecraft = minecraft;
     }
 
-    public DClient addAccountSnapshot(DAccountSnapshot snapshot) {
-        this.accountSnapshots.add(snapshot);
-        return this;
-    }
-
-    public List<DAccountSnapshot> getAccountSnapshots() {
-        return accountSnapshots.stream()
-            .sorted()
-            .toList();
-    }
 
     public ClientDiscordDetails getDiscord() {
+        if (this.discord != null) this.discord.hookUpdate(this);
         return this.discord;
     }
 
@@ -186,6 +182,18 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.discord = discord;
         return this;
     }
+
+    public DClient addAccountSnapshot(DClientSnapshot snapshot) {
+        this.accountSnapshots.add(snapshot);
+        return this;
+    }
+
+    public List<DClientSnapshot> getAccountSnapshots() {
+        return accountSnapshots.stream()
+            .sorted()
+            .toList();
+    }
+
 
     @Override
     public String getDisplayName() {
