@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base.exception;
+package com.ambrosia.loans.database.system.exception;
 
 import java.time.Instant;
 

@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.request.withdrawal;
 
-import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
+import com.ambrosia.loans.database.system.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import java.time.Instant;
 import java.util.List;

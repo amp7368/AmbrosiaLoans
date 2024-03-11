@@ -20,7 +20,6 @@ public final class Emeralds implements Comparable<Emeralds> {
         return new Emeralds(amount);
     }
 
-
     public static Emeralds of(BigDecimal amount) {
         return of(amount.longValue());
     }

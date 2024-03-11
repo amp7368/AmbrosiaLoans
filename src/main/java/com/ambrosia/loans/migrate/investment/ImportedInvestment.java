@@ -44,11 +44,11 @@ public class ImportedInvestment {
 
     private void invest(Emeralds delta, RawInvestment raw) {
         Instant date = raw.date();
-        InvestApi.createInvestment(raw.client(), date, DStaffConductor.MIGRATION, delta);
+        InvestApi.createMigrationInvestment(raw.client(), date, DStaffConductor.MIGRATION, delta);
     }
 
     private void withdrawal(Emeralds delta, RawInvestment raw) {
         Instant date = raw.date();
-        WithdrawalApi.createWithdrawal(raw.client(), date, DStaffConductor.MIGRATION, delta.negative(), true);
+        WithdrawalApi.createMigrationWithdrawal(raw.client(), date, DStaffConductor.MIGRATION, delta.negative());
     }
 }

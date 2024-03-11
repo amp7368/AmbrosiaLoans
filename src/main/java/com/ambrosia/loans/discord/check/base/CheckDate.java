@@ -16,7 +16,7 @@ public class CheckDate extends CheckError<Instant> {
         }
         Instant monthAgo = Instant.now().minus(30, ChronoUnit.DAYS);
         if (value.isBefore(monthAgo)) {
-            String msg = "Cannot set %s as start_date since it is more than a month ago?"
+            String msg = "Cannot set to %s since it is more than a month ago!"
                 .formatted(formatDate(value));
             error.addError(msg);
         }

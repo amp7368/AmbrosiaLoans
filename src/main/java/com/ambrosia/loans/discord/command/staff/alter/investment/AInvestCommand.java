@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class AInvestSetCommand extends BaseCommand {
+public class AInvestCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -15,7 +15,7 @@ public class AInvestSetCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new InvestAlterCommand());
+        return List.of(new InvestMakeCommand(), new InvestAlterCommand());
     }
 
     @Override

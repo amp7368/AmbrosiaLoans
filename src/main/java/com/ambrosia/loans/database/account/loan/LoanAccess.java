@@ -5,8 +5,9 @@ import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.database.system.exception.OverpaymentException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -85,11 +86,11 @@ public interface LoanAccess {
 
     DLoan getEntity();
 
-    default DLoanPayment makePayment(Emeralds emeralds) {
-        return makePayment(emeralds, Instant.now());
+    default DLoanPayment makeMigrationPayment(Emeralds emeralds) {
+        return makeMigrationPayment(emeralds, Instant.now());
     }
 
-    default DLoanPayment makePayment(Emeralds emeralds, Instant date) {
+    default DLoanPayment makeMigrationPayment(Emeralds emeralds, Instant date) {
         if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
         DLoan loan = getEntity();
         DLoanPayment payment = new DLoanPayment(loan, date, emeralds.amount(), DStaffConductor.SYSTEM);
@@ -100,18 +101,25 @@ public interface LoanAccess {
         return payment;
     }
 
-    default DLoanPayment makePayment(ActiveRequestPayment request) throws InvalidStaffConductorException {
-        Emeralds emeralds = request.getPayment();
+    default DLoanPayment makePayment(ActiveRequestPayment request) throws InvalidStaffConductorException, OverpaymentException {
+        return makePayment(request.getPayment(), request.getTimestamp(), request.getConductor());
+    }
+
+    default DLoanPayment makePayment(Emeralds emeralds, Instant timestamp, DStaffConductor conductor) throws OverpaymentException {
         if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
+
         DLoan loan = getEntity();
-        DLoanPayment payment = new DLoanPayment(loan, request.getTimestamp(), emeralds.amount(), request.getConductor());
+        Emeralds totalOwed = loan.getTotalOwed(null, timestamp);
+        if (emeralds.gt(totalOwed.amount())) throw new OverpaymentException(emeralds, totalOwed);
+
+        DLoanPayment payment = new DLoanPayment(loan, timestamp, emeralds.amount(), conductor);
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
             transaction.commit();
         }
         payment.refresh();
         loan.refresh();
-        AlterCreateApi.create(request.getConductor(), AlterCreateType.PAYMENT, payment.getId());
+        AlterCreateApi.create(conductor, AlterCreateType.PAYMENT, payment.getId());
         loan.getClient().refresh();
         RunBankSimulation.simulateAsync(payment.getDate());
         return payment;

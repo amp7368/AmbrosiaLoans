@@ -3,7 +3,7 @@ package com.ambrosia.loans.database.account.base;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.Commentable;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
@@ -45,9 +45,8 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
         this.amount = amount.amount();
     }
 
-    public AccountEvent(BaseActiveRequestInvest<?> request, Instant timestamp) throws InvalidStaffConductorException {
-        this(request.getClient(), timestamp, request.getConductor(), request.getAmount(), request.getEventType());
-        this.amount = request.getAmount().amount();
+    public AccountEvent(BaseActiveRequestInvest<?> request, Instant date) throws InvalidStaffConductorException {
+        this(request.getClient(), date, request.getConductor(), request.getAmount(), request.getEventType());
     }
 
     @Override

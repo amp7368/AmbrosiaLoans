@@ -3,7 +3,7 @@ package com.ambrosia.loans.database.entity.staff;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 
 public class StaffConductorApi {
 

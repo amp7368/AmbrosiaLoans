@@ -6,8 +6,8 @@ import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -16,7 +16,7 @@ import java.time.Instant;
 
 public interface AccountEventApi {
 
-    static AccountEvent createInvestEvent(DClient client, Instant date, DStaffConductor staff, Emeralds emeralds,
+    static AccountEvent createMigrationInvestLike(DClient client, Instant date, DStaffConductor staff, Emeralds emeralds,
         AccountEventType type) {
         AccountEvent investment;
         if (type == AccountEventType.INVEST)
@@ -30,6 +30,28 @@ public interface AccountEventApi {
             transaction.commit();
         }
         return investment;
+    }
+
+    static AccountEvent createInvestLike(DClient client, Instant date, DStaffConductor staff, Emeralds amount,
+        AccountEventType eventType) {
+        AccountEvent event;
+        if (eventType == AccountEventType.INVEST) {
+            DInvestment investment = new DInvestment(client, date, staff, amount, eventType);
+            event = investment;
+            event.getClient().addInvestment(investment);
+        } else {
+            DWithdrawal withdrawal = new DWithdrawal(client, date, staff, amount, eventType);
+            event = withdrawal;
+            event.getClient().addWithdrawal(withdrawal);
+        }
+        event.save();
+        AlterCreateType alterCreateType = eventType.getAlterCreateType();
+        AlterCreateApi.create(staff, alterCreateType, event.getId());
+        event.refresh();
+        event.getClient().refresh();
+
+        RunBankSimulation.simulateAsync(event.getDate());
+        return event;
     }
 
     static AccountEvent createInvestLike(BaseActiveRequestInvest<?> request) throws InvalidStaffConductorException {

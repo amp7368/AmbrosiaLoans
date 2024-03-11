@@ -1,23 +1,24 @@
 package com.ambrosia.loans.database.system.service;
 
 import com.ambrosia.loans.Bank;
-import com.ambrosia.loans.database.account.balance.query.QDClientSnapshot;
+import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
-import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
-import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
+import com.ambrosia.loans.database.account.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.base.IAccountChange;
 import com.ambrosia.loans.database.account.investment.DInvestment;
-import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
+import com.ambrosia.loans.database.account.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
-import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
+import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
-import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.query.QDClientSnapshot;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
-import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
+import com.ambrosia.loans.database.account.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.bank.BankApi;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -90,6 +91,7 @@ public class RunBankSimulation {
 
     public static void simulate(Instant simulateStartDate, SimulationOptions options) {
         resetSimulationFromDate(simulateStartDate, options);
+        DatabaseModule.get().logger().info("Starting simulation...");
         List<DLoanPayment> loanPayments = findLoanPayments(simulateStartDate, options);
         List<IAccountChange> accountChanges = findAccountChanges(simulateStartDate, options);
 
@@ -102,6 +104,7 @@ public class RunBankSimulation {
         for (DLoan loan : LoanQueryApi.findAllLoans()) {
             loan.checkIsFrozen(true);
         }
+        DatabaseModule.get().logger().info("Finished running simulation!");
         checkSimulationQueue();
     }
 

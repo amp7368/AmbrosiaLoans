@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.command.staff.alter;
 
 import com.ambrosia.loans.database.alter.change.DAlterChange;
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,26 +15,92 @@ public class ReplyAlterMessage {
         return new ReplyAlterMessage().add(change, successMsg);
     }
 
+    public static ReplyAlterMessage of(DAlterCreate create, String successMsg) {
+        return new ReplyAlterMessage().add(create, successMsg);
+    }
+
+
     public ReplyAlterMessage add(DAlterChange change, String successMsg) {
-        changes.add(new ReplyAlterOneMessage(change, successMsg));
+        changes.add(new ReplyAlterModOneMessage(change, successMsg));
+        return this;
+    }
+
+    public ReplyAlterMessage add(DAlterCreate create, String successMsg) {
+        changes.add(new ReplyAlterCreateOneMessage(create, successMsg));
         return this;
     }
 
     public void addToEmbed(EmbedBuilder embed) {
         for (ReplyAlterOneMessage change : changes) {
-            String title = "## Modification %s %s\n".formatted(AmbrosiaEmoji.KEY_ID_CHANGES, change.record.getId());
-            embed.appendDescription(title);
+            String header = "## %s %s %s\n"
+                .formatted(change.getTitle(), AmbrosiaEmoji.KEY_ID_CHANGES, change.getId());
+            embed.appendDescription(header);
 
             String entityId = "### %s %s %s\n".formatted(
-                change.record.getEntityType(),
+                change.getEntityType(),
                 AmbrosiaEmoji.KEY_ID,
-                change.record.getEntityId());
+                change.getEntityId());
             embed.appendDescription(entityId);
-            embed.appendDescription("- " + change.successMsg);
+            embed.appendDescription("- " + change.successMsg());
         }
     }
 
-    private record ReplyAlterOneMessage(DAlterChange record, String successMsg) {
+    private interface ReplyAlterOneMessage {
 
+        String getTitle();
+
+        long getEntityId();
+
+        String getEntityType();
+
+        String successMsg();
+
+        long getId();
+    }
+
+    private record ReplyAlterModOneMessage(DAlterChange record, String successMsg) implements ReplyAlterOneMessage {
+
+        @Override
+        public String getTitle() {
+            return "Modification";
+        }
+
+        @Override
+        public long getEntityId() {
+            return record.getEntityId();
+        }
+
+        @Override
+        public String getEntityType() {
+            return record.getEntityDisplayName();
+        }
+
+        @Override
+        public long getId() {
+            return record.getId();
+        }
+    }
+
+    private record ReplyAlterCreateOneMessage(DAlterCreate record, String successMsg) implements ReplyAlterOneMessage {
+
+        @Override
+        public String getTitle() {
+            return "Create Modification";
+        }
+
+        @Override
+        public long getEntityId() {
+            return record.getEntityId();
+        }
+
+        @Override
+        public String getEntityType() {
+            return record.getEntityDisplayName();
+        }
+
+        @Override
+        public long getId() {
+            return record.getId();
+        }
     }
 }

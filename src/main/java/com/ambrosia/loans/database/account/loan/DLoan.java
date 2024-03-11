@@ -12,9 +12,9 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.VersionEntityType;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
@@ -132,7 +132,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @NotNull
     @Override
     public Instant getStartDate() {
-        return this.startDate.toInstant();
+        return startDate.toInstant();
     }
 
     public void setStartDate(Instant newStartDate) {
