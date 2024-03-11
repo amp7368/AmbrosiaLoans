@@ -29,7 +29,8 @@ public class InvestMakeCommand extends BaseStaffSubCommand {
         if (client == null) return;
         Emeralds amount = CommandOption.INVESTMENT_AMOUNT.getRequired(event);
         if (amount == null) return;
-        Instant date = CommandOption.DATE.getOptional(event, Instant.now());
+        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
+        if (date == null) return;
         DInvestment investment = InvestApi.createInvestment(client, date, staff, amount);
         DAlterCreate create = AlterQueryApi.findCreateByEntityId(investment.getId(), AlterCreateType.INVEST);
 

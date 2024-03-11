@@ -12,7 +12,7 @@ ALTER SEQUENCE staff_id_seq RESTART WITH 101;
 
 SELECT MAX(id) + 1
 FROM collateral;
-ALTER SEQUENCE collateral_id_seq RESTART WITH 970;
+ALTER SEQUENCE collateral_id_seq RESTART WITH 324;
 
 SELECT MAX(id) + 1
 FROM loan;

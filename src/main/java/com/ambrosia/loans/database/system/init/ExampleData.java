@@ -104,7 +104,7 @@ public class ExampleData {
         clientManyLoansMakePayment(loan3, loan3Date.plus(3, DAYS), false);
         clientManyLoansMakePayment(loan3, loan3Date.plus(4, DAYS), true);
         DLoan loan4 = LoanCreateApi.createExampleLoan(clientManyLoans, amount, .03, DStaffConductor.SYSTEM, loan4Date);
-        loan4.makePayment(Emeralds.leToEmeralds(16), loan4Date.plus(1, SECONDS));
+        loan4.makeMigrationPayment(Emeralds.leToEmeralds(16), loan4Date.plus(1, SECONDS));
     }
 
     private static void clientManyLoansMakePayment(DLoan loan, Instant paymentDate, boolean isAll) {
@@ -112,22 +112,22 @@ public class ExampleData {
         loan.getClient().refresh();
         Emeralds balance = loan.getClient().getBalance(paymentDate);
         long amount = isAll ? balance.amount() : balance.amount() / 2;
-        loan.makePayment(Emeralds.of(amount).negative(), paymentDate);
+        loan.makeMigrationPayment(Emeralds.of(amount).negative(), paymentDate);
     }
 
 
     private static void createPayments() {
         clients().forEach(Model::refresh);
         Instant now = Instant.now();
-        clientLoanA.getLoans().get(0).makePayment(Emeralds.leToEmeralds(16), now.minus(5, DAYS));
+        clientLoanA.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(16), now.minus(5, DAYS));
 
-        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(63), now);
-        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32), now.minus(10, DAYS));
-        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32), now.minus(15, DAYS));
-        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32), now.minus(20, DAYS));
-        clientLoanB.getLoans().get(0).makePayment(Emeralds.leToEmeralds(32), now.minus(25, DAYS));
+        clientLoanB.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(63), now);
+        clientLoanB.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(32), now.minus(10, DAYS));
+        clientLoanB.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(32), now.minus(15, DAYS));
+        clientLoanB.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(32), now.minus(20, DAYS));
+        clientLoanB.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(32), now.minus(25, DAYS));
 
-        clientLoanC.getLoans().get(0).makePayment(Emeralds.leToEmeralds(1));
+        clientLoanC.getLoans().get(0).makeMigrationPayment(Emeralds.leToEmeralds(1));
     }
 
     private static List<DClient> clients() {

@@ -20,7 +20,7 @@ public class CheckPosAmount extends CheckError<Emeralds> {
     @Override
     public void checkAll(Emeralds amount, CheckErrorList error) {
         if (!amount.isPositive()) {
-            error.addError("'Initial amount' must be positive!");
+            error.addError("'Initial amount' must be positive! Provided: %s.".formatted(amount));
         }
         if (amount.lt(warnLowerBound.amount())) {
             String msg = "Setting 'initial amount' to %s. Are you sure you want to set it under %s".formatted(amount, warnLowerBound);

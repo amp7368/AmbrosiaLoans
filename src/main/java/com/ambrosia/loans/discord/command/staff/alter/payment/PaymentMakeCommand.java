@@ -1,23 +1,24 @@
-package com.ambrosia.loans.discord.command.staff.alter.withdrawal;
+package com.ambrosia.loans.discord.command.staff.alter.payment;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
-import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi;
+import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.system.exception.NotEnoughFundsException;
+import com.ambrosia.loans.database.system.exception.OverpaymentException;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import com.ambrosia.loans.discord.check.CheckErrorList;
 import com.ambrosia.loans.discord.check.base.CheckDate;
-import com.ambrosia.loans.discord.check.withdrawal.CheckWithdrawalAmount;
+import com.ambrosia.loans.discord.check.payment.CheckPaymentAmount;
 import com.ambrosia.loans.discord.command.staff.alter.ReplyAlterMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.List;
@@ -25,51 +26,54 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class WithdrawalMakeCommand extends BaseStaffSubCommand {
+public class PaymentMakeCommand extends BaseStaffSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
-        Boolean isFull = CommandOption.WITHDRAWAL_FULL.getOptional(event);
+        DLoan loan = CommandOption.LOAN_ID.getRequired(event);
+        if (loan == null) return;
+        if (!loan.getClient().equals(client)) {
+            String msg = "Loan %s %d does not belong to %s"
+                .formatted(AmbrosiaEmoji.KEY_ID, loan.getId(), client.getEffectiveName());
+            replyError(event, msg);
+            return;
+        }
+        Emeralds maxPayment = loan.getTotalOwed(null, Instant.now());
+
+        Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
         Emeralds amount;
-        if (isFull != null && isFull) amount = client.getBalance(Instant.now());
-        else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
+        if (isFull != null && isFull) amount = maxPayment;
+        else amount = CommandOption.PAYMENT_AMOUNT.getOptional(event);
         if (amount == null) {
-            replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");
+            replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
             return;
         }
         Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
         if (date == null) return;
 
-        if (client.willBalanceFailAtTimestamp(date)) {
-            String msg = "Cannot make withdrawal at %s. Balance has been updated since then"
-                .formatted(formatDate(date));
-            replyError(event, msg);
-            return;
-        }
         CheckErrorList error = CheckErrorList.of();
-        Emeralds investBalance = client.getInvestBalance(date);
-        new CheckWithdrawalAmount(investBalance).checkAll(amount, error);
+        new CheckPaymentAmount(maxPayment).checkAll(amount, error);
         new CheckDate().checkAll(date, error);
         if (error.hasError()) {
             error.reply(event);
             return;
         }
 
-        DWithdrawal withdrawal;
+        DLoanPayment payment;
         try {
-            withdrawal = WithdrawalApi.createWithdrawal(client, date, staff, amount);
-        } catch (NotEnoughFundsException e) {
+            payment = loan.makePayment(amount, date, staff);
+        } catch (OverpaymentException e) {
             replyError(event, e.getMessage());
             return;
         }
-        DAlterCreate create = AlterQueryApi.findCreateByEntityId(withdrawal.getId(), AlterCreateType.WITHDRAWAL);
+        DAlterCreate create = AlterQueryApi.findCreateByEntityId(payment.getId(), AlterCreateType.PAYMENT);
 
         EmbedBuilder embed = success()
             .setAuthor("Success!", null, AmbrosiaAssets.JOKER);
 
-        String successMsg = "Successfully created withdrawal for %s of %s on %s"
+        String successMsg = "Successfully created payment for %s of %s on %s"
             .formatted(client.getEffectiveName(), amount, formatDate(date));
         ReplyAlterMessage.of(create, successMsg).addToEmbed(embed);
 
@@ -78,10 +82,10 @@ public class WithdrawalMakeCommand extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("make", "Make a withdrawal for a client");
+        SubcommandData command = new SubcommandData("make", "Make a loan payment for a client");
         CommandOptionList.of(
-            List.of(CommandOption.CLIENT),
-            List.of(CommandOption.WITHDRAWAL_AMOUNT, CommandOption.WITHDRAWAL_FULL, CommandOption.DATE)
+            List.of(CommandOption.CLIENT, CommandOption.LOAN_ID),
+            List.of(CommandOption.PAYMENT_AMOUNT, CommandOption.PAYMENT_FULL, CommandOption.DATE)
         ).addToCommand(command);
         return command;
     }

@@ -16,5 +16,11 @@ SELECT *
 FROM alter_change_undo_history;
 
 SELECT *
+FROM alter_create;
+
+SELECT *
+FROM alter_create_undo_history;
+
+SELECT *
 FROM loan_section
 WHERE loan_id = 274

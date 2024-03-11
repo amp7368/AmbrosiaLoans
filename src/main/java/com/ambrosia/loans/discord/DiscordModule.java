@@ -8,8 +8,9 @@ import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
 import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
-import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestSetCommand;
+import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestCommand;
 import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
+import com.ambrosia.loans.discord.command.staff.alter.payment.APaymentCommand;
 import com.ambrosia.loans.discord.command.staff.alter.withdrawal.AWithdrawalSetCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
@@ -104,9 +105,7 @@ public class DiscordModule extends AppleModule {
             new AProfileCreateCommand(),
             new ABlacklistCommand());
         // employee alter commands
-        commands.addCommand(new ALoanCommand());
-        commands.addCommand(new AInvestSetCommand());
-        commands.addCommand(new AWithdrawalSetCommand());
+        commands.addCommand(new ALoanCommand(), new AInvestCommand(), new AWithdrawalSetCommand(), new APaymentCommand());
         // employee undo redo
         commands.addCommand(new AUndoCommand(), new ARedoCommand(), new ADeleteCommand());
         // employee view commands

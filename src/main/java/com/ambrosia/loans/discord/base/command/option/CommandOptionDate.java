@@ -11,6 +11,7 @@ import java.time.temporal.TemporalAccessor;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import org.jetbrains.annotations.Nullable;
 
 public class CommandOptionDate extends CommandOptionMulti<String, Instant> {
 
@@ -38,5 +39,13 @@ public class CommandOptionDate extends CommandOptionMulti<String, Instant> {
     @Override
     public AmbrosiaMessage getErrorMessage(CommandInteraction event) {
         return ErrorMessages.dateParseError(getMap1(event), "MM/DD/YY");
+    }
+
+    @Nullable
+    public Instant getOrParseError(CommandInteraction event, Instant fallback) {
+        Instant val = getOptional(event, fallback);
+        if (val == null)
+            getErrorMessage(event).replyError(event);
+        return val;
     }
 }

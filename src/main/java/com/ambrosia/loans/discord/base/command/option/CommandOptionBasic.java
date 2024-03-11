@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import org.jetbrains.annotations.UnknownNullability;
 
 public class CommandOptionBasic<R> implements CommandOption<R> {
 
@@ -34,6 +35,7 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
     }
 
     @Override
+    @UnknownNullability
     public R getOptional(CommandInteraction event, R fallback) {
         return event.getOption(name, fallback, this.getOption);
     }

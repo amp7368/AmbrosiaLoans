@@ -34,7 +34,8 @@ public class LoanSetRateCommand extends BaseAlterCommand {
         if (loan == null) return;
         Double rate = CommandOption.RATE.getRequired(event);
         if (rate == null) return;
-        Instant date = CommandOption.DATE.getOptional(event, Instant.now());
+        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
+        if (date == null) return;
 
         CheckErrorList errors = checkErrors(loan, date, rate);
         if (errors.hasError()) {

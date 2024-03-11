@@ -16,7 +16,6 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -42,10 +41,10 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
 
     // common
-    CommandOptionMulti<String, Instant> DATE = new CommandOptionDate();
-    CommandOptionMulti<String, Instant> LOAN_START_DATE = new CommandOptionDate("start_date",
+    CommandOptionDate DATE = new CommandOptionDate();
+    CommandOptionDate LOAN_START_DATE = new CommandOptionDate("start_date",
         "The start date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
-    CommandOptionMulti<String, Instant> LOAN_END_DATE = new CommandOptionDate("end_date",
+    CommandOptionDate LOAN_END_DATE = new CommandOptionDate("end_date",
         "The end date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
 
     // request

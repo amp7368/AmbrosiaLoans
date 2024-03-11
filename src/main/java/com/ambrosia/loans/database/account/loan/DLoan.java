@@ -132,7 +132,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     @NotNull
     @Override
     public Instant getStartDate() {
-        return this.startDate.toInstant();
+        return startDate.toInstant();
     }
 
     public void setStartDate(Instant newStartDate) {
