@@ -63,6 +63,18 @@ public class DAlterCreate extends Model {
         return entityType;
     }
 
+    public String getEntityDisplayName() {
+        try {
+            return AlterCreateType.valueOf(entityType).displayName();
+        } catch (IllegalArgumentException e) {
+            return entityType;
+        }
+    }
+
+    public long getEntityId() {
+        return entityId;
+    }
+
     public Instant getEventDate() {
         return eventDate.toInstant();
     }
@@ -88,4 +100,5 @@ public class DAlterCreate extends Model {
         DB.delete(entity, entityId);
         this.isCreated = false;
     }
+
 }

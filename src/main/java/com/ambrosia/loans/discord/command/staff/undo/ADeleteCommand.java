@@ -27,7 +27,7 @@ public class ADeleteCommand extends BaseStaffCommand {
         Long entityId = CommandOption.DELETE_ENTITY_ID.getRequired(event);
         if (entityId == null) return;
 
-        DAlterCreate create = AlterQueryApi.findCreateByEntityId(entityId, entityType.getTypeId());
+        DAlterCreate create = AlterQueryApi.findCreateByEntityId(entityId, entityType);
         if (create == null) {
             replyError(event, "That %s does not exist in the database".formatted(entityType.displayName()));
             return;

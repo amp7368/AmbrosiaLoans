@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.base.request;
 
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
+import com.ambrosia.loans.database.system.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;

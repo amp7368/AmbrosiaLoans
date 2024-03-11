@@ -9,7 +9,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.check.CheckErrorList;
-import com.ambrosia.loans.discord.check.loan.CheckInitialAmount;
+import com.ambrosia.loans.discord.check.investment.CheckInvestInitialAmount;
 import com.ambrosia.loans.discord.check.loan.CheckStart;
 import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;
 import com.ambrosia.loans.discord.command.staff.alter.BaseAlterCommand;
@@ -25,7 +25,7 @@ public class InvestAlterCommand extends BaseAlterCommand {
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         AlterCommandField<DInvestment> investment = field(CommandOption.INVESTMENT_ID);
-        AlterCommandField<Emeralds> amount = field(CommandOption.INVESTMENT_AMOUNT, new CheckInitialAmount());
+        AlterCommandField<Emeralds> amount = field(CommandOption.INVESTMENT_AMOUNT, new CheckInvestInitialAmount());
         AlterCommandField<Instant> date = field(CommandOption.DATE, new CheckStart());
 
         CheckErrorList errors = getAndCheckErrors(event,

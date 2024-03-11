@@ -2,7 +2,7 @@ package com.ambrosia.loans.database.account.loan;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import org.jetbrains.annotations.Nullable;

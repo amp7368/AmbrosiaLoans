@@ -10,7 +10,7 @@ FROM client_snapshot
 ORDER BY date;
 
 SELECT *
-FROM alter_change_record;
+FROM alter_change;
 
 SELECT *
 FROM alter_change_undo_history;

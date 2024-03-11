@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.request.payment;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.discord.base.exception.BadDateAccessException;
+import com.ambrosia.loans.database.system.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import java.util.List;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;

@@ -17,8 +17,12 @@ import java.time.Instant;
 
 public interface InvestApi {
 
+    static DInvestment createMigrationInvestment(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+        return (DInvestment) AccountEventApi.createMigrationInvestLike(client, date, conductor, emeralds, AccountEventType.INVEST);
+    }
+
     static DInvestment createInvestment(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
-        return (DInvestment) AccountEventApi.createInvestEvent(client, date, conductor, emeralds, AccountEventType.INVEST);
+        return (DInvestment) AccountEventApi.createInvestLike(client, date, conductor, emeralds, AccountEventType.INVEST);
     }
 
 

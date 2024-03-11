@@ -2,12 +2,12 @@ package com.ambrosia.loans.discord.command.player.request.withdrawal;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
-import com.ambrosia.loans.discord.request.withdrawal.BaseModifyWithdrawalRequest;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.withdrawal.ActiveRequestWithdrawal;
 import com.ambrosia.loans.discord.request.withdrawal.ActiveRequestWithdrawalGui;
+import com.ambrosia.loans.discord.request.withdrawal.BaseModifyWithdrawalRequest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.List;
@@ -23,7 +23,7 @@ public class RequestWithdrawalCommand extends BaseClientSubCommand implements Ba
         if (isFull != null && isFull) amount = client.getBalance(Instant.now());
         else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
         if (amount == null) {
-            replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
+            replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");
             return;
         }
         if (checkErrors(event, client, amount)) return;

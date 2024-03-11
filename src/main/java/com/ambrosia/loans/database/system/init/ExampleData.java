@@ -4,22 +4,22 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import com.ambrosia.loans.database.account.balance.query.QDClientSnapshot;
-import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustBalance;
-import com.ambrosia.loans.database.account.event.adjust.query.QDAdjustLoan;
-import com.ambrosia.loans.database.account.event.investment.query.QDInvestment;
-import com.ambrosia.loans.database.account.event.loan.collateral.query.QDCollateral;
-import com.ambrosia.loans.database.account.event.loan.query.QDLoan;
-import com.ambrosia.loans.database.account.event.loan.section.query.QDLoanSection;
-import com.ambrosia.loans.database.account.event.payment.query.QDLoanPayment;
-import com.ambrosia.loans.database.account.event.withdrawal.query.QDWithdrawal;
+import com.ambrosia.loans.database.account.adjust.query.QDAdjustBalance;
+import com.ambrosia.loans.database.account.adjust.query.QDAdjustLoan;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi;
+import com.ambrosia.loans.database.account.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanCreateApi;
+import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
+import com.ambrosia.loans.database.account.loan.query.QDLoan;
+import com.ambrosia.loans.database.account.loan.section.query.QDLoanSection;
+import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.query.QDClientSnapshot;
 import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi;
-import com.ambrosia.loans.database.alter.create.query.QDAlterChange;
-import com.ambrosia.loans.database.alter.create.query.QDAlterChangeUndoHistory;
+import com.ambrosia.loans.database.account.withdrawal.query.QDWithdrawal;
+import com.ambrosia.loans.database.alter.change.query.QDAlterChange;
+import com.ambrosia.loans.database.alter.change.query.QDAlterChangeUndoHistory;
 import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
 import com.ambrosia.loans.database.alter.create.query.QDAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
@@ -167,21 +167,22 @@ public class ExampleData {
 
     private static void withdrawals() {
         Instant bitAgo = Instant.now().minus(30, DAYS);
-        WithdrawalApi.createWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19), true);
-        WithdrawalApi.createWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256), true);
+        WithdrawalApi.createMigrationWithdrawal(clientWithdrawalA, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(19));
+        WithdrawalApi.createMigrationWithdrawal(clientInvestB, bitAgo, DStaffConductor.SYSTEM, Emeralds.leToEmeralds(256));
     }
 
     private static void insertInvestments() {
         Instant longAgo = Instant.now().minus(60, DAYS);
-        DInvestment investmentA = InvestApi.createInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
+        DInvestment investmentA = InvestApi.createMigrationInvestment(clientInvestA, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(100));
-        DInvestment withdrawalA = InvestApi.createInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
+        DInvestment withdrawalA = InvestApi.createMigrationInvestment(clientWithdrawalA, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(19));
         for (int i = 0; i < 3; i++) {
-            DInvestment investmentB = InvestApi.createInvestment(clientInvestB, longAgo.plus(i, MINUTES), DStaffConductor.SYSTEM,
+            DInvestment investmentB = InvestApi.createMigrationInvestment(clientInvestB, longAgo.plus(i, MINUTES),
+                DStaffConductor.SYSTEM,
                 Emeralds.leToEmeralds(128));
         }
-        DInvestment investmentC = InvestApi.createInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
+        DInvestment investmentC = InvestApi.createMigrationInvestment(clientInvestC, longAgo, DStaffConductor.SYSTEM,
             Emeralds.leToEmeralds(128));
     }
 

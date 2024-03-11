@@ -64,6 +64,10 @@ public class DAlterChange extends Model {
         return this.entity.getEntityType();
     }
 
+    public String getEntityDisplayName() {
+        return this.entity.getEntityDisplayName();
+    }
+
     public AlterChangeType getAlterType() {
         return this.type;
     }

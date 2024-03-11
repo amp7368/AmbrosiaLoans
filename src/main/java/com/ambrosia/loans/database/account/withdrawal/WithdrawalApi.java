@@ -5,21 +5,27 @@ import com.ambrosia.loans.database.account.base.AccountEventApi;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.exception.NotEnoughFundsException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import java.time.Instant;
 
 public interface WithdrawalApi {
 
-    static DWithdrawal createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds, boolean force) {
+    static DWithdrawal createMigrationWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds) {
+        return (DWithdrawal) AccountEventApi.createMigrationInvestLike(client, date, conductor, emeralds.negative(),
+            AccountEventType.WITHDRAWAL);
+    }
+
+    static DWithdrawal createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds)
+        throws NotEnoughFundsException {
         Emeralds balance = client.getInvestBalance(date);
         if (balance.amount() < emeralds.amount()) {
-            String msg = "Not enough emeralds! Tried withdrawing %s from %s investment".formatted(emeralds, balance);
-            DatabaseModule.get().logger().error(msg);
-            if (!force)
-                throw new IllegalStateException(msg);
+            NotEnoughFundsException e = new NotEnoughFundsException(emeralds, balance);
+            DatabaseModule.get().logger().warn("", e);
+            throw e;
         }
-        return (DWithdrawal) AccountEventApi.createInvestEvent(client, date, conductor, emeralds.negative(),
+        return (DWithdrawal) AccountEventApi.createInvestLike(client, date, conductor, emeralds.negative(),
             AccountEventType.WITHDRAWAL);
     }
 

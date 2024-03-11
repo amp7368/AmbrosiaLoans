@@ -4,9 +4,9 @@ import com.ambrosia.loans.database.alter.change.AlterDB;
 import com.ambrosia.loans.database.alter.change.AlterDBChange;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.change.DAlterChangeUndoHistory;
+import com.ambrosia.loans.database.alter.change.query.QDAlterChange;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.alter.create.DAlterCreateUndoHistory;
-import com.ambrosia.loans.database.alter.create.query.QDAlterChange;
 import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -83,6 +83,10 @@ public interface AlterRecordApi {
             return new QDAlterChange()
                 .where().id.eq(id)
                 .findOne();
+        }
+
+        static DAlterCreate findCreateByEntityId(long entityId, AlterCreateType entityType) {
+            return findCreateByEntityId(entityId, entityType.getTypeId());
         }
 
         static DAlterCreate findCreateByEntityId(long entityId, String entityType) {

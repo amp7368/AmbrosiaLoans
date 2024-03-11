@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.account.loan.LoanBuilder;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
-import com.ambrosia.loans.discord.base.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;

@@ -7,7 +7,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.check.CheckErrorList;
-import com.ambrosia.loans.discord.check.loan.CheckInitialAmount;
+import com.ambrosia.loans.discord.check.loan.CheckLoanInitialAmount;
 import com.ambrosia.loans.discord.check.loan.CheckStart;
 import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;
 import com.ambrosia.loans.discord.command.staff.alter.BaseAlterCommand;
@@ -25,7 +25,7 @@ public class LoanAlterCommand extends BaseAlterCommand {
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         AlterCommandField<DLoan> loan = field(CommandOption.LOAN_ID);
         AlterCommandField<Instant> startDate = field(CommandOption.LOAN_START_DATE, new CheckStart());
-        AlterCommandField<Emeralds> initialAmount = field(CommandOption.LOAN_INITIAL_AMOUNT, new CheckInitialAmount());
+        AlterCommandField<Emeralds> initialAmount = field(CommandOption.LOAN_INITIAL_AMOUNT, new CheckLoanInitialAmount());
 
         CheckErrorList errors = getAndCheckErrors(event,
             List.of(loan),
