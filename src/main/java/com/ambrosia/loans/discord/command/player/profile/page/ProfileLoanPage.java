@@ -45,7 +45,7 @@ public class ProfileLoanPage extends ProfilePage {
             return;
         }
         DLoan loan = activeLoan.get();
-        embed.appendDescription("### Active Loan [#%s]\n".formatted(loan.getId()));
+        embed.appendDescription("### Active Loan %s %s\n".formatted(AmbrosiaEmoji.KEY_ID, loan.getId()));
         embed.addField("Start date", "%s\n".formatted(formatDate(loan.getStartDate(), true)), true);
         String rateMsg = AmbrosiaEmoji.LOAN_RATE.spaced() + formatPercentage(loan.getLastSection().getRate());
         embed.addField("Rate", rateMsg, true);

@@ -31,7 +31,7 @@ public class ProfileOverviewPage extends ProfilePage {
 
         Optional<DLoan> activeLoan = client.getActiveLoan();
         String activeLoanMsg = activeLoan
-            .map(loan -> "%s Initial amount: %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()))
+            .map(loan -> "%s %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getTotalOwed()))
             .orElse("None");
         embed.addField("Active Loan", activeLoanMsg, true);
 

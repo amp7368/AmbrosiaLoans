@@ -2,7 +2,6 @@ package com.ambrosia.loans.discord.command.player.request.payment;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -22,7 +21,12 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
     @Override
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
         Instant timestamp = Instant.now();
-        Emeralds loanAmount = client.getBalance(timestamp).negative();
+        Optional<DLoan> loan = client.getActiveLoan();
+        if (loan.isEmpty()) {
+            replyError(event, "You have no active loans!");
+            return;
+        }
+        Emeralds loanAmount = loan.get().getTotalOwed(null, timestamp);
         Emeralds payment;
         Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
         if (isFull != null && isFull) payment = loanAmount;
@@ -31,22 +35,13 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
             return;
         }
-        Optional<DLoan> loan = client.getActiveLoan();
-        if (loan.isEmpty()) {
-            replyError(event, "You have no active loans!");
-            String error = "Client %s has a balance of %s, and wants to make a payment of %s, but has no active loans!"
-                .formatted(client.getEffectiveName(), loanAmount, payment);
-            DiscordModule.get().logger().error(error);
-            return;
-        }
         if (payment.lte(0)) {
             ErrorMessages.amountNotPositive(payment)
                 .replyError(event);
             return;
         }
-        if (loanAmount.lte(0)) {
-            ErrorMessages.onlyLoans(loanAmount.negative())
-                .replyError(event);
+        if (client.getActiveLoan().isEmpty()) {
+            ErrorMessages.onlyLoans().replyError(event);
             return;
         }
         if (loanAmount.lt(payment.amount())) {
