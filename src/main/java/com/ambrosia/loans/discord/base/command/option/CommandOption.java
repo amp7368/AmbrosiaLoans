@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi.WithdrawalQueryApi;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
@@ -68,6 +69,8 @@ public interface CommandOption<R> {
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DLoanPayment> PAYMENT_ID = multi("payment_id", "The id of the payment", OptionType.INTEGER,
+        OptionMapping::getAsLong, LoanQueryApi::findPaymentById);
     CommandOptionMulti<Long, DWithdrawal> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
         OptionMapping::getAsLong, WithdrawalQueryApi::findById);
     CommandOptionMulti<Long, DInvestment> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,

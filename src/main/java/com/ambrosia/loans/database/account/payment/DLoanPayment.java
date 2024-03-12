@@ -55,6 +55,11 @@ public class DLoanPayment extends Model implements Commentable {
         return Emeralds.of(this.amount);
     }
 
+    public DLoanPayment setAmount(Emeralds amount) {
+        this.amount = amount.amount();
+        return this;
+    }
+
     public Instant getDate() {
         return this.date.toInstant();
     }

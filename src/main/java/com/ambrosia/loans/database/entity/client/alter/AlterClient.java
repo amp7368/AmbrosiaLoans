@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.entity.client.alter;
 
 import com.ambrosia.loans.database.alter.change.AlterDBChange;
 import com.ambrosia.loans.database.alter.type.AlterChangeType;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 
@@ -15,8 +16,8 @@ public abstract class AlterClient<T> extends AlterDBChange<DClient, T> {
     }
 
     @Override
-    public String getEntityType() {
-        return "Client";
+    public AlterCreateType getEntityType() {
+        return AlterCreateType.CLIENT;
     }
 
     @Override

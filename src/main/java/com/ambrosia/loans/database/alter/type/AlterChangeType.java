@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanStartDate;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterPaymentAmount;
 import com.ambrosia.loans.database.alter.change.AlterDBChange;
 import com.ambrosia.loans.database.entity.client.alter.variant.AlterClientBlacklisted;
 import io.ebean.annotation.DbEnumValue;
@@ -21,7 +22,8 @@ public enum AlterChangeType implements GsonEnumTypeHolder<AlterDBChange<?, ?>> {
     INVESTMENT_AMOUNT(AlterInvestmentAmount.class),
     INVESTMENT_INSTANT(AlterInvestmentDate.class),
     LOAN_START_DATE(AlterLoanStartDate.class),
-    LOAN_DEFAULTED(AlterLoanDefaulted.class);
+    LOAN_DEFAULTED(AlterLoanDefaulted.class),
+    PAYMENT_AMOUNT(AlterPaymentAmount.class);
 
     private final Class<? extends AlterDBChange<?, ?>> typeClass;
 

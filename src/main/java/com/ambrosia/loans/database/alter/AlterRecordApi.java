@@ -124,7 +124,8 @@ public interface AlterRecordApi {
         static DAlterChange applyChange(DStaffConductor staff, AlterDBChange<?, ?> change) {
             DAlterCreate create = AlterQueryApi.findCreateByEntityId(change.getEntityId(), change.getEntityType());
             if (create == null) {
-                String msg = "Create{%s,%s} should already exist".formatted(change.getEntityId(), change.getEntityType());
+                String msg = "Create{%s,%s} should already exist".formatted(change.getEntityId(),
+                    change.getEntityType().displayName());
                 throw new IllegalStateException(msg);
             }
             DAlterChange record = new DAlterChange(change, create);

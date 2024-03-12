@@ -57,7 +57,7 @@ public class DAlterChange extends Model {
     }
 
     public long getEntityId() {
-        return this.entity.getId();
+        return this.entity.getEntityId();
     }
 
     public String getEntityType() {
