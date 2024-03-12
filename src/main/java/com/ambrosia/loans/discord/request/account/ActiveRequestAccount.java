@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.request.account;
 
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
@@ -48,7 +49,8 @@ public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccou
         return new ActiveRequestAccountGui(messageId, this);
     }
 
-    public void onComplete() throws UpdateAccountException {
+    @Nullable
+    public DAlterCreate onComplete() throws UpdateAccountException {
         DClient newVersion = ClientQueryApi.findById(clientId);
         if (newVersion == null) throw new UpdateAccountException("Client no longer exists");
         updateField(DClient::getMinecraft, minecraft, newVersion::setMinecraft);
@@ -59,6 +61,7 @@ public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccou
             DiscordModule.get().logger().error("", e);
             throw new UpdateAccountException("Client is not unique");
         }
+        return null;
     }
 
     public <T> void updateField(Function<DClient, T> extract, T updated, Consumer<T> setter) {

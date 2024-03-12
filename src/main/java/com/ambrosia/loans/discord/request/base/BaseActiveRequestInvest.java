@@ -1,12 +1,17 @@
 package com.ambrosia.loans.discord.request.base;
 
+import com.ambrosia.loans.database.account.base.AccountEvent;
 import com.ambrosia.loans.database.account.base.AccountEventApi;
 import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class BaseActiveRequestInvest<Gui extends ActiveRequestGui<?>> extends ActiveClientRequest<Gui> {
 
@@ -22,9 +27,12 @@ public abstract class BaseActiveRequestInvest<Gui extends ActiveRequestGui<?>> e
         this.amount = amount.amount();
     }
 
+    @Nullable
     @Override
-    public void onComplete() throws Exception {
-        AccountEventApi.createInvestLike(this);
+    public DAlterCreate onComplete() throws Exception {
+        AccountEvent event = AccountEventApi.createInvestLike(this);
+        AlterCreateType type = event.getEventType().getAlterCreateType();
+        return AlterQueryApi.findCreateByEntityId(event.getId(), type);
     }
 
     public Emeralds getAmount() {

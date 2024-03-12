@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -14,11 +15,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DCFStoredGui<Data> {
 
@@ -34,6 +35,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     private static final Button BUTTON_CLAIM = Button.primary(BUTTON_CLAIM_ID, "Claim");
     private static final Button BUTTON_APPROVE = Button.primary(BUTTON_APPROVE_ID, "Approve");
     private static final Button BUTTON_RESET_STAGE = Button.primary(BUTTON_RESET_STAGE_ID, "Reset");
+    @Nullable
+    protected DAlterCreate create;
     private String error = null;
 
     public ActiveRequestGui(long message, Data data) {
@@ -66,12 +69,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     private void approve(ButtonInteractionEvent event) {
         this.data.stage = ActiveRequestStage.APPROVED;
-        try {
-            this.onApprove();
-        } catch (Exception e) {
-            this.error = e.getMessage();
-            this.data.stage = ActiveRequestStage.ERROR;
-        }
     }
 
     private void unClaim(ButtonInteractionEvent event) {
@@ -106,8 +103,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         if (!setEndorser(event)) return;
         this.data.stage = ActiveRequestStage.COMPLETED;
         try {
-            this.data.onComplete();
-            this.onComplete();
+            this.create = this.data.onComplete();
         } catch (Exception e) {
             this.data.stage = ActiveRequestStage.ERROR;
             this.error = e.getMessage();
@@ -115,12 +111,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         }
         this.remove();
         this.updateSender();
-    }
-
-    protected void onApprove() throws Exception {
-    }
-
-    protected void onComplete() throws Exception {
     }
 
     @Override
@@ -144,9 +134,12 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         EmbedBuilder embed = new EmbedBuilder();
 
         AmbrosiaEmoji statusEmoji = this.data.stage.getEmoji();
-        String title = String.format("### %s %s %s %s %d\n", title(),
-            statusEmoji, stageName(),
-            AmbrosiaEmoji.KEY_ID_CHANGES, data.getRequestId());
+        String idMsg;
+        if (create == null)
+            idMsg = "%s **%d**".formatted(AmbrosiaEmoji.KEY_ID_CHANGES, data.getRequestId());
+        else idMsg = "";
+        String title = String.format("## %s %s **%s** %s\n", title(), statusEmoji, stageName(), idMsg);
+
         embed.appendDescription(title);
         embed.setColor(this.data.stage.getColor());
         data.sender.author(embed);
@@ -155,11 +148,12 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
         this.fields().forEach(embed::addField);
 
-        MessageCreateBuilder message = new MessageCreateBuilder();
-        message.setEmbeds(embed.build());
+        MessageCreateBuilder message = new MessageCreateBuilder()
+            .setEmbeds(embed.build());
+
         List<Button> components = getComponents();
         if (components.isEmpty()) message.setComponents();
-        else message.setComponents(ActionRow.of(components));
+        else message.setActionRow(components);
         return message.build();
     }
 
@@ -239,6 +233,11 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     protected String staffDescription() {
         return null;
+    }
+
+    protected String createEntityId() {
+        if (create == null) return "";
+        return AmbrosiaEmoji.KEY_ID.spaced(create.getEntityId());
     }
 
     protected abstract String title();

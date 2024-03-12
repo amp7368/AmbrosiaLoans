@@ -1,9 +1,11 @@
 package com.ambrosia.loans.discord.request.loan;
 
+import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -103,6 +105,8 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @Override
     protected String title() {
-        return "%s %s".formatted(data.transactionType(), data.getAmount());
+        AccountEventType transactionType = data.transactionType();
+        Emeralds amount = data.getAmount();
+        return "%s %s %s".formatted(transactionType, amount, createEntityId());
     }
 }

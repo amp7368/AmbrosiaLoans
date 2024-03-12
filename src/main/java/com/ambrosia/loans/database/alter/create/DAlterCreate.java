@@ -52,7 +52,7 @@ public class DAlterCreate extends Model {
     }
 
     public long getId() {
-        return this.entityId;
+        return this.id;
     }
 
     public void addHistory(DAlterCreateUndoHistory history) {

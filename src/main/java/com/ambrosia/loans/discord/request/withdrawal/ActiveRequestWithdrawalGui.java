@@ -38,6 +38,6 @@ public class ActiveRequestWithdrawalGui extends ActiveRequestGui<ActiveRequestWi
 
     @Override
     protected String title() {
-        return "Investment";
+        return "Withdrawal " + createEntityId();
     }
 }

@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.base.request;
 
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
@@ -7,6 +8,7 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import discord.util.dcf.gui.stored.DCFStoredDormantGui;
 import net.dv8tion.jda.api.entities.User;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCFStoredDormantGui<Gui> {
 
@@ -61,5 +63,6 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
         return StaffConductorApi.findByDiscordOrConvert(endorser, endorserId);
     }
 
-    public abstract void onComplete() throws Exception;
+    @Nullable
+    public abstract DAlterCreate onComplete() throws Exception;
 }
