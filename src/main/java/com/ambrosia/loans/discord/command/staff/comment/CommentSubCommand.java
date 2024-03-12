@@ -23,11 +23,11 @@ public class CommentSubCommand extends BaseStaffSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
-        Commentable loan = entityOption.getRequired(event);
-        if (loan == null) return;
+        Commentable entity = entityOption.getRequired(event);
+        if (entity == null) return;
         String message = CommandOption.COMMENT.getRequired(event);
         if (message == null) return;
-        DComment comment = CommentApi.comment(staff, loan, message);
+        DComment comment = CommentApi.comment(staff, entity, message);
         replySuccess(event, comment.toString());
     }
 
