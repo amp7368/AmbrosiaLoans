@@ -18,6 +18,7 @@ public class ACommentCommand extends BaseCommand {
     public List<DCFSlashSubCommand> getSubCommands() {
         return List.of(
             new CommentSubCommand(CommandOption.CLIENT, "client"),
+            new CommentSubCommand(CommandOption.PAYMENT_ID, "payment"),
             new CommentSubCommand(CommandOption.LOAN_ID, "loan"),
             new CommentSubCommand(CommandOption.INVESTMENT_ID, "investment"),
             new CommentSubCommand(CommandOption.WITHDRAWAL_ID, "withdrawal")

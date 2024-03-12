@@ -118,6 +118,7 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new HelpCommand(),
             new ProfileCommand(), new HistoryCommand(),
             new CommandRequest(), new CommandModifyRequest());
+        // 35 count commands
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));
