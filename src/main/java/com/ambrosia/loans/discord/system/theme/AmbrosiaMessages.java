@@ -96,9 +96,8 @@ public class AmbrosiaMessages {
             return error(msg);
         }
 
-        public static AmbrosiaMessage onlyLoans(Emeralds balance) {
-            String msg = "You do not have any loans since your balance is %s!".formatted(balance);
-            return error(msg);
+        public static AmbrosiaMessage onlyLoans() {
+            return error("You do not have any active loans!");
         }
 
         public static AmbrosiaMessage notCorrectClient(DClient client) {

@@ -40,6 +40,6 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
 
     @Override
     protected String title() {
-        return "Payment %s".formatted(data.getPayment());
+        return "Payment %s %s".formatted(data.getPayment(), createEntityId());
     }
 }

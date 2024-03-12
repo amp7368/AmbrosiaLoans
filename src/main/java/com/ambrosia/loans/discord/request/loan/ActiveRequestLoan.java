@@ -1,8 +1,12 @@
 package com.ambrosia.loans.discord.request.loan;
 
 import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanCreateApi;
 import com.ambrosia.loans.database.account.loan.LoanBuilder;
+import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
+import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
@@ -12,9 +16,9 @@ import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
-import io.avaje.lang.Nullable;
 import java.time.Instant;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> implements LoanBuilder {
 
@@ -58,9 +62,11 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         return new ActiveRequestLoanGui(messageId, this);
     }
 
+    @Nullable
     @Override
-    public void onComplete() throws CreateEntityException, InvalidStaffConductorException {
-        LoanCreateApi.createLoan(this);
+    public DAlterCreate onComplete() throws CreateEntityException, InvalidStaffConductorException {
+        DLoan loan = LoanCreateApi.createLoan(this);
+        return AlterQueryApi.findCreateByEntityId(loan.getId(), AlterCreateType.LOAN);
     }
 
     public AccountEventType transactionType() {

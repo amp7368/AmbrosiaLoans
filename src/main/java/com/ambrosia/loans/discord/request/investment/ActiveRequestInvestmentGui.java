@@ -38,6 +38,6 @@ public class ActiveRequestInvestmentGui extends ActiveRequestGui<ActiveRequestIn
 
     @Override
     protected String title() {
-        return "Investment";
+        return "Investment " + createEntityId();
     }
 }

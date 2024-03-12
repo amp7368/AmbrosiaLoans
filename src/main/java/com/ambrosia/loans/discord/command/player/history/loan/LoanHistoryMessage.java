@@ -65,7 +65,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
 
         DLoanStatus status = loan.getStatus();
         AmbrosiaEmoji statusEmoji = status.getEmoji();
-        embed.appendDescription("### Loan [#%d] - %s %s\n".formatted(loan.getId(), statusEmoji, status));
+        embed.appendDescription("### Loan %s %d - %s %s\n".formatted(AmbrosiaEmoji.KEY_ID, loan.getId(), statusEmoji, status));
 
         embed.appendDescription("**%s Start:** %s\n".formatted(AmbrosiaEmoji.ANY_DATE, formatDate(loan.getStartDate())));
         String rateMsg = formatPercentage(loan.getLastSection().getRate());
@@ -110,7 +110,8 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
 
     private void findPaymentEvents(DLoan loan, List<LoanEventMsg> history) {
         for (DLoanPayment payment : loan.getPayments()) {
-            String msg = "Payment made: " + payment.getAmount();
+            String id = AmbrosiaEmoji.KEY_ID.spaced(payment.getId());
+            String msg = "Payment %s %s".formatted(payment.getAmount(), id);
             history.add(new LoanEventMsg(AmbrosiaEmoji.LOAN_PAYMENT, msg, payment.getDate()));
         }
     }
@@ -126,7 +127,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
 
         @Override
         public String toString() {
-            return "%s %s - %s".formatted(emoji, formatDate(date), msg);
+            return "%s %s %s %s".formatted(emoji, msg, AmbrosiaEmoji.ANY_DATE, formatDate(date));
         }
     }
 }

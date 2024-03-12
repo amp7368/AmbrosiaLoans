@@ -5,7 +5,6 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.HasDateRange;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
-import io.avaje.lang.Nullable;
 import io.ebean.Model;
 import io.ebean.annotation.History;
 import java.math.BigDecimal;
@@ -19,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @History
 @Entity

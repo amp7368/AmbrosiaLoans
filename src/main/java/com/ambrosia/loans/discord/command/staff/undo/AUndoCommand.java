@@ -44,7 +44,7 @@ public class AUndoCommand extends BaseStaffCommand {
             replyError(event, msg);
             return;
         }
-        String msg = "Change %s #%d has been undone".formatted(AmbrosiaEmoji.KEY_ID, undo.getRecord().getId());
+        String msg = "Change %s %d has been undone".formatted(AmbrosiaEmoji.KEY_ID, undo.getRecord().getId());
         replySuccess(event, msg);
     }
 
