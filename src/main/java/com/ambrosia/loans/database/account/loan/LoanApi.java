@@ -4,8 +4,11 @@ import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanStartDate;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterPaymentAmount;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
+import com.ambrosia.loans.database.account.payment.DLoanPayment;
+import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
@@ -34,6 +37,12 @@ public interface LoanApi {
         static Collection<DLoan> findAllLoans() {
             return new QDLoan().findList();
         }
+
+        static DLoanPayment findPaymentById(long id) {
+            return new QDLoanPayment()
+                .where().id.eq(id)
+                .findOne();
+        }
     }
 
     interface LoanAlterApi {
@@ -55,6 +64,11 @@ public interface LoanApi {
 
         static DAlterChange setDefaulted(DStaffConductor staff, DLoan loan, Instant date) {
             AlterLoanDefaulted change = new AlterLoanDefaulted(loan, true, date);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange setPaymentAmount(DStaffConductor staff, DLoanPayment payment, Emeralds amount) {
+            AlterPaymentAmount change = new AlterPaymentAmount(payment, amount);
             return AlterCreateApi.applyChange(staff, change);
         }
     }

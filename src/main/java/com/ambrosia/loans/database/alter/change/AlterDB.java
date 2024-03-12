@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.alter.change;
 
 import com.ambrosia.loans.database.alter.type.AlterChangeType;
+import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.alter.type.AlterGson;
 import com.google.gson.Gson;
 import java.time.Instant;
@@ -78,5 +79,5 @@ public abstract class AlterDB<Entity> {
         return true;
     }
 
-    public abstract String getEntityType();
+    public abstract AlterCreateType getEntityType();
 }

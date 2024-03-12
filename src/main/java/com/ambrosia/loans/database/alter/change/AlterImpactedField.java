@@ -7,5 +7,6 @@ public enum AlterImpactedField {
     LOAN_RATE,
     LOAN_START_DATE,
     CLIENT_BLACKLISTED,
+    LOAN_PAYMENT_AMOUNT,
     LOAN_END_DATE
 }
