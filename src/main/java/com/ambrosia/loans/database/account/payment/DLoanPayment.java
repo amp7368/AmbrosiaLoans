@@ -1,6 +1,5 @@
 package com.ambrosia.loans.database.account.payment;
 
-import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -11,9 +10,7 @@ import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Index;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +26,8 @@ import javax.persistence.Table;
 @Table(name = "loan_payment")
 public class DLoanPayment extends Model implements Commentable {
 
+    @OneToMany
+    private final List<DComment> comments = new ArrayList<>();
     @Id
     private long id;
     @ManyToOne
@@ -40,8 +39,6 @@ public class DLoanPayment extends Model implements Commentable {
     private long amount;
     @ManyToOne(optional = false)
     private DStaffConductor conductor;
-    @OneToMany
-    private final List<DComment> comments = new ArrayList<>();
 
 
     public DLoanPayment(DLoan loan, Instant date, long amount, DStaffConductor conductor) {
@@ -62,11 +59,6 @@ public class DLoanPayment extends Model implements Commentable {
 
     public Instant getDate() {
         return this.date.toInstant();
-    }
-
-    public BigDecimal getEffectiveAmount(Duration duration, BigDecimal rate) {
-        BigDecimal amount = BigDecimal.valueOf(this.amount);
-        return amount.add(Bank.interest(duration, amount, rate));
     }
 
     @Override

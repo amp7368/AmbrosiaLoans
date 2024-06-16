@@ -11,19 +11,29 @@ import com.ambrosia.loans.database.message.CommentApi;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.migrate.ImportModule;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 public class ImportedLoan implements LoanBuilder {
 
+    private static final DateTimeFormatter UTC_DATE = new DateTimeFormatterBuilder()
+        .appendPattern("yyyy-MM-dd")
+        .parseDefaulting(ChronoField.SECOND_OF_DAY, 0)
+        .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
+        .toFormatter()
+        .withZone(ZoneOffset.UTC);
     private final long id;
     private final DClient client;
     private final Emeralds amount;
@@ -94,41 +104,42 @@ public class ImportedLoan implements LoanBuilder {
             }
             transaction.commit();
         }
+        this.db.refresh();
         return this.db;
 
     }
 
     public long additionalPayment(Transaction transaction) {
         if (this.id == 102) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("07/23/23"));
-            long amount = 7936 * 64;
+            Instant date = Instant.from(UTC_DATE.parse("2023-07-23"));
+            long amount = 7936 * Emeralds.BLOCK;
             additionalPayment(transaction, date, amount);
             return amount;
         } else if (this.id == 104) {
-            Instant date1 = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("12/20/23"));
+            Instant date1 = Instant.from(UTC_DATE.parse("2023-12-20"));
             long amount1 = 2L * Emeralds.STACK;
             additionalPayment(transaction, date1, amount1);
-            Instant date2 = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("12/25/23"));
+            Instant date2 = Instant.from(UTC_DATE.parse("2023-12-25"));
             long amount2 = 4L * Emeralds.STACK;
             additionalPayment(transaction, date2, amount2);
             return amount1 + amount2;
         } else if (this.id == 149) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/20/22"));
+            Instant date = Instant.from(UTC_DATE.parse("2022-06-20")).plus(5, ChronoUnit.HOURS);
             long amount = Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
         } else if (this.id == 161) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("06/28/22"));
+            Instant date = Instant.from(UTC_DATE.parse("2022-06-28"));
             long amount = Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
         } else if (this.id == 129) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("09/08/22"));
+            Instant date = Instant.from(UTC_DATE.parse("2022-09-08"));
             long amount = 30L * Emeralds.STACK;
             additionalPayment(transaction, date, amount);
             return amount;
         } else if (this.id == 109) {
-            Instant date = Instant.from(DiscordModule.SIMPLE_DATE_FORMATTER.parse("02/04/24"));
+            Instant date = Instant.from(UTC_DATE.parse("2024-02-04"));
             long amount = 2L * Emeralds.STACK + 20 * Emeralds.LIQUID;
             additionalPayment(transaction, date, amount);
             return amount;

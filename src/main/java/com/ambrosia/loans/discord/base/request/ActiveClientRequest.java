@@ -35,6 +35,7 @@ public abstract class ActiveClientRequest<Gui extends ActiveRequestGui<?>> exten
         DClient client = getClient();
         if (client.willBalanceFailAtTimestamp(timestamp))
             throw new BadDateAccessException(timestamp);
+        // todo separate into getLoanBalance and getInvestBalance
         return client.getBalance(timestamp);
     }
 }

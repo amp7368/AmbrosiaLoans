@@ -5,13 +5,14 @@ SET balance_loan_amount   = COALESCE(q.loan_balance, 0),      -- account_balance
     balance_last_updated  = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
 FROM (
      SELECT DISTINCT ON (c.id) c.id,
-                               ss.invest_balance,
-                               ss.loan_balance,
-                               ss.date
+                               cs.invest_balance,
+                               cs.loan_balance,
+                               cs.date
      FROM client c
-              LEFT JOIN client_snapshot ss ON c.id = ss.client_id
+              LEFT JOIN client_snapshot cs ON c.id = cs.client_id
      ORDER BY c.id,
-              ss.date DESC) AS q
+              cs.date DESC,
+              cs.event DESC) AS q
 WHERE c.id = q.id;
 
 UPDATE loan l
@@ -19,5 +20,3 @@ SET end_date = NULL,
     status   = 'ACTIVE'
 WHERE status = 'PAID'
   AND end_date >= :from_date;
-SELECT *
-FROM loan;

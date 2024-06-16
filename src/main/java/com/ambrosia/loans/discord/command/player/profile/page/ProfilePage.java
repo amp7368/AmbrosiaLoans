@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 
 public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements SendMessageClient {
 
@@ -29,29 +31,48 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements SendM
 
     protected EmbedBuilder embed(String title, int color) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(title)
-            .setColor(color);
+        embed.setColor(color);
+        embed.appendDescription("## %s\n".formatted(title));
         author(embed);
+
+        clientId(embed);
         return embed;
     }
 
+    private void clientId(EmbedBuilder embed) {
+        embed.appendDescription("### %s %s \n".formatted(AmbrosiaEmoji.KEY_ID, getClient().getId()));
+    }
+
     protected void balance(EmbedBuilder embed) {
-        Emeralds balance = getClient().getBalance(Instant.now());
-        String msg;
-        if (balance.isNegative())
-            msg = "### Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, balance.negative());
-        else
-            msg = "### Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, balance);
+        BalanceWithInterest balance = getClient().getBalanceWithRecentInterest(Instant.now());
+        Emeralds investBalance = balance.investTotal();
+        Emeralds loanBalance = balance.loanTotal();
+        String msg = "";
+        if (!investBalance.isZero())
+            msg += "### Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
+        if (!loanBalance.isZero())
+            msg += "### Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative());
+        if (investBalance.isZero() && loanBalance.isZero())
+            msg += "### Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
         embed.appendDescription(msg);
     }
 
     protected List<Button> pageBtns() {
         List<Button> btns = new ArrayList<>(3);
-        btns.add(OVERVIEW);
-        if (!getClient().getLoans().isEmpty())
-            btns.add(LOANS);
-        if (!getClient().getInvestmentLike().isEmpty())
-            btns.add(INVESTMENTS);
+        if (getPageNum() == 0)
+            btns.add(OVERVIEW.withStyle(ButtonStyle.PRIMARY));
+        else btns.add(OVERVIEW);
+
+        if (!getClient().getLoans().isEmpty()) {
+            if (getPageNum() == 1)
+                btns.add(LOANS.withStyle(ButtonStyle.PRIMARY));
+            else btns.add(LOANS);
+        }
+        if (!getClient().getInvestmentLike().isEmpty()) {
+            if (getPageNum() == 2)
+                btns.add(INVESTMENTS.withStyle(ButtonStyle.PRIMARY));
+            else btns.add(INVESTMENTS);
+        }
         return btns;
     }
 

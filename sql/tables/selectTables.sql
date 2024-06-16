@@ -6,7 +6,7 @@ FROM loan
 ORDER BY client_id, start_date;
 
 SELECT *
-FROM client_snapshot
+FROM client_invest_snapshot
 ORDER BY date;
 
 SELECT *

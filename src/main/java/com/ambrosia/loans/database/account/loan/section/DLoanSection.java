@@ -4,7 +4,6 @@ import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.HasDateRange;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
-import com.ambrosia.loans.database.version.DApiVersion;
 import io.ebean.Model;
 import io.ebean.annotation.History;
 import java.math.BigDecimal;
@@ -82,14 +81,12 @@ public class DLoanSection extends Model implements HasDateRange {
 
     public BigDecimal getInterest(Instant start, Instant end, BigDecimal principal) {
         Duration duration = getDuration(start, end);
-        if (duration.isNegative()) return BigDecimal.ZERO;
+        if (!duration.isPositive()) return BigDecimal.ZERO;
         BigDecimal rate = BigDecimal.valueOf(getRate());
 
-        DApiVersion version = loan.getVersion();
-        if (version.getLoan() == ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY) {
-            double weeks = duration.toSeconds() / (double) Duration.ofDays(7).toSeconds();
-            int up = (int) Math.ceil(weeks - 0.25);
-            duration = Duration.ofDays(up * 7L);
+        ApiVersionListLoan version = loan.getVersion().getLoan();
+        if (version.equals(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
+            duration = Bank.legacySimpleWeeksDuration(duration);
         }
 
         return Bank.interest(duration, principal, rate);

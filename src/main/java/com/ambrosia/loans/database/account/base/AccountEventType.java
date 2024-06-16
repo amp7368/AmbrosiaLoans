@@ -55,7 +55,7 @@ public enum AccountEventType {
     }
 
     public boolean isProfit() {
-        return this == PROFIT || this == ADJUST_UP;
+        return this == PROFIT || this == ADJUST_UP || this == ADJUST_DOWN;
     }
 
     public AmbrosiaEmoji getEmoji() {

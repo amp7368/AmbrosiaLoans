@@ -10,6 +10,7 @@ import com.ambrosia.loans.database.alter.create.DAlterCreateUndoHistory;
 import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.util.List;
@@ -119,6 +120,7 @@ public interface AlterRecordApi {
                 history.save(transaction);
                 transaction.commit();
             }
+            RunBankSimulation.simulateAsync(record.getEventDate());
         }
 
         static DAlterChange applyChange(DStaffConductor staff, AlterDBChange<?, ?> change) {

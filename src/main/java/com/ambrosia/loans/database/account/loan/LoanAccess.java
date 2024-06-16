@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import org.jetbrains.annotations.Nullable;
 
 public interface LoanAccess {
 
@@ -127,13 +128,13 @@ public interface LoanAccess {
 
     default Emeralds getTotalPaid() {
         DLoan loan = getEntity();
-        return getTotalPaid(loan.getStartDate(), loan.getEndDate());
+        return getTotalPaid(loan.getStartDate(), null);
     }
 
-    default Emeralds getTotalPaid(Instant startDate, Instant endDate) {
+    default Emeralds getTotalPaid(Instant startDate, @Nullable Instant endDate) {
         Instant end = Objects.requireNonNullElseGet(endDate, Instant::now);
         return getPayments().stream()
-            .filter(pay -> !pay.getDate().isBefore(startDate))
+            .filter(pay -> pay.getDate().isAfter(startDate))
             .filter(pay -> !pay.getDate().isAfter(end))
             .map(DLoanPayment::getAmount)
             .reduce(Emeralds.zero(), Emeralds::add);

@@ -17,7 +17,6 @@ public class AlterPaymentAmount extends AlterPayment<Emeralds> {
 
     public AlterPaymentAmount(DLoanPayment payment, Emeralds current) {
         super(AlterChangeType.PAYMENT_AMOUNT, payment, payment.getAmount(), current);
-        System.out.println(payment);
     }
 
     @Override
@@ -29,6 +28,7 @@ public class AlterPaymentAmount extends AlterPayment<Emeralds> {
     @Override
     protected void apply(DLoanPayment payment, Emeralds value, Transaction transaction) {
         payment.setAmount(value);
+        payment.save();
         RunBankSimulation.simulateAsync(payment.getDate());
     }
 }
