@@ -1,5 +1,7 @@
 package com.ambrosia.loans.database.entity.client;
 
+import com.ambrosia.loans.database.account.DClientInvestSnapshot;
+import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.loan.DLoan;
@@ -11,6 +13,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileInvestPage;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileLoanPage;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileOverviewPage;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -18,22 +21,29 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
-    private DClientSnapshot newSnapshot(Instant timestamp,
-        long newInvestBalance, long newLoanBalance, long interest,
-        AccountEventType eventType, Transaction transaction) {
+    private DClientSnapshot newLoanSnapshot(Instant timestamp, long delta, AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
-        client.setBalance(newInvestBalance, newLoanBalance, timestamp);
-
-        DClientSnapshot snapshot = new DClientSnapshot(client, timestamp,
-            newInvestBalance, newLoanBalance, interest,
-            eventType);
+        Emeralds newLoanBalance = client.addLoanBalance(delta, timestamp);
+        DClientLoanSnapshot snapshot = new DClientLoanSnapshot(client, timestamp,
+            newLoanBalance.amount(), delta, eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
+        client.save(transaction);
+        return snapshot;
+    }
+
+    private DClientSnapshot newInvestSnapshot(Instant timestamp, long delta, AccountEventType eventType, Transaction transaction) {
+        DClient client = getEntity();
+        Emeralds newLoanBalance = client.addInvestBalance(delta, timestamp);
+        DClientInvestSnapshot snapshot = new DClientInvestSnapshot(client, timestamp,
+            newLoanBalance.amount(), delta, eventType);
+        client.addAccountSnapshot(snapshot);
+        snapshot.save(transaction);
+        client.save(transaction);
         return snapshot;
     }
 
@@ -84,25 +94,21 @@ public interface ClientAccess {
 
     default DClientSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
+        client.refresh();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-        long newInvestBalance = balanceWithInterest.investTotal().amount();
-        long newLoanBalance = balanceWithInterest.loanTotal().amount();
 
         if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
             long interest = balanceWithInterest.interestAsNegative().amount();
-            newSnapshot(timestamp, newInvestBalance, newLoanBalance, interest, AccountEventType.INTEREST, transaction);
+            newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
         }
-
-        if (eventType.isLoanLike()) newLoanBalance += delta;
-        else newInvestBalance += delta;
-
-        DClientSnapshot snapshot = newSnapshot(timestamp, newInvestBalance, newLoanBalance, delta, eventType, transaction);
-        client.save(transaction);
-
-        // mark past loans as paid
-        checkLoansPaid(timestamp, transaction);
-        return snapshot;
+        if (eventType.isLoanLike()) {
+            DClientSnapshot snapshot = newLoanSnapshot(timestamp, delta, eventType, transaction);
+            checkLoansPaid(timestamp, transaction);
+            return snapshot;
+        } else {
+            return newInvestSnapshot(timestamp, delta, eventType, transaction);
+        }
     }
 
     private void checkLoansPaid(Instant timestamp, Transaction transaction) {
@@ -122,16 +128,17 @@ public interface ClientAccess {
         return gui;
     }
 
-    default List<DClientSnapshot> getAccountSnapshots(Predicate<AccountEventType> test) {
-        return getEntity().getAccountSnapshots()
-            .stream()
-            .filter(snap -> test.test(snap.getEventType()))
-            .toList();
-    }
-
     default Optional<DLoan> getActiveLoan() {
         return getLoans().stream()
             .filter(loan -> loan.getStatus().isActive())
             .findFirst();
+    }
+
+    default List<DClientInvestSnapshot> getProfits() {
+        return getEntity().getInvestSnapshots()
+            .stream()
+            .filter(snap -> snap.getEventType().isProfit())
+            .sorted()
+            .toList();
     }
 }

@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.player.history.transaction;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.database.account.DClientSnapshot;
+import com.ambrosia.loans.database.account.ClientMergedSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.SendMessageClient;
@@ -22,16 +22,20 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DClientSnapshot> implements SendMessageClient {
+public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, ClientMergedSnapshot> implements SendMessageClient {
+
+    private static final Comparator<ClientMergedSnapshot> COMPARATOR = Comparator.naturalOrder();
 
     public TransactionHistoryMessage(ClientGui gui) {
         super(gui);
-        setEntries(getClient().getAccountSnapshots());
+        setEntries(getClient().getMergedSnapshots());
+        sort();
     }
 
     @Override
-    protected Comparator<? super DClientSnapshot> entriesComparator() {
-        return Comparator.comparing(DClientSnapshot::getEventType);
+    protected Comparator<? super ClientMergedSnapshot> entriesComparator() {
+        if (isComparatorReversed) return COMPARATOR.reversed();
+        return COMPARATOR;
     }
 
     @Override
@@ -51,13 +55,14 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DCli
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
 
         embed.setTitle(title("Transactions History", entryPage, getMaxPage()));
-        List<DCFEntry<DClientSnapshot>> entries = getCurrentPageEntries();
+        List<DCFEntry<ClientMergedSnapshot>> entries = getCurrentPageEntries();
         for (int i = 0; i < entries.size(); i++) {
-            DCFEntry<DClientSnapshot> entry = entries.get(i);
+            DCFEntry<ClientMergedSnapshot> entry = entries.get(i);
             Field field = snapshotToString(entry.entry());
             embed.addField(field);
-            if (i % 2 == 0)
-                embed.addBlankField(true);
+            // todo
+//            if (i % 2 == 0)
+//                embed.addBlankField(true);
         }
         if (entries.size() % 2 == 1) {
             embed.addBlankField(true);
@@ -68,15 +73,15 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DCli
     private MessageCreateData makeMessage(MessageEmbed embed) {
         return new MessageCreateBuilder()
             .setEmbeds(embed)
-            .setComponents(ActionRow.of(btnFirst(), btnPrev(), btnNext()))
+            .setComponents(ActionRow.of(btnFirst(), btnPrev(), btnNext(), btnReversed()))
             .build();
     }
 
-    private Field snapshotToString(DClientSnapshot snapshot) {
+    private Field snapshotToString(ClientMergedSnapshot snapshot) {
         String date = AmbrosiaEmoji.ANY_DATE.spaced() + formatDate(snapshot.getDate());
         AccountEventType event = snapshot.getEventType();
         AmbrosiaEmoji eventEmoji = event.getEmoji();
-        Emeralds balance = snapshot.getAccountBalance();
+        Emeralds balance = snapshot.getBalance();
         AmbrosiaEmoji balanceEmoji = balance.isPositive() ? AmbrosiaEmoji.INVESTMENT_BALANCE : AmbrosiaEmoji.LOAN_BALANCE;
         String delta = EmeraldsFormatter.PLUS_MINUS.format(snapshot.getDelta());
 
@@ -86,6 +91,6 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, DCli
             delta,
             balanceEmoji,
             balance);
-        return new Field(date, msg, true);
+        return new Field(date, msg, false);
     }
 }

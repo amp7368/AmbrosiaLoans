@@ -43,7 +43,7 @@ public class ProfileTransactionsPage extends ProfilePage {
         DefaultTableXYDataset dataset = new DefaultTableXYDataset();
         for (DClient client : clients) {
             Map<Long, Double> dataPoints = new HashMap<>();
-            client.getAccountSnapshots().forEach(snapshot -> {
+            client.getMergedSnapshots().forEach(snapshot -> {
                 long x = snapshot.getDate().toEpochMilli();
                 double y = snapshot.getAccountBalance().toStacks();
                 Double there = dataPoints.get(x);

@@ -16,7 +16,8 @@ import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
-import com.ambrosia.loans.database.account.query.QDClientSnapshot;
+import com.ambrosia.loans.database.account.query.QDClientInvestSnapshot;
+import com.ambrosia.loans.database.account.query.QDClientLoanSnapshot;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.bank.BankApi;
@@ -29,7 +30,6 @@ import io.ebean.DB;
 import io.ebean.SqlUpdate;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,19 +42,31 @@ public class RunBankSimulation {
 
     private static final CallableSql UPDATE_BALANCE_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
-        SET balance_loan_amount   = COALESCE(q.loan_balance, 0),      -- account_balance might be null
-            balance_invest_amount = COALESCE(q.invest_balance, 0),    -- account_balance might be null
-            balance_last_updated  = COALESCE(q.date, TO_TIMESTAMP(0)) -- date might be null
+        SET balance_loan_amount        = COALESCE(loan_balance, 0),              -- account_balance might be null
+            balance_loan_last_updated  = COALESCE(loan_date, TO_TIMESTAMP(0)),   -- date might be null
+            balance_invest_amount      = COALESCE(invest_balance, 0),            -- account_balance might be null
+            balance_invest_last_updated= COALESCE(invest_date, TO_TIMESTAMP(0)), -- date might be null
+            balance_amount             = COALESCE(loan_balance, 0) + COALESCE(invest_balance, 0)
         FROM (
              SELECT DISTINCT ON (c.id) c.id,
-                                       ss.invest_balance,
-                                       ss.loan_balance,
-                                       ss.date
+                                       cl.balance loan_balance,
+                                       cl.date    loan_date
              FROM client c
-                      LEFT JOIN client_snapshot ss ON c.id = ss.client_id
+                      LEFT JOIN client_loan_snapshot cl ON c.id = cl.client_id
              ORDER BY c.id,
-                      ss.date DESC) AS q
-        WHERE c.id = q.id;
+                      cl.date DESC,
+                      cl.event DESC) AS q1
+                 LEFT JOIN
+             (
+             SELECT DISTINCT ON (c.id) c.id,
+                                       ci.balance invest_balance,
+                                       ci.date    invest_date
+             FROM client c
+                      LEFT JOIN client_invest_snapshot ci ON c.id = ci.client_id
+             ORDER BY c.id,
+                      ci.date DESC,
+                      ci.event DESC) q2 ON q1.id = q2.id
+        WHERE c.id = q1.id;
         """);
     private static final SqlUpdate RESET_PAID_MARKERS = DB.sqlUpdate("""
         UPDATE loan l
@@ -90,16 +102,15 @@ public class RunBankSimulation {
     }
 
     public static void simulate(Instant simulateStartDate, SimulationOptions options) {
-        resetSimulationFromDate(simulateStartDate, options);
+        resetSimulationFromDate(simulateStartDate);
         DatabaseModule.get().logger().info("Starting simulation...");
         List<DLoanPayment> loanPayments = findLoanPayments(simulateStartDate, options);
         List<IAccountChange> accountChanges = findAccountChanges(simulateStartDate, options);
-
         int index = 0;
         for (DLoanPayment loanPayment : loanPayments) {
             index = simulatePayment(loanPayment, index, accountChanges);
         }
-        doRelevantAccountChange(accountChanges, index, options.getEndDate());
+        doRelevantAccountChange(accountChanges, index, options.getEndDate(), false);
 
         for (DLoan loan : LoanQueryApi.findAllLoans()) {
             loan.checkIsFrozen(true);
@@ -110,19 +121,17 @@ public class RunBankSimulation {
 
     private static int simulatePayment(DLoanPayment loanPayment, int index, List<IAccountChange> accountChanges) {
         Instant currentDate = loanPayment.getDate();
-        index = doRelevantAccountChange(accountChanges, index, currentDate);
+        index = doRelevantAccountChange(accountChanges, index, currentDate, true);
         loanPayment.updateSimulation();
 
         // investors
         List<DClient> investors = findAllInvestors(loanPayment.getLoan().getClient().getId());
-        BigDecimal totalInvested = calcTotalInvested(investors, currentDate);
 
         // divide payment to investors
         BigDecimal profits = calcProfits(loanPayment).toBigDecimal();
         BigDecimal amountToInvestors = profits.multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
+        long amountGiven = GiveToInvestors.giveToInvestors(investors, amountToInvestors, currentDate);
         // difference is leftover from rounding errors
-        long amountGiven = giveToInvestors(loanPayment, investors, amountToInvestors, totalInvested);
-
         BigDecimal bankProfits = profits.subtract(BigDecimal.valueOf(amountGiven));
         BankApi.updateBankBalance(bankProfits.longValue(), currentDate, AccountEventType.PROFIT);
         return index;
@@ -144,36 +153,17 @@ public class RunBankSimulation {
         return profits;
     }
 
-    private static long giveToInvestors(DLoanPayment loanPayment, List<DClient> investors, BigDecimal amountToInvestors,
-        BigDecimal totalInvested) {
-        long amountGiven = 0;
-        Instant currentTime = loanPayment.getDate();
-        for (DClient investor : investors) {
-            BigDecimal investorBalance = investor.getInvestBalance(currentTime).toBigDecimal();
-            long amountToInvestor = investorBalance
-                .multiply(amountToInvestors)
-                .divide(totalInvested, RoundingMode.FLOOR)
-                .longValue();
-            if (amountToInvestor == 0) continue;
-            amountGiven += amountToInvestor;
-            investor.updateBalance(amountToInvestor, currentTime, AccountEventType.PROFIT);
-        }
-        return amountGiven;
-    }
 
-    @NotNull
-    private static BigDecimal calcTotalInvested(List<DClient> investors, Instant currentTime) {
-        return investors.stream()
-            .map(c -> c.getInvestBalance(currentTime))
-            .reduce(Emeralds.zero(), Emeralds::add)
-            .toBigDecimal();
-    }
-
-    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant currentDate) {
+    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant currentDate,
+        boolean isPayment) {
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
             if (accountChange.getDate().isAfter(currentDate))
                 break;
+            if (isPayment && accountChange.getDate().equals(currentDate)) {
+                int compare = AccountEventType.ORDER.compare(accountChange.getEventType(), AccountEventType.PAYMENT);
+                if (compare > 0) break;
+            }
             accountChange.getClient().refresh();
             accountChange.updateSimulation();
         }
@@ -188,10 +178,13 @@ public class RunBankSimulation {
     }
 
 
-    private static void resetSimulationFromDate(Instant fromDateInstant, SimulationOptions options) {
+    private static void resetSimulationFromDate(Instant fromDateInstant) {
         Timestamp fromDate = Timestamp.from(fromDateInstant);
 
-        new QDClientSnapshot().where()
+        new QDClientInvestSnapshot().where()
+            .date.greaterOrEqualTo(fromDate)
+            .delete();
+        new QDClientLoanSnapshot().where()
             .date.greaterOrEqualTo(fromDate)
             .delete();
         new QDBankSnapshot().where()

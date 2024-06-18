@@ -1,7 +1,6 @@
 package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.account.DClientSnapshot;
-import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
@@ -44,7 +43,7 @@ public class ProfileInvestPage extends ProfilePage {
     }
 
     public void recentProfits(EmbedBuilder embed) {
-        List<DClientSnapshot> profits = new ArrayList<>(getClient().getAccountSnapshots(AccountEventType::isProfit));
+        List<DClientSnapshot> profits = new ArrayList<>(getClient().getProfits());
         Collections.reverse(profits);
 
         StringBuilder desc = embed.getDescriptionBuilder();
@@ -89,7 +88,7 @@ public class ProfileInvestPage extends ProfilePage {
 
     public void totalProfits(EmbedBuilder embed) {
         Emeralds totalProfits = getClient()
-            .getAccountSnapshots(AccountEventType::isProfit)
+            .getProfits()
             .stream()
             .map(DClientSnapshot::getDelta)
             .reduce(Emeralds::add)

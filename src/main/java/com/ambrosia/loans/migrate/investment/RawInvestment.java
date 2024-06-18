@@ -31,7 +31,7 @@ public class RawInvestment implements RawMakeAdjustment {
 
     @Override
     public void createAdjustment(Emeralds difference, Instant date) {
-        AdjustApi.createAdjustment(difference, this.client(), date, false);
+        AdjustApi.createAdjustment(difference, this.client(), date, true);
     }
 
     public long getClientId() {

@@ -30,13 +30,16 @@ public interface InvestApi {
 
         static BigDecimal getInvestorStake(DClient investor) {
             Emeralds balance = investor.getInvestBalance(Instant.now());
-            if (balance.isNegative()) return BigDecimal.ZERO;
+            if (!balance.isPositive()) return BigDecimal.ZERO;
             Emeralds totalInvested = new QDClient().where()
                 .where().balance.investAmount.gt(0)
                 .findStream()
                 .map(c -> c.getInvestBalance(Instant.now()))
                 .reduce(Emeralds.zero(), Emeralds::add);
 
+            if (totalInvested.isZero()) {
+                return BigDecimal.valueOf(100);
+            }
             BigDecimal bigTotalInvested = totalInvested.toBigDecimal();
             return balance.toBigDecimal()
                 .divide(bigTotalInvested, MathContext.DECIMAL128);

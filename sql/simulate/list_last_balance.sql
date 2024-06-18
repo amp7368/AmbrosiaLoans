@@ -39,9 +39,14 @@ ORDER BY MAX(q2.delta_le), q1.client_id;
 
 -- All
 SELECT event,
-       SUM(loan_delta + invest_delta) / 4096 / 64 delta_stx
-FROM client_snapshot
-WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+       SUM(delta) / 4096 / 64 delta_stx
+FROM (
+     SELECT *
+     FROM client_invest_snapshot
+     UNION ALL
+     SELECT *
+     FROM client_loan_snapshot) q
+-- WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
 GROUP BY event
 ORDER BY delta_stx;
 
@@ -57,15 +62,23 @@ GROUP BY client_id, event, minecraft_username
 -- HAVING ABS(SUM(loan_delta + invest_delta) / 4096) > 32
 ORDER BY event, delta_le;
 
-SELECT ROUND((loan_delta + invest_delta) / 4096.0, 2)     delta_le,
-       ROUND((loan_balance + invest_balance) / 4096.0, 2) balance_le,
-       ROUND(loan_balance / 4096.0, 2)                    loan_le,
-       ROUND(invest_balance / 4096.0, 2)                  invest_le,
+SELECT ROUND((loan_delta + invest_delta) / 4096.0, 3) delta_le,
+       ROUND(loan_balance / 4096.0, 3)                loan_le,
        event,
+       ROUND(invest_balance / 4096.0, 3)              invest_le,
        date
 FROM client_snapshot
-WHERE client_id = 108
+WHERE client_id = 117
 ORDER BY date;
+SELECT *
+FROM loan
+WHERE client_id = 117;
+SELECT *
+FROM loan_section
+WHERE loan_id = 129;
+
+
+SELECT date('2022-09-08 00:00:00.000000 +00:00') - date('2022-05-10 04:00:00.000000 +00:00');
 
 SELECT *
 FROM (

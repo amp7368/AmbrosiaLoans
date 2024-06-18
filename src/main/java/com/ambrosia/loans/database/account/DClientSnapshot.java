@@ -10,14 +10,12 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.UUID;
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.MappedSuperclass;
 import org.jetbrains.annotations.NotNull;
 
-@Entity
-@Table(name = "client_snapshot")
+@MappedSuperclass
 public class DClientSnapshot extends Model implements Comparable<DClientSnapshot> {
 
     private static final Comparator<DClientSnapshot> COMPARATOR = Comparator.comparing(DClientSnapshot::getDate)
@@ -30,33 +28,19 @@ public class DClientSnapshot extends Model implements Comparable<DClientSnapshot
     @Column(nullable = false)
     private Timestamp date;
     @Column(nullable = false)
-    private long investDelta;
+    private long delta;
     @Index
     @Column(nullable = false)
-    private long investBalance;
-    @Column(nullable = false)
-    private long loanDelta;
-    @Index
-    @Column(nullable = false)
-    private long loanBalance;
+    private long balance;
     @Column(nullable = false, columnDefinition = "event_type")
     private AccountEventType event;
 
-    public DClientSnapshot(DClient client, Instant date, long investBalance, long loanBalance, long delta,
-        AccountEventType event) {
+    public DClientSnapshot(DClient client, Instant date, long balance, long delta, AccountEventType event) {
         this.date = Timestamp.from(date);
         this.client = client;
-        this.investBalance = investBalance;
-        this.loanBalance = loanBalance;
-
-        if (event.isLoanLike()) loanDelta = delta;
-        else investDelta = delta;
-
+        this.balance = balance;
+        this.delta = delta;
         this.event = event;
-    }
-
-    public Emeralds getAccountBalance() {
-        return Emeralds.of(this.investBalance + this.loanBalance);
     }
 
     @NotNull
@@ -69,12 +53,20 @@ public class DClientSnapshot extends Model implements Comparable<DClientSnapshot
         return this.event;
     }
 
+    @NotNull
+    public Emeralds getBalance() {
+        return Emeralds.of(balance);
+    }
+
+    @NotNull
     public Emeralds getDelta() {
-        return Emeralds.of(this.investDelta + this.loanDelta);
+        return Emeralds.of(this.delta);
     }
 
     @Override
     public int compareTo(@NotNull DClientSnapshot o) {
         return COMPARATOR.compare(this, o);
     }
+
+
 }

@@ -46,15 +46,13 @@ public class ImportModule extends AppleModule {
         return instance;
     }
 
-    public static List<DClient> toDBClients(ImportRawData rawData) {
+    public static void toDBClients(ImportRawData rawData) {
         List<ImportedClient> clients = rawData.clients().stream()
             .map(RawClient::convert).toList();
         rawData.loans().forEach(loan -> loan.setClient(clients));
         rawData.investments().forEach(invest -> invest.setClient(clients));
 
-        return clients.stream()
-            .map(ImportedClient::toDB)
-            .toList();
+        clients.forEach(ImportedClient::toDB);
     }
 
 
@@ -150,15 +148,6 @@ public class ImportModule extends AppleModule {
         }
     }
 
-    public void printClients(List<DClient> clients) {
-        clients.stream().sorted(Comparator.comparing(DClient::getEffectiveName)).forEach(c -> {
-            c.refresh();
-            Emeralds balance = c.getBalance(Instant.now());
-            if (balance.amount() == 0) return;
-            System.out.printf("%s %.2fLE%n", c.getEffectiveName(), balance.toLiquids());
-        });
-    }
-
     public void printLoans(List<DLoan> loans, ImportRawData rawData, boolean includeCorrect) {
         for (DLoan loan : loans) {
             if (loan.isActive()) continue;
@@ -200,9 +189,11 @@ public class ImportModule extends AppleModule {
         for (Long clientId : ids) {
             DClient client = new QDClient()
                 .id.eq(clientId)
-                .fetch("accountSnapshots")
+                .fetch("loanSnapshots")
+                .fetch("investSnapshots")
                 .findOne();
-            if (client == null || client.getAccountSnapshots().isEmpty()) continue;
+            if (client == null) continue;
+            if (client.getLoanSnapshots().isEmpty() && client.getInvestSnapshots().isEmpty()) continue;
 
             File file = Ambrosia.get().getFile("Graphs", "%d-%s.png".formatted(client.getId(), client.getEffectiveName()));
             ProfileTransactionsPage.createGraph(List.of(client), file);
@@ -211,7 +202,7 @@ public class ImportModule extends AppleModule {
     }
 
     private boolean shouldReset() {
-        return false;
+        return true;
     }
 
     private boolean shouldEnable() {

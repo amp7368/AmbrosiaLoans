@@ -20,18 +20,27 @@ public class ClientBalance {
     @Column
     private long amount = 0;
     @Column
-    private Timestamp lastUpdated = Timestamp.from(Instant.EPOCH);
+    private Timestamp loanLastUpdated = Timestamp.from(Instant.EPOCH);
+    @Column
+    private Timestamp investLastUpdated = Timestamp.from(Instant.EPOCH);
 
-    public void setBalance(long investAmount, long loanAmount, Instant date) {
-        this.investAmount = investAmount;
-        this.loanAmount = loanAmount;
-        this.amount = investAmount + loanAmount;
-        this.lastUpdated = Timestamp.from(date);
+    public Emeralds addInvestBalance(long investDelta, Instant date) {
+        this.investAmount += investDelta;
+        this.amount = this.investAmount + this.loanAmount;
+        this.investLastUpdated = Timestamp.from(date);
+        return Emeralds.of(this.investAmount);
+    }
+
+    public Emeralds addLoanBalance(long loanDelta, Instant date) {
+        this.loanAmount += loanDelta;
+        this.amount = this.investAmount + this.loanAmount;
+        this.loanLastUpdated = Timestamp.from(date);
+        return Emeralds.of(this.loanAmount);
     }
 
     @NotNull
-    public Instant getLastUpdated() {
-        return this.lastUpdated.toInstant();
+    public Instant getLoanLastUpdated() {
+        return this.loanLastUpdated.toInstant();
     }
 
     public Emeralds getInvestAmount() {

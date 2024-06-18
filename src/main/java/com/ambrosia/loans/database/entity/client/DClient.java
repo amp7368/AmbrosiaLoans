@@ -1,6 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
-import com.ambrosia.loans.database.account.DClientSnapshot;
+import com.ambrosia.loans.database.account.ClientMergedSnapshot;
+import com.ambrosia.loans.database.account.DClientInvestSnapshot;
+import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.base.AccountEvent;
 import com.ambrosia.loans.database.account.investment.DInvestment;
@@ -40,6 +42,23 @@ import org.jetbrains.annotations.NotNull;
 @Table(name = "client")
 public class DClient extends Model implements ClientAccess, Commentable {
 
+    @OneToMany
+    private final List<DComment> comments = new ArrayList<>();
+    @Column
+    @Embedded(prefix = "balance_")
+    private final ClientBalance balance = new ClientBalance();
+    @OneToMany
+    private final List<DClientLoanSnapshot> loanSnapshots = new ArrayList<>();
+    @OneToMany
+    private final List<DClientInvestSnapshot> investSnapshots = new ArrayList<>();
+    @OneToMany(mappedBy = "client")
+    private final List<DLoan> loans = new ArrayList<>();
+    @OneToMany
+    private final List<DInvestment> investments = new ArrayList<>();
+    @OneToMany
+    private final List<DWithdrawal> withdrawals = new ArrayList<>();
+    @OneToMany
+    private final List<DAdjustBalance> adjustments = new ArrayList<>();
     @Id
     @Column
     @Identity(start = 100)
@@ -57,24 +76,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private Timestamp dateCreated = Timestamp.from(Instant.now());
     @Column(nullable = false)
     private boolean blacklisted = false;
-
-    @OneToMany
-    private final List<DComment> comments = new ArrayList<>();
-
-    @Column
-    @Embedded(prefix = "balance_")
-    private final ClientBalance balance = new ClientBalance();
-    @OneToMany
-    private final List<DClientSnapshot> accountSnapshots = new ArrayList<>();
-
-    @OneToMany(mappedBy = "client")
-    private final List<DLoan> loans = new ArrayList<>();
-    @OneToMany
-    private final List<DInvestment> investments = new ArrayList<>();
-    @OneToMany
-    private final List<DWithdrawal> withdrawals = new ArrayList<>();
-    @OneToMany
-    private final List<DAdjustBalance> adjustments = new ArrayList<>();
 
     public DClient(String displayName) {
         this.displayName = displayName;
@@ -98,7 +99,12 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
     public Emeralds getInvestBalance(Instant now) {
         return getBalanceWithRecentInterest(now)
-            .investBalance();
+            .investTotal();
+    }
+
+    public Emeralds getLoanBalance(Instant now) {
+        return getBalanceWithRecentInterest(now)
+            .loanTotal();
     }
 
     public BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
@@ -108,15 +114,18 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative);
     }
 
-    DClient setBalance(long investAmount, long loanAmount, Instant date) {
-        this.balance.setBalance(investAmount, loanAmount, date);
-        return this;
+    Emeralds addLoanBalance(long loanDelta, Instant date) {
+        return this.balance.addLoanBalance(loanDelta, date);
+    }
+
+    Emeralds addInvestBalance(long investDelta, Instant date) {
+        return this.balance.addInvestBalance(investDelta, date);
     }
 
     @NotNull
     private Emeralds getInterest(Instant currentTime) throws IllegalArgumentException {
         this.refresh();
-        Instant lastUpdated = this.balance.getLastUpdated();
+        Instant lastUpdated = this.balance.getLoanLastUpdated();
         if (willBalanceFailAtTimestamp(currentTime)) {
             String error = "Client{%s}'s balance was last updated at %s, which is later than the current timestamp of %s"
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
@@ -126,6 +135,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
         for (DLoan loan : getLoans()) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
             if (loanDuration.isNegative()) continue; // todo ??? consider 0 as well
+            if (loanDuration.isZero()) continue;
 
             // if we call this for running a simulation, we don't want to include payments.
             // However,
@@ -137,7 +147,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
     }
 
     public boolean willBalanceFailAtTimestamp(Instant currentTime) {
-        Instant lastUpdated = this.balance.getLastUpdated();
+        Instant lastUpdated = this.balance.getLoanLastUpdated();
         return lastUpdated.isAfter(currentTime);
     }
 
@@ -183,15 +193,74 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return this;
     }
 
-    public DClient addAccountSnapshot(DClientSnapshot snapshot) {
-        this.accountSnapshots.add(snapshot);
+    public DClient addAccountSnapshot(DClientInvestSnapshot snapshot) {
+        this.investSnapshots.add(snapshot);
         return this;
     }
 
-    public List<DClientSnapshot> getAccountSnapshots() {
-        return accountSnapshots.stream()
+    public DClient addAccountSnapshot(DClientLoanSnapshot snapshot) {
+        this.loanSnapshots.add(snapshot);
+        return this;
+    }
+
+    public List<DClientLoanSnapshot> getLoanSnapshots() {
+        return loanSnapshots.stream()
             .sorted()
             .toList();
+    }
+
+    public List<DClientInvestSnapshot> getInvestSnapshots() {
+        return investSnapshots.stream()
+            .sorted()
+            .toList();
+    }
+
+    public List<ClientMergedSnapshot> getMergedSnapshots() {
+        List<DClientLoanSnapshot> loanSnapshots = getLoanSnapshots();
+        List<DClientInvestSnapshot> investSnapshots = getInvestSnapshots();
+        if (loanSnapshots.isEmpty() && investSnapshots.isEmpty()) return List.of();
+
+        int loanI = 0;
+        int investI = 0;
+        Emeralds lastLoanBalance = Emeralds.zero();
+        Emeralds lastInvestBalance = Emeralds.zero();
+        DClientLoanSnapshot nextLoan = loanI < loanSnapshots.size() ? loanSnapshots.get(loanI) : null;
+        DClientInvestSnapshot nextInvest = investI < investSnapshots.size() ? investSnapshots.get(investI) : null;
+
+        List<ClientMergedSnapshot> mergedSnapshots = new ArrayList<>(loanSnapshots.size() + investSnapshots.size());
+        ClientMergedSnapshot merged = null;
+
+        while (nextLoan != null || nextInvest != null) {
+            boolean isLoan;
+            if (nextLoan != null && nextInvest != null)
+                isLoan = nextLoan.getDate().isBefore(nextInvest.getDate());
+            else isLoan = nextLoan != null;
+
+            Instant date = isLoan ? nextLoan.getDate() : nextInvest.getDate();
+            if (merged == null) {
+                merged = new ClientMergedSnapshot(date, lastLoanBalance, lastInvestBalance);
+            }
+
+            // if successful merge, move on
+            // otherwise, add current to mergedSnapshots and stay on nextLoan|nextInvest
+            if (merged.tryMerge(isLoan ? nextLoan : nextInvest)) {
+                if (isLoan) {
+                    lastLoanBalance = nextLoan.getBalance();
+                    loanI++;
+                    nextLoan = loanI < loanSnapshots.size() ? loanSnapshots.get(loanI) : null;
+                } else {
+                    lastInvestBalance = nextInvest.getBalance();
+                    investI++;
+                    nextInvest = investI < investSnapshots.size() ? investSnapshots.get(investI) : null;
+                }
+            } else {
+                mergedSnapshots.add(merged);
+                merged = null;
+            }
+        }
+
+        if (merged != null) mergedSnapshots.add(merged);
+        return mergedSnapshots;
     }
 
 
@@ -230,5 +299,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Override
     public List<DComment> getComments() {
         return this.comments;
+    }
+
+    public List<DAdjustBalance> getAdjustments() {
+        return adjustments;
     }
 }

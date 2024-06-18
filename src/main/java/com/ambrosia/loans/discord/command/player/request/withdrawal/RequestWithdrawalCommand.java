@@ -20,7 +20,7 @@ public class RequestWithdrawalCommand extends BaseClientSubCommand implements Ba
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
         Emeralds amount;
         Boolean isFull = CommandOption.WITHDRAWAL_FULL.getOptional(event);
-        if (isFull != null && isFull) amount = client.getBalance(Instant.now());
+        if (isFull != null && isFull) amount = client.getInvestBalance(Instant.now());
         else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
         if (amount == null) {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");
