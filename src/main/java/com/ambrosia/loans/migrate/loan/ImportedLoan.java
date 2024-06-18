@@ -43,8 +43,8 @@ public class ImportedLoan implements LoanBuilder {
     private final Instant endDate;
     private final long finalPayment;
     private final Long interestCap;
-    private DLoan db;
     private final RawLoan raw;
+    private DLoan db;
     private ImportedLoanAdjustment confirm;
 
     public ImportedLoan(RawLoan rawLoan) {
@@ -74,18 +74,11 @@ public class ImportedLoan implements LoanBuilder {
         } catch (CreateEntityException | InvalidStaffConductorException e) {
             throw new RuntimeException(e);
         }
-        try (Transaction transaction = DB.beginTransaction()) {
-            this.db.save(transaction);
-            for (String link : this.collateral) {
-                new DCollateral(this.db, link).save(transaction);
-            }
-            for (String comment : raw.getComments()) {
-                CommentApi.comment(getConductor(), this.db, comment, transaction);
-            }
-            transaction.commit();
-        }
+        addCollateralToLoan();
+
         if (this.interestCap != null) {
             Duration duration = Bank.interestDuration(this.interestCap, this.amount.amount(), this.rate);
+
             Instant rateChangeDate = this.startDate.plus(duration);
             if (rateChangeDate.isAfter(Objects.requireNonNullElseGet(this.endDate, Instant::now))) {
                 String msg = "Loan{%d} is frozen at %s, after the end date".formatted(getLoanId(), rateChangeDate);
@@ -107,6 +100,19 @@ public class ImportedLoan implements LoanBuilder {
         this.db.refresh();
         return this.db;
 
+    }
+
+    public void addCollateralToLoan() {
+        try (Transaction transaction = DB.beginTransaction()) {
+            this.db.save(transaction);
+            for (String link : this.collateral) {
+                new DCollateral(this.db, link).save(transaction);
+            }
+            for (String comment : raw.getComments()) {
+                CommentApi.comment(getConductor(), this.db, comment, transaction);
+            }
+            transaction.commit();
+        }
     }
 
     public long additionalPayment(Transaction transaction) {

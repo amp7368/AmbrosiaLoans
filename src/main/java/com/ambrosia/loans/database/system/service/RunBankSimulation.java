@@ -42,10 +42,11 @@ public class RunBankSimulation {
 
     private static final CallableSql UPDATE_BALANCE_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
-        SET balance_loan_amount        = COALESCE(loan_balance, 0),             -- account_balance might be null
-            balance_loan_last_updated  = COALESCE(loan_date, TO_TIMESTAMP(0)),  -- date might be null
-            balance_invest_amount      = COALESCE(invest_balance, 0),           -- account_balance might be null
-            balance_invest_last_updated= COALESCE(invest_date, TO_TIMESTAMP(0)) -- date might be null
+        SET balance_loan_amount        = COALESCE(loan_balance, 0),              -- account_balance might be null
+            balance_loan_last_updated  = COALESCE(loan_date, TO_TIMESTAMP(0)),   -- date might be null
+            balance_invest_amount      = COALESCE(invest_balance, 0),            -- account_balance might be null
+            balance_invest_last_updated= COALESCE(invest_date, TO_TIMESTAMP(0)), -- date might be null
+            balance_amount             = COALESCE(loan_balance, 0) + COALESCE(invest_balance, 0)
         FROM (
              SELECT DISTINCT ON (c.id) c.id,
                                        cl.balance loan_balance,
@@ -105,7 +106,6 @@ public class RunBankSimulation {
         DatabaseModule.get().logger().info("Starting simulation...");
         List<DLoanPayment> loanPayments = findLoanPayments(simulateStartDate, options);
         List<IAccountChange> accountChanges = findAccountChanges(simulateStartDate, options);
-
         int index = 0;
         for (DLoanPayment loanPayment : loanPayments) {
             index = simulatePayment(loanPayment, index, accountChanges);

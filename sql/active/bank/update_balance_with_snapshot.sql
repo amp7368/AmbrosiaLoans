@@ -1,8 +1,10 @@
 UPDATE client c
-SET balance_loan_amount        = COALESCE(loan_balance, 0),             -- account_balance might be null
-    balance_loan_last_updated  = COALESCE(loan_date, TO_TIMESTAMP(0)),  -- date might be null
-    balance_invest_amount      = COALESCE(invest_balance, 0),           -- account_balance might be null
-    balance_invest_last_updated= COALESCE(invest_date, TO_TIMESTAMP(0)) -- date might be null
+SET balance_loan_amount        = COALESCE(loan_balance, 0),              -- account_balance might be null
+    balance_loan_last_updated  = COALESCE(loan_date, TO_TIMESTAMP(0)),   -- date might be null
+    balance_invest_amount      = COALESCE(invest_balance, 0),            -- account_balance might be null
+    balance_invest_last_updated= COALESCE(invest_date, TO_TIMESTAMP(0)), -- date might be null
+    balance_amount             = COALESCE(loan_balance, 0) + COALESCE(invest_balance, 0)
+
 FROM (
      SELECT DISTINCT ON (c.id) c.id,
                                cl.balance loan_balance,
@@ -23,5 +25,4 @@ FROM (
               ci.date DESC,
               ci.event DESC) q2 ON q1.id = q2.id
 WHERE c.id = q1.id;
-
 

@@ -13,8 +13,7 @@ public interface RawMakeAdjustment {
     default void confirm(Instant lastDate) {
         SimulationOptions options = SimulationOptions.options()
             .setEndDate(date());
-        Instant startDate = ImportModule.get().isQuick() ? lastDate : Instant.EPOCH; // todo maybe can be lastDate.minusSeconds(1)
-        RunBankSimulation.simulate(startDate, options);
+        RunBankSimulation.simulate(Instant.EPOCH, options);
         client().refresh();
         Instant date = this.date();
         Emeralds realBal = getBalanceAt(date);

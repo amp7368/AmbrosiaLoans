@@ -11,12 +11,13 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 
 public class GiveToInvestors {
 
-    private static final BigDecimal CHANGE_PROFITS_RATE = BigDecimal.valueOf(0.3);
+    private static final BigDecimal CHANGE_PROFITS_RATE = BigDecimal.valueOf(0.20);
     private static final SqlQuery FIND_ADJUSTMENT_DELTA = DB.sqlQuery("""
         SELECT SUM(delta) AS delta, client_id
         FROM client_invest_snapshot
@@ -68,7 +69,7 @@ public class GiveToInvestors {
         Map<Long, GiveInvestor> investorsById = investors.stream()
             .collect(Collectors.toMap(
                 investor -> investor.client.getId(),
-                investor -> investor,
+                Function.identity(),
                 (a, b) -> b)
             );
         for (SqlRow client : FIND_ADJUSTMENT_DELTA.findList()) {
@@ -80,7 +81,7 @@ public class GiveToInvestors {
     }
 
     private void calcAdjustments() {
-        for (GiveInvestor investor : investors) {
+        for (GiveInvestor investor : List.copyOf(investors)) {
             BigDecimal adjustment = investor.adjustProfits();
             if (adjustment.equals(BigDecimal.ZERO)) continue;
 

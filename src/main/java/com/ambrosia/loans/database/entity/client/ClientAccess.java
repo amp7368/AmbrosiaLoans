@@ -32,6 +32,7 @@ public interface ClientAccess {
             newLoanBalance.amount(), delta, eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
+        client.save(transaction);
         return snapshot;
     }
 
@@ -42,6 +43,7 @@ public interface ClientAccess {
             newLoanBalance.amount(), delta, eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
+        client.save(transaction);
         return snapshot;
     }
 
@@ -100,7 +102,6 @@ public interface ClientAccess {
             long interest = balanceWithInterest.interestAsNegative().amount();
             newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
         }
-
         if (eventType.isLoanLike()) {
             DClientSnapshot snapshot = newLoanSnapshot(timestamp, delta, eventType, transaction);
             checkLoansPaid(timestamp, transaction);

@@ -1,18 +1,20 @@
 -- All snapshots in date order
 SELECT COALESCE(client.display_name, client.minecraft_username, client.discord_username) username,
-       COALESCE(cl.event, ci.event),
-       ci.balance / 64 / 64.0                                                            invest_balance_le,
-       ci.delta / 64 / 64.0                                                              invest_delta_le,
-       cl.balance / 64 / 64.0                                                            loan_balance_le,
-       cl.delta / 64 / 64.0                                                              loan_delta_le,
+       COALESCE(cl.event, ci.event)                                                      event,
+       ci.balance / 64.0 / 64                                                            invest_balance_le,
+       ci.delta / 64.0 / 64                                                              invest_delta_le,
+       cl.balance / 64.0 / 64                                                            loan_balance_le,
+       cl.delta / 64.0 / 64                                                              loan_delta_le,
        COALESCE(cl.date, ci.date)                                                        date,
        client.id
 FROM client
          LEFT JOIN client_invest_snapshot ci ON ci.client_id = client.id
          LEFT JOIN client_loan_snapshot cl ON cl.client_id = client.id
--- WHERE client.id = 241
-ORDER BY date
-;
+WHERE client.id = (
+                  SELECT client_id
+                  FROM loan
+                  WHERE loan.id = 102)
+ORDER BY date;
 
 
 SELECT COUNT(*),

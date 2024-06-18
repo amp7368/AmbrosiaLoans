@@ -39,9 +39,14 @@ ORDER BY MAX(q2.delta_le), q1.client_id;
 
 -- All
 SELECT event,
-       SUM(loan_delta + invest_delta) / 4096 / 64 delta_stx
-FROM client_snapshot
-WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
+       SUM(delta) / 4096 / 64 delta_stx
+FROM (
+     SELECT *
+     FROM client_invest_snapshot
+     UNION ALL
+     SELECT *
+     FROM client_loan_snapshot) q
+-- WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN', 'ADJUST_LOAN')
 GROUP BY event
 ORDER BY delta_stx;
 

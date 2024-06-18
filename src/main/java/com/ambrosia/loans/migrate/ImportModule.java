@@ -178,7 +178,6 @@ public class ImportModule extends AppleModule {
 
     @Override
     public void onEnablePost() {
-        if (true) return;
         Ambrosia.get().getFile("Graphs").mkdirs();
         logger().info("Creating graphs");
         try {
@@ -190,7 +189,8 @@ public class ImportModule extends AppleModule {
         for (Long clientId : ids) {
             DClient client = new QDClient()
                 .id.eq(clientId)
-                .fetch("accountSnapshots")
+                .fetch("loanSnapshots")
+                .fetch("investSnapshots")
                 .findOne();
             if (client == null) continue;
             if (client.getLoanSnapshots().isEmpty() && client.getInvestSnapshots().isEmpty()) continue;

@@ -27,11 +27,19 @@ public interface ClientApi {
                 .findOne();
             if (client != null) return client;
 
-            return new QDClient().where()
+            client = new QDClient().where()
                 .discord.username.ieq(clientName)
                 .findOne();
+            if (client != null) return client;
+            try {
+                long clientId = Long.parseLong(clientName);
+                return new QDClient().where()
+                    .id.eq(clientId)
+                    .findOne();
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
-
 
         static DClient findByDiscord(long discordId) {
             return new QDClient().where()
