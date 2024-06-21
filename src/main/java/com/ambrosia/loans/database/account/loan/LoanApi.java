@@ -74,9 +74,11 @@ public interface LoanApi {
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChange freeze(DStaffConductor staff, DLoan loan, Instant effectiveDate, double unfreezeRate,
-            Instant unfreezeDate) {
-            AlterLoanFreeze change = new AlterLoanFreeze(loan, effectiveDate, unfreezeRate, unfreezeDate);
+        static DAlterChange freeze(DStaffConductor staff, DLoan loan, Instant effectiveDate,
+            double unfreezeToRate, Instant unfreezeDate,
+            Instant pastUnfreezeDate, Double pastUnfreezeRate) {
+            AlterLoanFreeze change = new AlterLoanFreeze(loan, effectiveDate, unfreezeToRate, unfreezeDate, pastUnfreezeDate,
+                pastUnfreezeRate);
             return AlterCreateApi.applyChange(staff, change);
         }
 

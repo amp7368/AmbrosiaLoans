@@ -27,10 +27,6 @@ public class LoanFreezeCommand extends BaseAlterCommand {
         CheckErrorList errors = CheckErrorList.of();
         if (loan.isPaid())
             errors.addError("Loan is already paid!");
-        else if (loan.isFrozen()) {
-            errors.addError("Loan is already frozen! Unfreeze the loan before trying to freeze the loan again! "
-                + "(or undo the last freeze modification)");
-        }
 
         if (!duration.isPositive()) {
             errors.addError("Duration must be positive!");
@@ -66,18 +62,25 @@ public class LoanFreezeCommand extends BaseAlterCommand {
 
         Instant effectiveDate = Instant.now();
         Instant unfreezeDate = effectiveDate.plus(duration);
-        Double unfreezeRate = loan.getRateAt(effectiveDate);
-        if (unfreezeRate == null) {
+        Double unfreezeToRate;
+        if (loan.isFrozen()) {
+            unfreezeToRate = loan.getMeta().getUnfreezeToRate();
+        } else unfreezeToRate = loan.getRateAt(effectiveDate);
+        Instant pastUnfreezeDate = loan.getMeta().getUnfreezeDate();
+        Double pastUnfreezeRate = loan.getMeta().getUnfreezeToRate();
+
+        if (unfreezeToRate == null) {
             String msg = "Somehow there is no interest rate set on the loan at %s? Inform staff of this error."
                 .formatted(formatDate(effectiveDate));
             replyError(event, msg);
             return;
         }
 
-        DAlterChange change = LoanAlterApi.freeze(staff, loan, effectiveDate, unfreezeRate, unfreezeDate);
+        DAlterChange change = LoanAlterApi.freeze(staff, loan, effectiveDate, unfreezeToRate, unfreezeDate,
+            pastUnfreezeDate, pastUnfreezeRate);
         String clientName = loan.getClient().getEffectiveName();
         String successMsg = "Set %s's loan %s as frozen on %s. The loan will return to an interest rate of %s on %s."
-            .formatted(clientName, loan.getId(), formatDate(effectiveDate), formatPercentage(unfreezeRate),
+            .formatted(clientName, loan.getId(), formatDate(effectiveDate), formatPercentage(unfreezeToRate),
                 formatDate(unfreezeDate));
 
         ReplyAlterMessage message = ReplyAlterMessage.of(change, successMsg);
@@ -88,7 +91,8 @@ public class LoanFreezeCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("freeze", "Freeze a loan for a certain duration");
+        SubcommandData command = new SubcommandData("freeze",
+            "Freeze a loan for the specified days, or set the new duration for a currently frozen loan");
         CommandOptionList.of(
             List.of(CommandOption.LOAN_ID, CommandOption.LOAN_FREEZE_DURATION)
         ).addToCommand(command);

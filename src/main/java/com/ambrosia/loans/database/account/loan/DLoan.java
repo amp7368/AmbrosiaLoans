@@ -465,31 +465,32 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public void checkIsFrozen(boolean saveIfChanged) {
         if (this.status.isActive()) {
-            if (this.isFrozen() && this.status != DLoanStatus.FROZEN) this.status = DLoanStatus.FROZEN;
+            if (this.isFrozen()) this.status = DLoanStatus.FROZEN;
             else if (status != DLoanStatus.ACTIVE) this.status = DLoanStatus.ACTIVE;
             else return;
             if (saveIfChanged) this.save();
         }
     }
 
-    public void freeze(Instant effectiveDate, Instant unfreezeDate, double unfreezeRate, double current, Transaction transaction) {
+    public void freeze(Instant effectiveDate, Instant unfreezeDate, double unfreezeToRate, double current, Transaction transaction) {
         changeToNewRate(current, effectiveDate, transaction);
-        this.meta.setToUnfreeze(unfreezeDate, unfreezeRate);
+        this.meta.setToUnfreeze(unfreezeDate, unfreezeToRate);
         this.checkIsFrozen(false);
         this.save(transaction);
         LoanFreezeService.refresh();
     }
 
-    public void deletePastFreeze(Instant effectiveDate, double unfrozenRate, Transaction transaction) {
+    public void deletePastFreeze(Instant effectiveDate, double unfrozenRate, Instant pastUnfreezeDate, Double pastUnfreezeRate,
+        Transaction transaction) {
         DLoanSection section = getSectionAt(effectiveDate);
         if (section == null) {
             String msg = "There is no section during %s for loan{%d}".formatted(formatDate(effectiveDate), getId());
             throw new IllegalStateException(msg);
         }
-        this.meta.clearUnfreeze();
+        this.meta.setToUnfreeze(pastUnfreezeDate, pastUnfreezeRate);
         section.setRate(unfrozenRate);
-        this.checkIsFrozen(false);
         section.save(transaction);
+        this.checkIsFrozen(false);
         this.save(transaction);
         LoanFreezeService.refresh();
     }

@@ -13,26 +13,31 @@ import java.util.List;
 public class AlterLoanFreeze extends AlterLoan<Double> {
 
     Instant effectiveDate;
-    private double unfreezeRate;
+    private double unfreezeToRate;
     private Instant unfreezeDate;
+    private Instant pastUnfreezeDate;
+    private Double pastUnfreezeRate;
 
     public AlterLoanFreeze() {
     }
 
-    public AlterLoanFreeze(DLoan loan, Instant effectiveDate, double unfreezeRate, Instant unfreezeDate) {
+    public AlterLoanFreeze(DLoan loan, Instant effectiveDate, double unfreezeToRate, Instant unfreezeDate, Instant pastUnfreezeDate,
+        Double pastUnfreezeRate) {
         super(AlterChangeType.LOAN_FREEZE, loan, loan.getRateAt(effectiveDate), 0d);
         this.effectiveDate = effectiveDate;
-        this.unfreezeRate = unfreezeRate;
+        this.unfreezeToRate = unfreezeToRate;
         this.unfreezeDate = unfreezeDate;
+        this.pastUnfreezeDate = pastUnfreezeDate;
+        this.pastUnfreezeRate = pastUnfreezeRate;
     }
 
 
     @Override
     protected void apply(DLoan loan, Double current, Transaction transaction) {
         if (isApplied()) {
-            loan.deletePastFreeze(effectiveDate, current, transaction);
+            loan.deletePastFreeze(effectiveDate, current, pastUnfreezeDate, pastUnfreezeRate, transaction);
         } else {
-            loan.freeze(effectiveDate, unfreezeDate, unfreezeRate, current, transaction);
+            loan.freeze(effectiveDate, unfreezeDate, unfreezeToRate, current, transaction);
         }
     }
 

@@ -6,6 +6,7 @@ import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.OneToOne;
+import org.jetbrains.annotations.Nullable;
 
 @Embeddable
 public class DLoanMeta {
@@ -33,7 +34,11 @@ public class DLoanMeta {
         this.vouch = request.getVouchClient();
     }
 
-    public void setToUnfreeze(Instant unfreezeDate, double unfreezeToRate) {
+    public void setToUnfreeze(@Nullable Instant unfreezeDate, @Nullable Double unfreezeToRate) {
+        if (unfreezeDate == null || unfreezeToRate == null) {
+            this.clearUnfreeze();
+            return;
+        }
         this.unfreezeDate = Timestamp.from(unfreezeDate);
         this.unfreezeToRate = unfreezeToRate;
     }
