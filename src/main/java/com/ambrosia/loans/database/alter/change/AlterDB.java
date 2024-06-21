@@ -18,6 +18,7 @@ public abstract class AlterDB<Entity> {
 
     private transient Instant appliedDate;
     private transient EnumSet<AlterImpactedField> impactedFields;
+    private transient boolean isApplied;
 
 
     public AlterDB() {
@@ -32,6 +33,7 @@ public abstract class AlterDB<Entity> {
     public void init(DAlterChange record) {
         this.entityId = record.getEntityId();
         this.appliedDate = record.getEventDate();
+        this.isApplied = record.isApplied();
     }
 
     public long getEntityId() {
@@ -40,6 +42,10 @@ public abstract class AlterDB<Entity> {
 
     public final Instant getAppliedDate() {
         return appliedDate;
+    }
+
+    public final boolean isApplied() {
+        return isApplied;
     }
 
     public AlterChangeType getType() {

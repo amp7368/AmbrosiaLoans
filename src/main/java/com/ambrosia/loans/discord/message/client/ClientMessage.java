@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.base.command;
+package com.ambrosia.loans.discord.message.client;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
@@ -10,11 +10,15 @@ import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.Nullable;
 
-public interface SendMessageClient {
+public interface ClientMessage {
+
+    static ClientMessageBuilder of(DClient client) {
+        return new ClientMessageBuilder(client);
+    }
 
     DClient getClient();
 
-    default void author(EmbedBuilder embed) {
+    default void clientAuthor(EmbedBuilder embed) {
         DClient client = getClient();
 
         @Nullable String display = client.getDisplayName();

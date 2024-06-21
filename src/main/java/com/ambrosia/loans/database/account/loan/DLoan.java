@@ -1,5 +1,7 @@
 package com.ambrosia.loans.database.account.loan;
 
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
+
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
@@ -17,11 +19,11 @@ import com.ambrosia.loans.database.system.exception.InvalidStaffConductorExcepti
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.VersionEntityType;
+import com.ambrosia.loans.service.loan.LoanFreezeService;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
-import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
@@ -36,11 +38,11 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,17 +77,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     private DLoanStatus status;
     @ManyToOne(optional = false)
     private DStaffConductor conductor;
-    @Column
-    @DbDefault("none")
-    private String reason;
-    @Column
-    @DbDefault("none")
-    private String repayment;
-    @OneToOne
-    private DClient vouch;
-    @Column
-    @DbDefault("none")
-    private String discount;
+    @Embedded(prefix = "")
+    private DLoanMeta meta;
     @OneToMany
     private List<DComment> comments;
     @ManyToOne
@@ -98,6 +91,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.startDate = Timestamp.from(startDate);
         this.sections = List.of(new DLoanSection(this, rate, startDate));
         this.status = DLoanStatus.ACTIVE;
+        this.meta = new DLoanMeta();
     }
 
     public DLoan(LoanBuilder request) throws CreateEntityException, InvalidStaffConductorException {
@@ -106,9 +100,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.client = request.getClient();
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();
-        this.reason = request.getReason();
-        this.repayment = request.getRepayment();
-        this.vouch = request.getVouchClient();
+        this.meta = new DLoanMeta(request);
         if (request.getStartDate() == null)
             this.startDate = Timestamp.from(Instant.now());
         else
@@ -117,7 +109,6 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         if (rate == null) throw new CreateEntityException("Rate has not been set!");
         DLoanSection firstSection = new DLoanSection(this, rate, this.startDate.toInstant());
         this.sections = List.of(firstSection);
-        this.discount = request.getDiscount();
         this.status = DLoanStatus.ACTIVE;
         this.checkIsFrozen(false);
     }
@@ -377,6 +368,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.PAID;
         this.endDate = Timestamp.from(endDate);
         getLastSection().setEndDate(endDate).save(transaction);
+        this.meta.clearUnfreeze(); // in case it was frozen
         this.save(transaction);
         return this;
     }
@@ -390,7 +382,6 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.id;
     }
 
-    @Override
     public List<DLoanPayment> getPayments() {
         return this.payments.stream()
             .sorted(Comparator.comparing(DLoanPayment::getDate))
@@ -469,5 +460,29 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             this.endDate = null;
         }
         return this;
+    }
+
+    public void freeze(Instant effectiveDate, Instant unfreezeDate, double unfreezeRate, double current, Transaction transaction) {
+        changeToNewRate(current, effectiveDate, transaction);
+        this.meta.setToUnfreeze(unfreezeDate, unfreezeRate);
+        this.save(transaction);
+        LoanFreezeService.refresh();
+    }
+
+    public void removeFreeze(Instant effectiveDate, double unfrozenRate, Transaction transaction) {
+        DLoanSection section = getSectionAt(effectiveDate);
+        if (section == null) {
+            String msg = "There is no section during %s for loan{%d}".formatted(formatDate(effectiveDate), getId());
+            throw new IllegalStateException(msg);
+        }
+        this.meta.clearUnfreeze();
+        this.save(transaction);
+        section.setRate(unfrozenRate);
+        section.save(transaction);
+        LoanFreezeService.refresh();
+    }
+
+    public DLoanMeta getMeta() {
+        return this.meta;
     }
 }

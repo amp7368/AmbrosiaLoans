@@ -44,6 +44,10 @@ public class AmbrosiaMessages {
             return new AmbrosiaCreateMessage(msg);
         }
 
+        public static AmbrosiaMessage invalidOption(String optionName, Object optionValue) {
+            return error("Invalid %s. '%s' was provided".formatted(optionName, optionValue));
+        }
+
         public static AmbrosiaMessage badRole(String requiredRole, CommandInteraction event) {
             String commandName = event.getFullCommandName();
             return error(String.format("You must be a %s to run '/%s'", requiredRole, commandName));
@@ -56,7 +60,7 @@ public class AmbrosiaMessages {
         }
 
         public static AmbrosiaMessage missingOption(String option) {
-            String msg = String.format("'%s' is required", option);
+            String msg = String.format("'%s' is required, but was not provided", option);
             return error(msg);
         }
 

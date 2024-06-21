@@ -15,7 +15,12 @@ public class ALoanCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new LoanSetRateCommand(), new LoanAlterCommand(), new LoanDefaultCommand());
+        return List.of(new LoanSetRateCommand(),
+            new LoanAlterCommand(),
+            new LoanDefaultCommand(),
+            new LoanFreezeCommand()
+//            todo new LoanUnFreeze()
+        );
     }
 
     @Override

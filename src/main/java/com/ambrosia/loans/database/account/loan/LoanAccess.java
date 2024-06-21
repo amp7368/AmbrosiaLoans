@@ -133,14 +133,12 @@ public interface LoanAccess {
 
     default Emeralds getTotalPaid(Instant startDate, @Nullable Instant endDate) {
         Instant end = Objects.requireNonNullElseGet(endDate, Instant::now);
-        return getPayments().stream()
+        return getEntity().getPayments().stream()
             .filter(pay -> pay.getDate().isAfter(startDate))
             .filter(pay -> !pay.getDate().isAfter(end))
             .map(DLoanPayment::getAmount)
             .reduce(Emeralds.zero(), Emeralds::add);
     }
-
-    List<DLoanPayment> getPayments();
 
     default double getCurrentRate() {
         return getEntity().getLastSection().getRate();
@@ -169,12 +167,18 @@ public interface LoanAccess {
             .add(loan.getTotalPaid());
     }
 
+    @Nullable
     default Double getRateAt(Instant effectiveDate) {
+        DLoanSection section = getSectionAt(effectiveDate);
+        return section == null ? null : section.getRate();
+    }
+
+    @Nullable
+    default DLoanSection getSectionAt(Instant effectiveDate) {
         return getEntity().getSections()
             .stream()
             .filter(s -> s.isDateDuring(effectiveDate))
             .findAny()
-            .map(DLoanSection::getRate)
             .orElse(null);
     }
 }

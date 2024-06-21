@@ -304,4 +304,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
     public List<DAdjustBalance> getAdjustments() {
         return adjustments;
     }
+
+    @Override
+    public String toString() {
+        return getEffectiveName();
+    }
 }

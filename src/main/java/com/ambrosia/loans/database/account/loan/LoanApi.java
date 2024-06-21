@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.account.loan;
 
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFrozen;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanStartDate;
@@ -69,6 +70,12 @@ public interface LoanApi {
 
         static DAlterChange setPaymentAmount(DStaffConductor staff, DLoanPayment payment, Emeralds amount) {
             AlterPaymentAmount change = new AlterPaymentAmount(payment, amount);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange freeze(DStaffConductor staff, DLoan loan, Instant effectiveDate, double unfreezeRate,
+            Instant unfreezeDate) {
+            AlterLoanFrozen change = new AlterLoanFrozen(loan, effectiveDate, unfreezeRate, unfreezeDate);
             return AlterCreateApi.applyChange(staff, change);
         }
     }

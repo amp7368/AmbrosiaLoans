@@ -114,7 +114,7 @@ public class ProfileTransactionsPage extends ProfilePage {
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        author(embed);
+        clientAuthor(embed);
         balance(embed);
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())

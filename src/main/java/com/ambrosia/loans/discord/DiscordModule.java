@@ -74,7 +74,7 @@ public class DiscordModule extends AppleModule {
         DiscordConfig.get().generateWarnings();
         DiscordPermissions.get().generateWarnings();
         if (!DiscordConfig.get().isConfigured()) {
-            this.logger().fatal("Please configure " + Ambrosia.get().getFile("AmbrosiaConfig.json"));
+            this.logger().fatal("Please configure {}", Ambrosia.get().getFile("AmbrosiaConfig.json"));
             System.exit(1);
         }
     }
