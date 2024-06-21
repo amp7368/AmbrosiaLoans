@@ -142,7 +142,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
         embed.appendDescription(title);
         embed.setColor(this.data.stage.getColor());
-        data.sender.author(embed);
+        data.sender.clientAuthor(embed);
 
         embed.appendDescription(this.generateDescription(extraDescription));
 
@@ -252,7 +252,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             case ERROR -> "There was an error processing the request D: Message **%s**";
         };
         updateMessage = String.format(updateMessage, data.getEndorser());
-        data.sender.sendDm(makeClientMessage(updateMessage));
+        MessageCreateData message = makeClientMessage(updateMessage);
+        data.sender.getClient().getDiscord().sendDm(message);
     }
 
     @Override

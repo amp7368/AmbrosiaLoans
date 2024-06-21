@@ -5,7 +5,7 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import com.ambrosia.loans.database.account.ClientMergedSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.command.SendMessageClient;
+import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, ClientMergedSnapshot> implements SendMessageClient {
+public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, ClientMergedSnapshot> implements ClientMessage {
 
     private static final Comparator<ClientMergedSnapshot> COMPARATOR = Comparator.naturalOrder();
 
@@ -51,7 +51,7 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, Clie
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        author(embed);
+        clientAuthor(embed);
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
 
         embed.setTitle(title("Transactions History", entryPage, getMaxPage()));

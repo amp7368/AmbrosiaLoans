@@ -8,14 +8,12 @@ public class CheckRate {
 
 
     public static void checkAll(CheckErrorList error, double rate) {
-        if (rate < 0)
+        if (rate < 0) {
             error.addError("Rate must be positive!");
-
-        if (rate < 1) {
+        } else if (rate < 1) {
             String msg = "Set rate as %s. Are you sure you want to set it less than 1%%?".formatted(formatPercentage(rate / 100));
             error.addWarning(msg);
-        }
-        if (rate > 10) {
+        } else if (rate > 10) {
             String msg = "Set rate as %s. Are you sure you want to set it more than 10%%?".formatted(formatPercentage(rate / 100));
             error.addWarning(msg);
         }

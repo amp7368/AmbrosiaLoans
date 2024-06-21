@@ -7,7 +7,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordModule;
-import com.ambrosia.loans.discord.base.command.SendMessageClient;
+import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.time.Instant;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -17,7 +17,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DiscordLog implements SendMessageClient {
+public class DiscordLog implements ClientMessage {
 
     private static TextChannel channel;
     private final DClient client;
@@ -83,7 +83,7 @@ public class DiscordLog implements SendMessageClient {
             .setColor(AmbrosiaColor.GREEN)
             .setFooter(getActorName(), actor.getAvatarUrl())
             .setTimestamp(Instant.now());
-        author(embed);
+        clientAuthor(embed);
         return embed;
     }
 }

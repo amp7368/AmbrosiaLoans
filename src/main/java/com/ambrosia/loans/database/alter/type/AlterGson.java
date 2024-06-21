@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.alter.type;
 
 import apple.utilities.json.gson.GsonBuilderDynamic;
-import com.ambrosia.loans.database.alter.change.AlterDB;
+import com.ambrosia.loans.database.alter.change.AlterDBChange;
 import com.ambrosia.loans.util.InstantGsonSerializing;
 import com.ambrosia.loans.util.emerald.EmeraldsGsonSerializing;
 import com.google.gson.ExclusionStrategy;
@@ -32,7 +32,7 @@ public class AlterGson {
         return gson.create();
     }
 
-    public static AlterDB<?> alterDBFromJson(String json) {
-        return gson().fromJson(json, AlterDB.class);
+    public static AlterDBChange<?, ?> alterDBFromJson(String json) {
+        return gson().fromJson(json, AlterDBChange.class);
     }
 }

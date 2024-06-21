@@ -2,8 +2,8 @@ package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
-import com.ambrosia.loans.discord.base.command.SendMessageClient;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 
-public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements SendMessageClient {
+public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements ClientMessage {
 
 
     public static final Button OVERVIEW = Button.primary("overview", "Overview");
@@ -33,14 +33,14 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements SendM
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(color);
         embed.appendDescription("## %s\n".formatted(title));
-        author(embed);
+        clientAuthor(embed);
 
         clientId(embed);
         return embed;
     }
 
     private void clientId(EmbedBuilder embed) {
-        embed.appendDescription("### %s %s \n".formatted(AmbrosiaEmoji.KEY_ID, getClient().getId()));
+        embed.appendDescription("### Client Id %s %s \n".formatted(AmbrosiaEmoji.KEY_ID, getClient().getId()));
     }
 
     protected void balance(EmbedBuilder embed) {

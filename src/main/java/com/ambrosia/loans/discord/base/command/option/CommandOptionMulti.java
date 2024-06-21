@@ -1,5 +1,7 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.util.List;
 import java.util.function.Function;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
@@ -25,6 +27,13 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
             if (v == null) return null;
             return mapping2.apply(v);
         });
+    }
+
+    @Override
+    public AmbrosiaMessage getErrorMessage(CommandInteraction event) {
+        V mapped = getMap1(event);
+        if (mapped == null) return super.getErrorMessage(event);
+        return ErrorMessages.invalidOption(getOptionName(), mapped);
     }
 
     @Override

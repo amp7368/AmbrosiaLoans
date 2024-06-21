@@ -5,6 +5,7 @@ import apple.lib.modules.ApplePlugin;
 import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
+import com.ambrosia.loans.service.ServiceModule;
 import java.util.List;
 
 public class Ambrosia extends ApplePlugin {
@@ -26,7 +27,7 @@ public class Ambrosia extends ApplePlugin {
 
     @Override
     public List<AppleModule> createModules() {
-        return List.of(new DatabaseModule(), new DiscordModule()
+        return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule()
 //            , new ImportModule()
         );
     }

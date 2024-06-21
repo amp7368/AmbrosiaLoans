@@ -99,7 +99,7 @@ public class ProfileLoanPage extends ProfilePage {
 
             summaries.add(line1 + line2 + line3);
         }
-        embed.appendDescription("### Past Loans\n");
+        embed.appendDescription("## Past Loans\n");
 
         embed.appendDescription(String.join("\n", summaries));
         if (hitMaxLoans)

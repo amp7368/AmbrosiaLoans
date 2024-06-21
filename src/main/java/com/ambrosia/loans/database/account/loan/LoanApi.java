@@ -1,9 +1,11 @@
 package com.ambrosia.loans.database.account.loan;
 
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanRate;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanStartDate;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanUnfreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterPaymentAmount;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
@@ -69,6 +71,21 @@ public interface LoanApi {
 
         static DAlterChange setPaymentAmount(DStaffConductor staff, DLoanPayment payment, Emeralds amount) {
             AlterPaymentAmount change = new AlterPaymentAmount(payment, amount);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange freeze(DStaffConductor staff, DLoan loan, Instant effectiveDate,
+            double unfreezeToRate, Instant unfreezeDate,
+            Instant pastUnfreezeDate, Double pastUnfreezeRate) {
+            AlterLoanFreeze change = new AlterLoanFreeze(loan, effectiveDate, unfreezeToRate, unfreezeDate, pastUnfreezeDate,
+                pastUnfreezeRate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange unfreeze(DStaffConductor staff, DLoan loan, Instant effectiveDate, Double beforeFreezeRate,
+            Double unfreezeToRate, Instant previousUnfreezeDate) {
+            AlterLoanUnfreeze change = new AlterLoanUnfreeze(loan, effectiveDate, beforeFreezeRate, unfreezeToRate,
+                previousUnfreezeDate);
             return AlterCreateApi.applyChange(staff, change);
         }
     }

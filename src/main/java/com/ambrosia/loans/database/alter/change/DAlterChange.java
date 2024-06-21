@@ -87,7 +87,7 @@ public class DAlterChange extends Model {
     public AlterDBChange<?, ?> getObj() {
         if (this.objDeserialized != null)
             return this.objDeserialized;
-        this.objDeserialized = (AlterDBChange<?, ?>) AlterGson.alterDBFromJson(this.obj);
+        this.objDeserialized = AlterGson.alterDBFromJson(this.obj);
         this.objDeserialized.init(this);
         return this.objDeserialized;
     }
