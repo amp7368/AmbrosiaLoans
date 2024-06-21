@@ -77,7 +77,7 @@ public class LoanFreezeCommand extends BaseAlterCommand {
         DAlterChange change = LoanAlterApi.freeze(staff, loan, effectiveDate, unfreezeRate, unfreezeDate);
         String clientName = loan.getClient().getEffectiveName();
         String successMsg = "Set %s's loan %s as frozen on %s. The loan will return to an interest rate of %s on %s."
-            .formatted(clientName, loan.getId(), formatDate(effectiveDate), formatPercentage(unfreezeRate * 100f),
+            .formatted(clientName, loan.getId(), formatDate(effectiveDate), formatPercentage(unfreezeRate),
                 formatDate(unfreezeDate));
 
         ReplyAlterMessage message = ReplyAlterMessage.of(change, successMsg);

@@ -6,11 +6,6 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.DLoanMeta;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
-import com.ambrosia.loans.discord.message.loan.LoanMessage;
-import com.ambrosia.loans.discord.message.loan.LoanMessageBuilder;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import io.ebean.DB;
-import io.ebean.Transaction;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,8 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
 public class LoanFreezeService {
@@ -53,7 +46,7 @@ public class LoanFreezeService {
 
     private static void run() {
         findLoansToUnfreeze().forEach(LoanFreezeService::unfreezeLoan);
-//        schedule();
+        refresh();
     }
 
     private static void unfreezeLoan(DLoan loan) {
@@ -65,23 +58,7 @@ public class LoanFreezeService {
             Ambrosia.get().logger().error(msg);
             return;
         }
-        try (Transaction transaction = DB.beginTransaction()) {
-            meta.clearUnfreeze();
-            loan.save(transaction);
-            loan.changeToNewRate(unfreezeToRate, unfreezeDate, transaction);
-            transaction.commit();
-        }
-
-        EmbedBuilder embed = new EmbedBuilder().setColor(AmbrosiaColor.BLUE_NORMAL);
-        LoanMessageBuilder msgBuilder = LoanMessage.of(loan);
-        msgBuilder.clientMsg().clientAuthor(embed);
-        msgBuilder.loanDescription(embed);
-
-        MessageCreateData message = MessageCreateData.fromEmbeds(embed.build());
-        // todo log channel to inform staff
-        //      also record messages in db
-        Ambrosia.get().logger().info("Sent unfreeze loan message");
-        loan.getClient().getDiscord().sendDm(message);
+        loan.unfreezeLoan(unfreezeToRate, unfreezeDate);
     }
 
     private static List<DLoan> findLoansToUnfreeze() {

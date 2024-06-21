@@ -18,8 +18,8 @@ public class ALoanCommand extends BaseCommand {
         return List.of(new LoanSetRateCommand(),
             new LoanAlterCommand(),
             new LoanDefaultCommand(),
-            new LoanFreezeCommand()
-//            todo new LoanUnFreeze()
+            new LoanFreezeCommand(),
+            new LoanUnfreezeCommand()
         );
     }
 
