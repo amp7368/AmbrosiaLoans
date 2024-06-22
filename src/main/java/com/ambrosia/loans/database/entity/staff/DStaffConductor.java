@@ -11,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "staff")
@@ -18,14 +19,13 @@ public class DStaffConductor extends Model {
 
     public static DStaffConductor SYSTEM;
     public static DStaffConductor MIGRATION;
+    @Column(nullable = false)
+    private final Timestamp dateCreated = Timestamp.from(Instant.now());
     @Id
     @Identity(start = 100)
     private long id;
     @Column(nullable = false)
     private String username;
-    @Column(nullable = false)
-    private final Timestamp dateCreated = Timestamp.from(Instant.now());
-
     @OneToOne // optional
     private DClient client;
 
@@ -61,5 +61,10 @@ public class DStaffConductor extends Model {
     public String getName() {
         if (this.client == null) return this.username;
         return this.client.getEffectiveName();
+    }
+
+    @Nullable
+    public DClient getClient() {
+        return this.client;
     }
 }

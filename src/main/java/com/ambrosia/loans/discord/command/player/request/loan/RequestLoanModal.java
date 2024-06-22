@@ -4,10 +4,14 @@ import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.SendMessage;
+import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
+import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.modal.DCFModal;
 import java.util.ArrayList;
@@ -15,7 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class RequestLoanModal extends DCFModal implements SendMessage {
 
@@ -37,10 +43,23 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     private String minecraft;
     private String reason;
 
+    private ActiveRequestLoan request;
+
+    public void onAccept(ButtonInteractionEvent event) {
+        ActiveRequestLoanGui finishedGui = request.create();
+        event.reply(finishedGui.makeClientMessage()).queue();
+        finishedGui.send(ActiveRequestDatabase::sendRequest);
+    }
+
+    private void onReject(ButtonInteractionEvent event) {
+        MessageCreateData msg = ErrorMessages.rejectedTOSRequest("loan").createMsg();
+        event.reply(msg).setEphemeral(true).queue();
+        request.saveArchive();
+    }
+
     public void setMinecraft(ModalMapping modalMapping) {
         this.minecraft = modalMapping.getAsString();
     }
-
 
     public void setEmeralds(ModalMapping modalMapping) {
         final String value = modalMapping.getAsString();
@@ -58,7 +77,6 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             this.error = "'Amount in STX' must be a decimal number";
         }
     }
-
 
     public void setReason(ModalMapping modalMapping) {
         this.reason = modalMapping.getAsString();
@@ -98,7 +116,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             }
         }
 
-        ActiveRequestLoan request = new ActiveRequestLoan(
+        request = new ActiveRequestLoan(
             client,
             this.emeralds,
             this.reason,
@@ -106,10 +124,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             this.collateral
         );
 
-        ActiveRequestLoanGui gui = request.create();
-        event.reply(gui.makeClientMessage()).queue();
-        gui.send(ActiveRequestDatabase::sendRequest);
+        AcceptTOSGui gui = new AcceptTOSGui(DiscordBot.dcf, event::reply);
+        new AcceptTOSRequest(gui, client, this::onAccept, this::onReject).send();
     }
-
-
 }

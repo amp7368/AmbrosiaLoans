@@ -37,6 +37,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     protected Instant startDate;
     protected transient DClient client;
     protected transient DClient vouchClient;
+    private Instant acceptedTOSDate;
 
     public ActiveRequestLoan() {
         super(ActiveRequestType.LOAN, null);
@@ -145,6 +146,15 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     public void setStartDate(@Nullable Instant startDate) {
         this.startDate = startDate;
         this.save();
+    }
+
+    public boolean hasAcceptedTOS() {
+        return this.acceptedTOSDate != null;
+    }
+
+    @Nullable
+    public Instant getAcceptedTOSDate() {
+        return acceptedTOSDate;
     }
 
     private void save() {

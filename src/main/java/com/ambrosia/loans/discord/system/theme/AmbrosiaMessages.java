@@ -9,6 +9,7 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -143,6 +144,19 @@ public class AmbrosiaMessages {
             String msg = "Failed to parse date. %s is not in the format %s".formatted(given, expected);
             return error(msg);
         }
+
+        public static AmbrosiaMessage rejectedTOSRequest(String type) {
+            String desc =
+                ("Since TOS was rejected, your %s request cannot be accepted"
+                    + " and was deleted. Staff has not been notified of your request.")
+                    .formatted(type);
+            MessageEmbed embed = new EmbedBuilder()
+                .setColor(AmbrosiaColor.RED)
+                .setTitle("Rejected TOS")
+                .setDescription(desc)
+                .build();
+            return error(MessageCreateData.fromEmbeds(embed));
+        }
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {
@@ -150,6 +164,11 @@ public class AmbrosiaMessages {
         @Override
         public void replyError(CommandInteraction event) {
             replyError(event, msg);
+        }
+
+        @Override
+        public MessageCreateData createMsg() {
+            return MessageCreateData.fromContent(msg);
         }
 
         @Override
@@ -167,9 +186,13 @@ public class AmbrosiaMessages {
         }
 
         @Override
+        public MessageCreateData createMsg() {
+            return msg;
+        }
+
+        @Override
         public String toString() {
             return this.msg.getContent();
         }
     }
-
 }

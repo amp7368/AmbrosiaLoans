@@ -1,19 +1,16 @@
 package com.ambrosia.loans.discord.request;
 
+import static com.ambrosia.loans.discord.request.ActiveRequestType.gson;
+
 import apple.utilities.database.concurrent.ConcurrentAJD;
 import apple.utilities.database.concurrent.inst.ConcurrentAJDInst;
-import apple.utilities.gson.adapter.GsonEnumTypeAdapter;
-import apple.utilities.json.gson.GsonBuilderDynamic;
+import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordConfig;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
-import com.ambrosia.loans.util.InstantGsonSerializing;
-import com.google.gson.Gson;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import discord.util.dcf.gui.stored.DCFStoredGuiFactory;
 import java.io.File;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -32,19 +29,15 @@ public class ActiveRequestDatabase {
 
     public static void load() {
         requestChannel = DiscordBot.dcf.jda().getTextChannelById(DiscordConfig.get().requestChannel);
-        File file = DiscordModule.get().getFile("ActiveRequests.json");
+        File file = DatabaseModule.get().getFile("ActiveRequests.json");
         manager = ConcurrentAJD.createInst(ActiveRequestDatabase.class, file, gson());
         manager.loadNow();
     }
 
-    private static Gson gson() {
-        return GsonEnumTypeAdapter.register(ActiveRequestType.values(), new GsonBuilderDynamic(), ActiveRequest.class)
-            .registerTypeAdapter(Instant.class, new InstantGsonSerializing())
-            .create();
-    }
 
     public static void save(ActiveRequest<?> request) {
         if (request.stage.isComplete()) {
+            request.saveArchive();
             remove(request);
             return;
         }

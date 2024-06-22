@@ -3,7 +3,7 @@ package com.ambrosia.loans.database;
 import apple.lib.ebean.database.AppleEbeanDatabase;
 import apple.lib.ebean.database.config.AppleEbeanDatabaseConfig;
 import apple.lib.ebean.database.config.AppleEbeanPostgresConfig;
-import com.ambrosia.loans.AmbrosiaConfig;
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;

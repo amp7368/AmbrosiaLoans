@@ -1,16 +1,19 @@
 package com.ambrosia.loans.discord.base.request;
 
+import apple.utilities.database.HasFilename;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
+import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredDormantGui;
+import java.util.UUID;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCFStoredDormantGui<Gui> {
+public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCFStoredDormantGui<Gui> implements HasFilename {
 
     public String typeId;
     public ActiveRequestStage stage = ActiveRequestStage.CREATED;
@@ -22,6 +25,12 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
     public ActiveRequest(ActiveRequestType typeId, ActiveRequestSender sender) {
         this.typeId = typeId.getTypeId();
         this.sender = sender;
+    }
+
+    @Override
+    public String getSaveFileName() {
+        if (id == null) return UUID.randomUUID().toString();
+        return id + "-archived.json";
     }
 
     public long getRequestId() {
@@ -57,6 +66,10 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
             this.endorserId = 0;
             return false;
         }
+    }
+
+    public void saveArchive() {
+        ArchivedRequestDatabase.save(this);
     }
 
     public DStaffConductor getConductor() throws InvalidStaffConductorException {

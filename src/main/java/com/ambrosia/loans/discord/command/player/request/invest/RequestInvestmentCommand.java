@@ -2,9 +2,12 @@ package com.ambrosia.loans.discord.command.player.request.invest;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
+import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
 import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestmentGui;
@@ -14,7 +17,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class RequestInvestmentCommand extends BaseClientSubCommand {
 
@@ -37,6 +42,18 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         return false;
     }
 
+    public void onAccept(ButtonInteractionEvent event, ActiveRequestInvestment request) {
+        ActiveRequestInvestmentGui finishedGui = request.create();
+        event.reply(finishedGui.makeClientMessage()).queue();
+        finishedGui.send(ActiveRequestDatabase::sendRequest);
+    }
+
+    private void onReject(ButtonInteractionEvent event, ActiveRequestInvestment request) {
+        MessageCreateData msg = ErrorMessages.rejectedTOSRequest("investment").createMsg();
+        event.reply(msg).setEphemeral(true).queue();
+        request.saveArchive();
+    }
+
     @Override
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
         Emeralds amount = CommandOption.INVESTMENT_AMOUNT.getRequired(event);
@@ -44,10 +61,11 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
 
         ActiveRequestInvestment request = new ActiveRequestInvestment(client, amount);
 
-        ActiveRequestInvestmentGui gui = request.create();
-        event.reply(gui.makeClientMessage()).queue();
-        gui.send(ActiveRequestDatabase::sendRequest);
-
+        AcceptTOSGui gui = new AcceptTOSGui(DiscordBot.dcf, event::reply);
+        new AcceptTOSRequest(gui, client,
+            e -> onAccept(e, request),
+            e -> onReject(e, request)
+        ).send();
     }
 
     @Override
