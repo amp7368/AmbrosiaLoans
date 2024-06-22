@@ -36,6 +36,7 @@ public interface LoanMessage {
         String rateMsg = formatPercentage(loan.getLastSection().getRate());
         embed.appendDescription("**%s Current Rate:** %s\n".formatted(AmbrosiaEmoji.LOAN_RATE, rateMsg));
         embed.appendDescription("**%s Initial Amount:** %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()));
+        embed.appendDescription("**%s Total Paid:** %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid()));
         String collateral = loan.getCollateral().stream()
             .map(c -> c.link)
             .collect(Collectors.joining(", "));

@@ -41,6 +41,8 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.jetbrains.annotations.NotNull;
 
 public class DiscordModule extends AppleModule {
@@ -83,7 +85,9 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnable() {
-        JDABuilder builder = JDABuilder.createDefault(DiscordConfig.get().token);
+        JDABuilder builder = JDABuilder.createDefault(DiscordConfig.get().token, GatewayIntent.GUILD_MEMBERS,
+                GatewayIntent.GUILD_EMOJIS_AND_STICKERS)
+            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
         JDA jda = builder.build();
         try {
             jda.awaitReady();

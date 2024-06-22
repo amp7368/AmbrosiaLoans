@@ -7,6 +7,8 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.AmbrosiaDatabase.AmbrosiaDatabaseConfig;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.init.InitDatabase;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
+import java.time.Instant;
 import java.util.List;
 
 public class DatabaseModule extends AppleModule {
@@ -32,6 +34,8 @@ public class DatabaseModule extends AppleModule {
 
         new AmbrosiaDatabase();
         InitDatabase.init();
+
+        RunBankSimulation.simulateAsync(Instant.EPOCH);
 
         if (AmbrosiaDatabaseConfig.get().isExample())
             ExampleData.loadExample();

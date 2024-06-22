@@ -70,7 +70,7 @@ public class AmbrosiaAssets {
 
         AmbrosiaEmoji(String emojiStr) {
             this.emojiId = 0;
-            this.emojiStr = Emoji.fromUnicode(emojiStr).getFormatted();
+            this.emojiStr = emojiStr;
         }
 
         public RichCustomEmoji getEmoji() {

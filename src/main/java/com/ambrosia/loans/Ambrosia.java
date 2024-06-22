@@ -7,6 +7,7 @@ import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.config.AmbrosiaStaffConfig;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
+import com.ambrosia.loans.migrate.ImportModule;
 import com.ambrosia.loans.service.ServiceModule;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class Ambrosia extends ApplePlugin {
     @Override
     public List<AppleModule> createModules() {
         return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule()
-//            , new ImportModule()
+            , new ImportModule()
         );
     }
 

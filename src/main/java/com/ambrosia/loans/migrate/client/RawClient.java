@@ -7,6 +7,7 @@ import com.ambrosia.loans.migrate.ImportModule;
 import java.util.UUID;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class RawClient {
 
@@ -28,9 +29,6 @@ public class RawClient {
     }
 
     public ClientMinecraftDetails getMinecraft() {
-        if (this.minecraftUUID != null && isProduction()) {
-            return ClientMinecraftDetails.fromUsername(this.minecraftName);
-        }
         return ClientMinecraftDetails.fromRaw(this.minecraftUUID, this.minecraftName);
     }
 
@@ -44,15 +42,28 @@ public class RawClient {
                 .debug("[Client] Skipping %s's discord search because discordId is null".formatted(this.minecraftName));
             return null;
         }
-        Member member = DiscordBot.getAmbrosiaServer()
-            .retrieveMemberById(discordId)
-            .complete();
-        if (member != null) return ClientDiscordDetails.fromMember(member);
+        ImportModule.get().logger().info("Loading discord: {}", discordId);
+        try {
+            Member member = DiscordBot.getAmbrosiaServer()
+                .retrieveMemberById(discordId)
+                .complete();
+            if (member != null) {
+                ImportModule.get().logger().info("Loaded member discord: {}", member.getEffectiveName());
+                return ClientDiscordDetails.fromMember(member);
+            }
+        } catch (ErrorResponseException ignored) {
+        }
 
-        User user = DiscordBot.jda()
-            .retrieveUserById(discordId)
-            .complete();
-        if (user != null) return ClientDiscordDetails.fromUser(user);
+        try {
+            User user = DiscordBot.jda()
+                .retrieveUserById(discordId)
+                .complete();
+            if (user != null) {
+                ImportModule.get().logger().info("Loaded discord user: {}", user.getName());
+                return ClientDiscordDetails.fromUser(user);
+            }
+        } catch (ErrorResponseException ignored) {
+        }
 
         ImportModule.get().logger().warn("[Client] Cannot find %s's discord from %d".formatted(this.minecraftName, this.discordId));
         return null;

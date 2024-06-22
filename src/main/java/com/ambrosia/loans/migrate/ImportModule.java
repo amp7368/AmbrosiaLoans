@@ -3,6 +3,7 @@ package com.ambrosia.loans.migrate;
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.config.AmbrosiaConfig;
+import com.ambrosia.loans.database.account.adjust.AdjustApi;
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.adjust.query.QDAdjustBalance;
@@ -12,12 +13,15 @@ import com.ambrosia.loans.database.account.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
+import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi;
 import com.ambrosia.loans.database.account.withdrawal.query.QDWithdrawal;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
+import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.exception.NotEnoughFundsException;
 import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileTransactionsPage;
@@ -117,6 +121,7 @@ public class ImportModule extends AppleModule {
             lastDate = confirm.date();
             logger().info("confirm %d/%d %d %s".formatted(i + 1, size, confirm.getId(), confirm.date()));
         }
+        manualAdditions();
         logger().info("Running final simulation");
         RunBankSimulation.simulate(Instant.EPOCH);
 
@@ -125,6 +130,17 @@ public class ImportModule extends AppleModule {
         logger().info("Inserting DAlterCreates");
         insertCreationRecords();
         logger().info("Migration complete!");
+    }
+
+    private void manualAdditions() {
+        DClient client = ClientQueryApi.findById(250);
+        Instant date = Instant.from(ImportedLoan.UTC_DATE.parse("2024-06-08"));
+        AdjustApi.createAdjustment(Emeralds.of(28812), client, date, true);
+        try {
+            WithdrawalApi.createWithdrawal(client, date.plusSeconds(1), DStaffConductor.MIGRATION, Emeralds.of(353894));
+        } catch (NotEnoughFundsException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void insertCreationRecords() {
@@ -206,16 +222,11 @@ public class ImportModule extends AppleModule {
     }
 
     private boolean shouldEnable() {
-        // todo
-        return true;
+        return false;
     }
 
     public boolean isProduction() {
         return AmbrosiaConfig.get().isProduction();
-    }
-
-    public boolean isQuick() {
-        return false;
     }
 
     @Override

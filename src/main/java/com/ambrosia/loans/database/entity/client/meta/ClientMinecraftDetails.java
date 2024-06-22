@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public class ClientMinecraftDetails {
 
     private static final String MOJANG_API = "https://api.mojang.com/users/profiles/minecraft/";
-    private static final TaskHandlerQueue rateLimited = new TaskHandlerQueue(100, 10 * 60 * 10000, 5000);
+    private static final TaskHandlerQueue rateLimited = new TaskHandlerQueue(500, 10 * 60 * 1000, 5000);
     @Column(unique = true)
     private UUID uuid;
     @Index
@@ -49,6 +49,7 @@ public class ClientMinecraftDetails {
             String username = obj.get("name").getAsString();
             return ClientMinecraftDetails.fromRaw(toUUID(uuidRaw), username);
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -66,5 +67,9 @@ public class ClientMinecraftDetails {
 
     public String getUsername() {
         return this.username;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 }

@@ -23,6 +23,8 @@ import org.jetbrains.annotations.Nullable;
 public class ClientDiscordDetails {
 
     private static final int HOURS_TILL_UPDATE = 12;
+    @Column
+    private final Timestamp lastUpdated = Timestamp.from(Instant.now());
     @Index
     @EmbeddedId
     @Column(unique = true)
@@ -32,8 +34,6 @@ public class ClientDiscordDetails {
     @Index
     @Column
     public String username;
-    @Column
-    private Timestamp lastUpdated;
 
     private ClientDiscordDetails(Long id, String avatarUrl, String username) {
         this.id = id;
@@ -61,7 +61,7 @@ public class ClientDiscordDetails {
 
 
     public void hookUpdate(DClient client) {
-        Instant last = lastUpdated == null ? Instant.EPOCH : lastUpdated.toInstant();
+        Instant last = lastUpdated.toInstant();
 
         Duration timeSince = Duration.between(last, Instant.now());
         if (timeSince.minusHours(HOURS_TILL_UPDATE).isNegative()) return;

@@ -10,7 +10,7 @@ public class Bank {
     public static final Duration INTEREST_INTERVAL = Duration.ofDays(7);
     public static final BigDecimal INTEREST_INTERVAL_DECIMAL = BigDecimal.valueOf(INTEREST_INTERVAL.toHours());
     public static final BigDecimal INVESTOR_SHARE = BigDecimal.valueOf(0.6);
-    public static final Instant MIGRATION_DATE = Instant.ofEpochSecond(1706745599L);
+    public static final Instant MIGRATION_DATE = Instant.ofEpochSecond(1719089272L);
 
 
     public static BigDecimal interest(Duration duration, BigDecimal amount, BigDecimal rate) {

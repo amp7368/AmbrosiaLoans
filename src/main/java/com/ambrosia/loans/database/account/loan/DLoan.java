@@ -374,7 +374,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.PAID;
         this.endDate = Timestamp.from(endDate);
         getLastSection().setEndDate(endDate).save(transaction);
-        this.meta.clearUnfreeze(); // in case it was frozen
+        if (this.meta == null) this.meta = new DLoanMeta(); // todo why is this needed?
+        meta.clearUnfreeze(); // in case it was frozen
         this.save(transaction);
         return this;
     }

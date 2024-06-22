@@ -42,13 +42,15 @@ public class DAlterCreate extends Model {
     @WhenCreated
     private Timestamp eventDate;
     @OneToMany
-    private final List<DAlterChange> changes = new ArrayList<>();
+    private List<DAlterChange> changes;
     @OneToMany
     private List<DAlterCreateUndoHistory> history;
 
     public DAlterCreate(AlterCreateType entityType, long entityId) {
         this.entityType = entityType.getTypeId();
         this.entityId = entityId;
+        this.changes = new ArrayList<>();
+        this.history = new ArrayList<>();
     }
 
     public long getId() {
