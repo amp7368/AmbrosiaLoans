@@ -28,4 +28,8 @@ public class AmbrosiaTOS {
         return Button.link(link(), "Terms of Service " + version)
             .withEmoji(AmbrosiaEmoji.TOS.getDiscordEmoji());
     }
+
+    public String hyperlink() {
+        return "[Terms of Service](%s)".formatted(link());
+    }
 }
