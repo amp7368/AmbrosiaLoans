@@ -33,6 +33,17 @@ import org.jetbrains.annotations.Nullable;
 
 public interface CommandOption<R> {
 
+    // help
+    CommandOptionBasic<Integer> HELP_PAGE = basic("page", "The page to jump to", OptionType.STRING, OptionMapping::getAsInt)
+        .addChoices(List.of(
+            new Choice("Home", 0),
+            new Choice("Loan Information", 0),
+            new Choice("Loan Commands", 0),
+            new Choice("Investor Information", 0),
+            new Choice("Investor Commands", 0),
+            new Choice("Extra", 0)
+        ));
+
     // client
     CommandOptionMulti<String, DClient> CLIENT = multi("client", "Client associated with this action", OptionType.STRING,
         OptionMapping::getAsString, ClientQueryApi::findByName).setAutocomplete();
@@ -47,8 +58,6 @@ public interface CommandOption<R> {
     CommandOptionDate DATE = new CommandOptionDate();
     CommandOptionDate LOAN_START_DATE = new CommandOptionDate("start_date",
         "The start date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
-    CommandOptionDate LOAN_END_DATE = new CommandOptionDate("end_date",
-        "The end date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
 
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
@@ -127,7 +136,8 @@ public interface CommandOption<R> {
         return new CommandOptionMulti<>(name, description, type, mapping1, mapping2);
     }
 
-    private static <R> CommandOption<R> basic(String name, String description, OptionType type, Function<OptionMapping, R> getOption) {
+    private static <R> CommandOptionBasic<R> basic(String name, String description, OptionType type,
+        Function<OptionMapping, R> getOption) {
         return new CommandOptionBasic<>(name, description, type, getOption);
     }
 

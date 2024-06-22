@@ -45,7 +45,7 @@ public class CommandRequestAccount extends BaseSubCommand {
                 }
                 ActiveRequestAccount request = new ActiveRequestAccount(client, minecraft, displayNameOption);
                 ActiveRequestAccountGui gui = request.create();
-                final MessageEditData message = MessageEditData.fromCreateData(gui.makeClientMessage());
+                MessageEditData message = MessageEditData.fromCreateData(gui.makeClientMessage());
                 reply.editOriginal(message).queue();
                 gui.send(ActiveRequestDatabase::sendRequest);
             } catch (UpdateAccountException | CreateEntityException e) {
