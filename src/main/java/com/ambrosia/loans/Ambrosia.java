@@ -3,6 +3,8 @@ package com.ambrosia.loans;
 import apple.lib.modules.AppleModule;
 import apple.lib.modules.ApplePlugin;
 import apple.lib.modules.configs.factory.AppleConfigLike;
+import com.ambrosia.loans.config.AmbrosiaConfig;
+import com.ambrosia.loans.config.AmbrosiaStaffConfig;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.service.ServiceModule;
@@ -34,7 +36,10 @@ public class Ambrosia extends ApplePlugin {
 
     @Override
     public List<AppleConfigLike> getConfigs() {
-        return List.of(configJson(AmbrosiaConfig.class, "AmbrosiaConfig"));
+        return List.of(
+            configJson(AmbrosiaConfig.class, "AmbrosiaConfig"),
+            configJson(AmbrosiaStaffConfig.class, "AmbrosiaStaffConfig")
+        );
     }
 
     @Override

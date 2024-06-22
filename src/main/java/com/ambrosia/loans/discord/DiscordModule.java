@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.discord.command.manager.StaffConfigCommand;
 import com.ambrosia.loans.discord.command.player.help.HelpCommand;
 import com.ambrosia.loans.discord.command.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
@@ -26,6 +27,7 @@ import com.ambrosia.loans.discord.command.staff.undo.AUndoCommand;
 import com.ambrosia.loans.discord.misc.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.misc.context.user.UserContextListener;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import com.ambrosia.loans.discord.system.DiscordLog;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
@@ -97,8 +99,12 @@ public class DiscordModule extends AppleModule {
         jda.addEventListener(new UserContextListener());
 
         ActiveRequestDatabase.load();
+        ArchivedRequestDatabase.load();
 
         DCFCommandManager commands = dcf.commands();
+        // manager config commands
+        commands.addCommand(new StaffConfigCommand());
+
         // employee client commands
         commands.addCommand(
             new ACommandLink(),

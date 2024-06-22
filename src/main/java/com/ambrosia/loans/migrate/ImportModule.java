@@ -2,7 +2,7 @@ package com.ambrosia.loans.migrate;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.AmbrosiaConfig;
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.adjust.query.QDAdjustBalance;

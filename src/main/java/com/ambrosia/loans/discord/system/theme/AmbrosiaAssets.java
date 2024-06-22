@@ -57,7 +57,8 @@ public class AmbrosiaAssets {
         LOAN_REPAYMENT_PLAN(1208248426836267078L),
         TRADE(LOAN_REPAYMENT_PLAN.emojiId),
         UNUSED_PAYMENT_REMINDER(1208248436105678928L),
-        UNUSED_SORT(1208248437037076502L);
+        UNUSED_SORT(1208248437037076502L),
+        TOS("\uD83D\uDCDC");
 
         private final long emojiId;
         private RichCustomEmoji emoji;
@@ -89,6 +90,10 @@ public class AmbrosiaAssets {
 
         public String spaced(Object msg) {
             return spaced() + msg;
+        }
+
+        public Emoji getDiscordEmoji() {
+            return Emoji.fromUnicode(emojiStr);
         }
     }
 }

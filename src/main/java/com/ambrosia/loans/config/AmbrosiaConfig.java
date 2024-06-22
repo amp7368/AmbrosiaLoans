@@ -1,4 +1,4 @@
-package com.ambrosia.loans;
+package com.ambrosia.loans.config;
 
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordPermissions;
@@ -16,6 +16,10 @@ public class AmbrosiaConfig {
 
     public static AmbrosiaConfig get() {
         return instance;
+    }
+
+    public static AmbrosiaStaffConfig staff() {
+        return AmbrosiaStaffConfig.get();
     }
 
     public boolean isProduction() {

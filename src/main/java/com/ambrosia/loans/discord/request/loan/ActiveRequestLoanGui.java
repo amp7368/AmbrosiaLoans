@@ -100,7 +100,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
     @Override
     protected boolean hasApproveButton() {
-        return this.data.getRate() != null;
+        return this.data.getRate() != null && this.data.hasAcceptedTOS();
     }
 
     @Override

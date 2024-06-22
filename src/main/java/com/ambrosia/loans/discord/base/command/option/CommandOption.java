@@ -92,6 +92,12 @@ public interface CommandOption<R> {
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
 
+    // config
+    CommandOption<String> CONFIG_TOS_LINK = basic("link", "The link for this version of the TOS", OptionType.STRING,
+        OptionMapping::getAsString);
+    CommandOption<String> CONFIG_TOS_VERSION = basic("version", "The version (ie: 'v1.2') for this version of the TOS",
+        OptionType.STRING, OptionMapping::getAsString);
+
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
             OptionType.STRING, OptionMapping::getAsString, name -> AlterCreateType.valueOf(name.toUpperCase()));
