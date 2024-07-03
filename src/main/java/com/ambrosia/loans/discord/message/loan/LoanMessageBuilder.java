@@ -19,6 +19,7 @@ public class LoanMessageBuilder implements LoanMessage {
     private final DLoan loan;
     private ClientMessageBuilder clientMsg;
     private boolean includeHistory = LoanMessage.super.includeHistory();
+    private boolean includeCollateral = LoanMessage.super.includeCollateral();
 
     public LoanMessageBuilder(DLoan loan) {
         this.loan = loan;
@@ -43,6 +44,16 @@ public class LoanMessageBuilder implements LoanMessage {
     @Override
     public boolean includeHistory() {
         return includeHistory;
+    }
+
+    @Override
+    public boolean includeCollateral() {
+        return includeCollateral;
+    }
+
+    public LoanMessageBuilder withCollateral(boolean includeCollateral) {
+        this.includeCollateral = includeCollateral;
+        return this;
     }
 
     public LoanMessageBuilder withIncludeHistory(boolean includeHistory) {

@@ -1,21 +1,21 @@
-SELECT TO_CHAR(loans.date, 'MM/DD/YY')          period,
+SELECT TO_CHAR(loans.date, 'MM''YYYY')                  period,
        loans.active_loans,
        total_investors,
-       CONCAT(COALESCE(rate_of_return, 0), '%') returns,
+       CONCAT(COALESCE(rate_of_return, 0), '%')         returns,
        CONCAT(ROUND(AVG(rate_of_return)
                     OVER (ORDER BY ptimespan ROWS BETWEEN 11 PRECEDING AND CURRENT ROW),
-                    2), '%')                    returns_moving_avg,
-       COALESCE(profits.total_profits, 0)       total_profits
+                    2), '%')                            returns_moving_avg,
+       COALESCE(pays.interest_payments_stx, 0) * 0.6 AS profits_to_investors
 FROM (
      SELECT ROUND(SUM(delta) / 4096 / 64, 2)          total_profits,
             ROUND(MIN(balance) / 4096 / 64, 2)        total_investors,
             DATE_TRUNC('MONTH', rate.date)            ptimespan,
             ROUND(SUM(delta) / MIN(balance) * 100, 2) rate_of_return
      FROM (
-          SELECT SUM(invest_delta)       delta,
-                 SUM(invest_balance) + 1 balance,
+          SELECT SUM(delta)       delta,
+                 SUM(balance) + 1 balance,
                  date
-          FROM client_snapshot
+          FROM client_invest_snapshot
           WHERE event IN ('PROFIT')
           GROUP BY date) rate
      GROUP BY ptimespan) profits
@@ -35,7 +35,7 @@ FROM (
               SELECT ROUND(SUM(loan.initial_amount) / 4096 / 64, 2) active_loans,
                      date
               FROM GENERATE_SERIES('2022-04-01',
-                                   '2024-02-01', '1 month'::INTERVAL) date
+                                   NOW(), '1 month'::INTERVAL) date
                        INNER JOIN loan ON loan.start_date <= date + '1 month'::INTERVAL AND
                                           COALESCE(loan.end_date, NOW()) > date
               GROUP BY date

@@ -1,12 +1,15 @@
 package com.ambrosia.loans.discord.message.tos;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
 import java.util.function.Consumer;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
@@ -21,18 +24,28 @@ public class AcceptTOSRequest extends DCFGuiPage<AcceptTOSGui> {
         this.client = client;
         parent.addPage(this);
         registerButton(TOSMessage.btnAccept().getId(), e -> {
+            if (this.isDenied(e)) return;
             this.accepted = true;
             onSuccess.accept(e);
             editMessage();
             getParent().remove();
         });
         registerButton(TOSMessage.btnReject().getId(), e -> {
+            if (this.isDenied(e)) return;
             this.accepted = false;
             onReject.accept(e);
             editMessage();
             getParent().remove();
         });
     }
+
+    private boolean isDenied(ButtonInteractionEvent e) {
+        if (e.getUser().getIdLong() == client.getDiscord(ClientDiscordDetails::getDiscordId)) return false;
+        MessageEmbed msg = SendMessage.get().error("Only the user who initiated the request is allowed to accept/reject");
+        e.replyEmbeds(msg).setEphemeral(true).queue();
+        return true;
+    }
+
 
     @Override
     public boolean editOnInteraction() {

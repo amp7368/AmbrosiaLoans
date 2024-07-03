@@ -2,6 +2,8 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.command.manager.StaffConfigCommand;
 import com.ambrosia.loans.discord.command.player.help.HelpCommand;
 import com.ambrosia.loans.discord.command.player.history.HistoryCommand;
@@ -31,6 +33,7 @@ import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import com.ambrosia.loans.discord.system.DiscordLog;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
+import discord.util.dcf.slash.DCFAbstractCommand;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -38,6 +41,7 @@ import java.time.temporal.ChronoField;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -140,7 +144,22 @@ public class DiscordModule extends AppleModule {
         CommandData viewProfileCommand = Commands.user("view_profile");
         DiscordBot.dcf.commands().updateCommands(
             action -> action.addCommands(viewProfileCommand),
-            commands -> {}
+            commands -> {
+                for (Command command : commands) {
+                    DCFAbstractCommand abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
+
+                    boolean isStaffCommand;
+                    if (abstractCommand instanceof BaseCommand dcfCommand) {
+                        isStaffCommand = dcfCommand.isOnlyEmployee();
+                    } else if (abstractCommand instanceof BaseSubCommand dcfCommand) {
+                        isStaffCommand = dcfCommand.isOnlyEmployee();
+                    } else {
+                        isStaffCommand = false;
+                    }
+
+                    if (!isStaffCommand) continue;
+                }
+            }
         );
     }
 

@@ -67,6 +67,4 @@ public class DClientSnapshot extends Model implements Comparable<DClientSnapshot
     public int compareTo(@NotNull DClientSnapshot o) {
         return COMPARATOR.compare(this, o);
     }
-
-
 }

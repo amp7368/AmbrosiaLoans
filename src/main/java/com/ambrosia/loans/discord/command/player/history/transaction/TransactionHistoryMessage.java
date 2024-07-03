@@ -5,9 +5,9 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import com.ambrosia.loans.database.account.ClientMergedSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -54,17 +54,20 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, Clie
         clientAuthor(embed);
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
 
-        embed.setTitle(title("Transactions History", entryPage, getMaxPage()));
-        List<DCFEntry<ClientMergedSnapshot>> entries = getCurrentPageEntries();
-        for (int i = 0; i < entries.size(); i++) {
-            DCFEntry<ClientMergedSnapshot> entry = entries.get(i);
+        String title = title("Transactions History", entryPage, Math.max(getMaxPage(), 0));
+        embed.appendDescription("# %s\n".formatted(title));
+
+        List<DCFEntry<ClientMergedSnapshot>> page = getCurrentPageEntries();
+        if (page.isEmpty()) {
+            embed.appendDescription("## No Transaction History");
+            return makeMessage(embed.build());
+        }
+
+        for (DCFEntry<ClientMergedSnapshot> entry : page) {
             Field field = snapshotToString(entry.entry());
             embed.addField(field);
-            // todo
-//            if (i % 2 == 0)
-//                embed.addBlankField(true);
         }
-        if (entries.size() % 2 == 1) {
+        if (page.size() % 2 == 1) {
             embed.addBlankField(true);
         }
         return makeMessage(embed.build());

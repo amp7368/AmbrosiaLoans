@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account;
 
+import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import java.time.Instant;
@@ -12,5 +13,9 @@ public class DClientInvestSnapshot extends DClientSnapshot {
 
     public DClientInvestSnapshot(DClient client, Instant date, long balance, long delta, AccountEventType event) {
         super(client, date, balance, delta, event);
+    }
+
+    public boolean isLegacy() {
+        return this.getDate().isBefore(Bank.MIGRATION_DATE);
     }
 }

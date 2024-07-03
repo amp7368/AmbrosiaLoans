@@ -160,4 +160,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     private void save() {
         ActiveRequestDatabase.save(this);
     }
+
+    public void acceptTOS() {
+        this.acceptedTOSDate = Instant.now();
+    }
 }

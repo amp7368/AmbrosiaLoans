@@ -148,7 +148,7 @@ public class AmbrosiaMessages {
         public static AmbrosiaMessage rejectedTOSRequest(String type) {
             String desc =
                 ("Since TOS was rejected, your %s request cannot be accepted"
-                    + " and was deleted. Staff has not been notified of your request.")
+                    + " and was deleted. Staff have not been notified of your request.")
                     .formatted(type);
             MessageEmbed embed = new EmbedBuilder()
                 .setColor(AmbrosiaColor.RED)

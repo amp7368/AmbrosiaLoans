@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -39,7 +40,9 @@ public class LoanFreezeService {
         if (!delay.isPositive()) delay = Duration.ofSeconds(3);
 
         scheduled = SERVICE.schedule(LoanFreezeService::run, delay.getSeconds(), TimeUnit.SECONDS);
-        String timeUntil = "%d days %.2f hours".formatted(delay.toDays(), delay.toMinutes() / 60d);
+        double hours = delay.minus(delay.toDays(), ChronoUnit.DAYS)
+            .dividedBy(Duration.ofMinutes(1)) / 60d;
+        String timeUntil = "%d days %.2f hours".formatted(delay.toDays(), hours);
         Ambrosia.get().logger().info("Scheduled to unfreeze loan{{}} at {} ({}). {} total frozen loans scheduled.",
             nextLoan.getId(), formatDate(unfreezeDate), timeUntil, countNextLoans());
     }

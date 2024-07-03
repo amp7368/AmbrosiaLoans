@@ -16,7 +16,6 @@ public class ProfileCommand extends BaseClientCommand {
 
     @Override
     public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("profile", "View your profile");
-        return command.setGuildOnly(true);
+        return Commands.slash("profile", "View your profile");
     }
 }

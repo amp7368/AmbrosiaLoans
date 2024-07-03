@@ -1,41 +1,62 @@
 -- All snapshots in date order
-SELECT COALESCE(client.display_name, client.minecraft_username, client.discord_username) username,
-       COALESCE(cl.event, ci.event)                                                      event,
-       ci.balance / 64.0 / 64                                                            invest_balance_le,
-       ci.delta / 64.0 / 64                                                              invest_delta_le,
-       cl.balance / 64.0 / 64                                                            loan_balance_le,
-       cl.delta / 64.0 / 64                                                              loan_delta_le,
-       COALESCE(cl.date, ci.date)                                                        date,
-       client.id
-FROM client
-         LEFT JOIN client_invest_snapshot ci ON ci.client_id = client.id
-         LEFT JOIN client_loan_snapshot cl ON cl.client_id = client.id
-WHERE client.id = (
-                  SELECT client_id
-                  FROM loan
-                  WHERE loan.id = 102)
-ORDER BY date;
-
-
-SELECT COUNT(*),
-       client_id,
-       COALESCE(client.display_name, client.minecraft_username, client.discord_username) username
-FROM client_snapshot
+SELECT date,
+       COALESCE(loan_balance,
+                FIRST_VALUE(loan_balance)
+                OVER (PARTITION BY loan_grp ORDER BY date,event), 0)
+                      AS loan_balance,
+       COALESCE(invest_balance,
+                FIRST_VALUE(invest_balance)
+                OVER (PARTITION BY invest_grp ORDER BY date,event ), 0)
+                      AS invest_balance,
+       q.loan_delta   AS loan_delta,
+       q.invest_delta AS invest_delta,
+       event
+--/ 262144.0
+FROM (
+     SELECT *,
+            COALESCE(SUM(CASE WHEN loan_balance IS NOT NULL THEN 1 END)
+                     OVER (ORDER BY date ,event ), 0) AS loan_grp,
+            COALESCE(SUM(CASE WHEN invest_balance IS NOT NULL THEN 1 END)
+                     OVER (ORDER BY date ,event ), 0) AS invest_grp
+     FROM (
+          SELECT delta   AS invest_delta,
+                 0       AS loan_delta,
+                 balance AS invest_balance,
+                 NULL    AS loan_balance,
+                 date,
+                 event,
+                 client_id
+          FROM client_invest_snapshot
+          UNION
+          SELECT 0       AS invest_delta,
+                 delta   AS loan_delta,
+                 NULL    AS invest_balance,
+                 balance AS loan_balance,
+                 date,
+                 event,
+                 client_id
+          FROM client_loan_snapshot) q
+     WHERE client_id = 317) q
          LEFT JOIN client ON client_id = client.id
-GROUP BY client_id, display_name, minecraft_username, discord_username;
-
-SELECT ROUND(invest_balance / 64.0 / 4096.0, 2) invest_balance_le,
-       ROUND(invest_delta / 64.0 / 4096.0, 2)   invest_delta_le,
-       ROUND(loan_balance / 64.0 / 4096.0, 2)   loan_balance_le,
-       ROUND(loan_delta / 64.0 / 4096.0, 2)     loan_delta_le,
-       event,
-       date
-FROM client_snapshot
-         LEFT JOIN client ON client_id = client.id
-WHERE client_id = 139
-ORDER BY client.minecraft_username, date;
+ORDER BY date, event;
 
 SELECT *
-FROM client;
+FROM loan
+WHERE client_id = 194;
 
 
+SELECT SUM(amount)
+FROM adjust_balance
+WHERE adjust_balance.event_type IN ('ADJUST_UP', 'ADJUST_DOWN')
+  AND client_id IN (
+                   SELECT id
+                   FROM client
+                   WHERE balance_invest_amount != 0)
+
+SELECT SUM(delta)
+FROM client_invest_snapshot
+WHERE event IN ('ADJUST_UP', 'ADJUST_DOWN')
+  AND client_id IN (
+                   SELECT id
+                   FROM client
+                   WHERE balance_invest_amount != 0)

@@ -40,7 +40,10 @@ public class PaymentMakeCommand extends BaseStaffSubCommand {
             replyError(event, msg);
             return;
         }
-        Emeralds maxPayment = loan.getTotalOwed(null, Instant.now());
+        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
+        if (date == null) return;
+
+        Emeralds maxPayment = loan.getTotalOwed(null, date);
 
         Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
         Emeralds amount;
@@ -50,8 +53,6 @@ public class PaymentMakeCommand extends BaseStaffSubCommand {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
             return;
         }
-        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
-        if (date == null) return;
 
         CheckErrorList error = CheckErrorList.of();
         new CheckPaymentAmount(maxPayment).checkAll(amount, error);

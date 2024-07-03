@@ -8,11 +8,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public interface CommandCheckPermission extends SendMessage {
 
     default boolean isBadPermission(SlashCommandInteractionEvent event) {
-        // todo release
-        if (event.getGuild() == null || event.getGuild().getIdLong() != 603039156892860417L) {
-            event.reply("Not released yet").queue();
-            return true;
-        }
         Member sender = event.getMember();
         if (requiresMember() && sender == null) {
             ErrorMessages.onlyInAmbrosia().replyError(event);

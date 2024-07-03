@@ -11,7 +11,7 @@ repositories {
 }
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(19))
+        languageVersion.set(JavaLanguageVersion.of(18))
     }
 }
 
@@ -57,6 +57,8 @@ dependencies {
 
     // for BigDecimal exponents
     implementation 'ch.obermuhlner:big-math:2.3.2'
+    // rate limiting client
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.13.1'
     // discord
     implementation 'net.dv8tion:JDA:5.0.0-beta.19'
     // fuzzy string matching
@@ -77,6 +79,7 @@ shadowJar {
         attributes 'Multi-Release': true
     }
     doLast {
+        println botsBuildDir
         copy {
             from getArchiveFile()
             into file(botsBuildDir + "/AmbrosiaLoans")

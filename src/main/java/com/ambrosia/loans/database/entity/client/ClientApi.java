@@ -81,11 +81,20 @@ public interface ClientApi {
     interface ClientCreateApi {
 
         static DClient createClient(String clientName, String minecraft, Member discord) throws CreateEntityException {
+            if (ClientQueryApi.findByDiscord(discord.getIdLong()) != null) {
+                throw new CreateEntityException("Your discord is already registered!");
+            }
+            if (ClientQueryApi.findByName(minecraft) != null) {
+                throw new CreateEntityException(
+                    "That account already exists! If this is your account, it may just need to be linked to your discord");
+            }
+
             DClient client = new DClient(clientName);
             client.setMinecraft(ClientMinecraftDetails.fromUsername(minecraft));
             if (client.getMinecraft() == null)
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             client.setDiscord(ClientDiscordDetails.fromMember(discord));
+
             client.save();
             AlterCreateApi.create(DStaffConductor.SYSTEM, AlterCreateType.CLIENT, client.getId());
             return client;
