@@ -46,6 +46,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     private ActiveRequestLoan request;
 
     public void onAccept(ButtonInteractionEvent event) {
+        request.acceptTOS();
         ActiveRequestLoanGui finishedGui = request.create();
         event.reply(finishedGui.makeClientMessage()).queue();
         finishedGui.send(ActiveRequestDatabase::sendRequest);
@@ -88,6 +89,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
 
     public void setCollateral(ModalMapping modalMapping) {
         this.collateral = new ArrayList<>();
+        
         StringBuilder url = new StringBuilder();
         for (char c : modalMapping.getAsString().toCharArray()) {
             if (URL_CHARACTERS.contains(c))

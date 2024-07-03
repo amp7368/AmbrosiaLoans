@@ -227,70 +227,20 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     private Emeralds getSimpleInterest(BigDecimal accountBalanceAtStart, Instant assumedStart, Instant end) {
-        // todo deduplicate
-        BigDecimal runningBalance = accountBalanceAtStart.negate();
+        List<DLoanSection> sections = getSections();
+        Instant checkpoint = getStartDate();
+        BigDecimal principal = getInitialAmount().toBigDecimal();
         BigDecimal totalInterest = BigDecimal.ZERO;
-        if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
-            Emeralds bal = Emeralds.of(accountBalanceAtStart);
-            String msg = "%s{%d}'s balance of %s is > 0, but has active loan!"
-                .formatted(client.getEffectiveName(), client.getId(), bal);
-            DatabaseModule.get().logger().warn(msg);
-            return Emeralds.zero();
-        }
+        if (end.isAfter(getEndDate(end)))
+            end = getEndDate(end);
 
-        Duration durationCompleted = Bank.legacySimpleWeeksDuration(Duration.between(getStartDate(), assumedStart));
-        Instant actualStart = getStartDate().plus(durationCompleted);
-
-        int paymentIndex = 0;
-        int sectionIndex = 0;
-        List<DLoanSection> sections = getSections().stream()
-            .filter(s -> !s.getStartDate().isBefore(actualStart))
-            .filter(s -> !s.getEndDate(end).isBefore(actualStart))
-            .toList();
-        List<DLoanPayment> payments = getPayments().stream()
-            .filter(p -> p.getDate().isAfter(actualStart))
-            .filter(p -> p.getDate().isBefore(end))
-            .toList();
-        Instant checkpoint = actualStart;
-        BigDecimal principal = this.getInitialAmount().toBigDecimal();
-
-        // while there's payments, make payments until there's none left
-        // each iteration, increment either sectionIndex or paymentIndex
-        while (paymentIndex < payments.size()) {
-            if (sectionIndex >= sections.size()) break; // payments in future means running simulation
-            DLoanSection section = sections.get(sectionIndex);
-            DLoanPayment payment = payments.get(paymentIndex);
-
-            Instant sectionEndDate = section.getEndDateOrNow();
-            boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
-            if (isPaymentEarlierOrEq) {
-                // make payment
-                Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(getStartDate(), checkpoint));
-                Instant actualCheckpoint = getStartDate().plus(duration);
-                BigDecimal sectionInterest = section.getInterest(actualCheckpoint, payment.getDate(), principal);
-                BigDecimal paymentAmount = payment.getAmount().toBigDecimal();
-                runningBalance = runningBalance.add(sectionInterest).subtract(paymentAmount);
-                totalInterest = totalInterest.add(sectionInterest);
-                checkpoint = payment.getDate();
-                paymentIndex++;
-            } else {
-                Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(getStartDate(), checkpoint));
-                Instant actualCheckpoint = getStartDate().plus(duration);
-                BigDecimal sectionInterest = section.getInterest(actualCheckpoint, end, principal);
-                checkpoint = section.getEndDate(end);
-                runningBalance = runningBalance.add(sectionInterest);
-                totalInterest = totalInterest.add(sectionInterest);
-                sectionIndex++;
-            }
-        }
-        while (sectionIndex < sections.size()) {
-            DLoanSection section = sections.get(sectionIndex);
-            Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(getStartDate(), checkpoint));
-            Instant actualCheckpoint = getStartDate().plus(duration);
-            BigDecimal sectionInterest = section.getInterest(actualCheckpoint, end, principal);
-            checkpoint = section.getEndDate(end);
+        for (DLoanSection section : sections) {
+            Instant estimatedCheckpoint = section.getEndDate(end);
+            Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(checkpoint, estimatedCheckpoint));
+            Instant nextCheckpoint = estimatedCheckpoint.plus(duration);
+            BigDecimal sectionInterest = section.getInterest(checkpoint, nextCheckpoint, principal);
+            checkpoint = nextCheckpoint;
             totalInterest = totalInterest.add(sectionInterest);
-            sectionIndex++;
         }
         return Emeralds.of(totalInterest);
     }
@@ -363,7 +313,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public void makePayment(DLoanPayment payment, Transaction transaction) {
         this.payments.add(payment);
-        if (isWithinPaidBounds(getTotalOwed(null, payment.getDate()).amount())) {
+        long loanBalance = getTotalOwed(null, payment.getDate()).amount();
+        if (isWithinPaidBounds(loanBalance)) {
             markPaid(payment.getDate(), transaction);
         }
         payment.save(transaction);
@@ -374,7 +325,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.status = DLoanStatus.PAID;
         this.endDate = Timestamp.from(endDate);
         getLastSection().setEndDate(endDate).save(transaction);
-        this.meta.clearUnfreeze(); // in case it was frozen
+        getMeta().clearUnfreeze(); // in case it was frozen
         this.save(transaction);
         return this;
     }
@@ -432,6 +383,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public DLoanMeta getMeta() {
+        if (this.meta == null) this.meta = new DLoanMeta(); // todo why is this needed?
         return this.meta;
     }
 
@@ -444,11 +396,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this;
     }
 
-    public void checkIsPaid(Instant endDate, Transaction transaction) {
+    public boolean checkIsPaid(Instant endDate, Transaction transaction) {
         Emeralds totalOwed = getTotalOwed(null, endDate);
         if (isWithinPaidBounds(totalOwed.amount())) {
             markPaid(endDate, transaction);
+            return true;
         }
+        return false;
     }
 
     public DLoan setDefaulted(Instant endDate, boolean defaulted) {
@@ -474,7 +428,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public void freeze(Instant effectiveDate, Instant unfreezeDate, double unfreezeToRate, double current, Transaction transaction) {
         changeToNewRate(current, effectiveDate, transaction);
-        this.meta.setToUnfreeze(unfreezeDate, unfreezeToRate);
+        getMeta().setToUnfreeze(unfreezeDate, unfreezeToRate);
         this.checkIsFrozen(false);
         this.save(transaction);
         LoanFreezeService.refresh();
@@ -487,7 +441,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             String msg = "There is no section during %s for loan{%d}".formatted(formatDate(effectiveDate), getId());
             throw new IllegalStateException(msg);
         }
-        this.meta.setToUnfreeze(pastUnfreezeDate, pastUnfreezeRate);
+        getMeta().setToUnfreeze(pastUnfreezeDate, pastUnfreezeRate);
         section.setRate(unfrozenRate);
         section.save(transaction);
         this.checkIsFrozen(false);

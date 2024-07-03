@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.alter.create;
 
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
+import com.ambrosia.loans.database.account.base.IAccountChange;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
@@ -9,6 +10,7 @@ import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.annotation.DbDefault;
@@ -42,13 +44,15 @@ public class DAlterCreate extends Model {
     @WhenCreated
     private Timestamp eventDate;
     @OneToMany
-    private final List<DAlterChange> changes = new ArrayList<>();
+    private List<DAlterChange> changes;
     @OneToMany
     private List<DAlterCreateUndoHistory> history;
 
     public DAlterCreate(AlterCreateType entityType, long entityId) {
         this.entityType = entityType.getTypeId();
         this.entityId = entityId;
+        this.changes = new ArrayList<>();
+        this.history = new ArrayList<>();
     }
 
     public long getId() {
@@ -88,7 +92,7 @@ public class DAlterCreate extends Model {
     }
 
     public void deleteEntity() {
-        Class<?> entity = switch (AlterCreateType.valueOf(entityType)) {
+        Class<?> entityClass = switch (AlterCreateType.valueOf(entityType)) {
             case CLIENT -> DClient.class;
             case LOAN -> DLoan.class;
             case ADJUST_LOAN -> DAdjustLoan.class;
@@ -97,8 +101,17 @@ public class DAlterCreate extends Model {
             case ADJUST_BALANCE -> DAdjustBalance.class;
             case WITHDRAWAL -> DWithdrawal.class;
         };
-        DB.delete(entity, entityId);
-        this.isCreated = false;
-    }
+        Object entity = DB.find(entityClass, entityId);
+        if (entity == null)
+            throw new IllegalStateException("%s of id=%d does not exist!".formatted(entityType, entityId));
 
+        Instant date = switch (AlterCreateType.valueOf(entityType)) {
+            case PAYMENT -> ((DLoanPayment) entity).getDate();
+            case LOAN, WITHDRAWAL, ADJUST_BALANCE, INVEST, ADJUST_LOAN -> ((IAccountChange) entity).getDate();
+            case CLIENT -> Instant.now();
+        };
+        DB.delete(entityClass, entityId);
+        this.isCreated = false;
+        RunBankSimulation.simulateAsync(date);
+    }
 }

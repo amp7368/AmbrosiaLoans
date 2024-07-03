@@ -32,7 +32,7 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
     protected EmbedBuilder embed(String title, int color) {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(color);
-        embed.appendDescription("## %s\n".formatted(title));
+        embed.appendDescription("# %s\n".formatted(title));
         clientAuthor(embed);
 
         clientId(embed);
@@ -40,7 +40,7 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
     }
 
     private void clientId(EmbedBuilder embed) {
-        embed.appendDescription("### Client Id %s %s \n".formatted(AmbrosiaEmoji.KEY_ID, getClient().getId()));
+        embed.appendDescription("## Client Id %s %s \n".formatted(AmbrosiaEmoji.KEY_ID, getClient().getId()));
     }
 
     protected void balance(EmbedBuilder embed) {
@@ -49,11 +49,11 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
         Emeralds loanBalance = balance.loanTotal();
         String msg = "";
         if (!investBalance.isZero())
-            msg += "### Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
+            msg += "## Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
         if (!loanBalance.isZero())
-            msg += "### Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative());
+            msg += "## Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative());
         if (investBalance.isZero() && loanBalance.isZero())
-            msg += "### Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
+            msg += "## Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
         embed.appendDescription(msg);
     }
 

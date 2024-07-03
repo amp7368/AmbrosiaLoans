@@ -5,7 +5,7 @@ SELECT *
 FROM loan
 ORDER BY client_id, start_date;
 
-SELECT *
+SELECT loan_payment.*, loan.*
 FROM loan
          LEFT JOIN loan_payment ON loan.id = loan_payment.loan_id
 ORDER BY loan.client_id, loan_payment.date;
@@ -32,4 +32,3 @@ FROM alter_create_undo_history;
 
 SELECT *
 FROM loan_payment;
-

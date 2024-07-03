@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.discord.DiscordBot;
+import com.ambrosia.loans.discord.DiscordModule;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
@@ -70,7 +71,7 @@ public class AmbrosiaAssets {
 
         AmbrosiaEmoji(String emojiStr) {
             this.emojiId = 0;
-            this.emojiStr = Emoji.fromUnicode(emojiStr).getFormatted();
+            this.emojiStr = emojiStr;
         }
 
         public RichCustomEmoji getEmoji() {
@@ -81,7 +82,13 @@ public class AmbrosiaAssets {
         @Override
         public String toString() {
             if (this.emojiStr != null) return emojiStr;
-            return this.emojiStr = getEmoji().getFormatted();
+            RichCustomEmoji em = getEmoji();
+            if (em == null) {
+                DiscordModule.get().logger().error("{} emoji not found!!", name());
+                return "Emoji not found";
+            }
+            this.emojiStr = em.getFormatted();
+            return emojiStr;
         }
 
         public String spaced() {

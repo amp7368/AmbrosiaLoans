@@ -12,8 +12,10 @@ import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.balance.ClientBalance;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.meta.UpdateClientMetaHook;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
@@ -28,6 +30,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Predicate;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -110,8 +113,20 @@ public class DClient extends Model implements ClientAccess, Commentable {
     public BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
         Emeralds investAmount = this.balance.getInvestAmount();
         Emeralds loanAmount = this.balance.getLoanAmount();
+
+        List<DLoan> legacyLoans = getLoans().stream()
+            .filter(loan -> loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
+            .filter(loan -> !loan.getEndDate(currentTime).isBefore(currentTime))
+            .toList();
+        Emeralds legacyInterest;
+        if (legacyLoans.isEmpty()) legacyInterest = Emeralds.zero();
+        else legacyInterest = legacyLoans.stream()
+            .map(loan -> loan.getInterest(null, null, currentTime))
+            .reduce(Emeralds.zero(), Emeralds::add)
+            .negative();
+
         Emeralds interestAsNegative = getInterest(currentTime).negative();
-        return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative);
+        return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative, legacyInterest);
     }
 
     Emeralds addLoanBalance(long loanDelta, Instant date) {
@@ -132,7 +147,10 @@ public class DClient extends Model implements ClientAccess, Commentable {
             throw new IllegalArgumentException(error);
         }
         BigDecimal totalInterest = BigDecimal.ZERO;
-        for (DLoan loan : getLoans()) {
+        List<DLoan> loans = getLoans().stream()
+            .filter(loan -> !loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
+            .toList();
+        for (DLoan loan : loans) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
             if (loanDuration.isNegative()) continue; // todo ??? consider 0 as well
             if (loanDuration.isZero()) continue;
@@ -178,19 +196,25 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return minecraft;
     }
 
-    public void setMinecraft(ClientMinecraftDetails minecraft) {
+    public DClient setMinecraft(ClientMinecraftDetails minecraft) {
         this.minecraft = minecraft;
+        return this;
     }
 
 
     public ClientDiscordDetails getDiscord() {
-        if (this.discord != null) this.discord.hookUpdate(this);
+        if (this.discord != null) UpdateClientMetaHook.hookUpdate(this);
         return this.discord;
     }
 
     public DClient setDiscord(ClientDiscordDetails discord) {
         this.discord = discord;
         return this;
+    }
+
+    public ClientDiscordDetails getDiscord(boolean shouldUpdate) {
+        if (shouldUpdate) return getDiscord();
+        return this.discord;
     }
 
     public DClient addAccountSnapshot(DClientInvestSnapshot snapshot) {
@@ -209,12 +233,17 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .toList();
     }
 
+    // get non-legacy investment snapshots
     public List<DClientInvestSnapshot> getInvestSnapshots() {
         return investSnapshots.stream()
+            .filter(Predicate.not(DClientInvestSnapshot::isLegacy))
             .sorted()
             .toList();
     }
 
+    /**
+     * @return Gets merged snapshots after migration day
+     */
     public List<ClientMergedSnapshot> getMergedSnapshots() {
         List<DClientLoanSnapshot> loanSnapshots = getLoanSnapshots();
         List<DClientInvestSnapshot> investSnapshots = getInvestSnapshots();

@@ -2,11 +2,11 @@ package com.ambrosia.loans.discord.command.player.request.invest;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
-import com.ambrosia.loans.discord.request.investment.BaseModifyInvestmentRequest;
-import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestmentGui;
+import com.ambrosia.loans.discord.request.investment.BaseModifyInvestmentRequest;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import java.util.ArrayList;
 import java.util.List;

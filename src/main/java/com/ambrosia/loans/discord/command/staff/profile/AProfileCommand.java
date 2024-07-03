@@ -26,6 +26,6 @@ public class AProfileCommand extends BaseCommand {
     public SlashCommandData getData() {
         SlashCommandData command = Commands.slash("aprofile", "[Staff] View a client's profile");
         CommandOption.CLIENT.addOption(command, true);
-        return command.setDefaultPermissions(DefaultMemberPermissions.DISABLED).setGuildOnly(true);
+        return command.setDefaultPermissions(DefaultMemberPermissions.DISABLED);
     }
 }

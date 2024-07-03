@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
+import org.jetbrains.annotations.NotNull;
 
 public interface LoanMessage {
 
@@ -26,33 +27,55 @@ public interface LoanMessage {
         return true;
     }
 
+    default boolean includeCollateral() {
+        return false;
+    }
+
     default void loanDescription(EmbedBuilder embed) {
         DLoan loan = getLoan();
         DLoanStatus status = loan.getStatus();
         AmbrosiaEmoji statusEmoji = status.getEmoji();
-        embed.appendDescription("### Loan %s %d - %s %s\n".formatted(AmbrosiaEmoji.KEY_ID, loan.getId(), statusEmoji, status));
+        String active = loan.isActive() ? "Active " : "";
+        embed.appendDescription(
+            "## %sLoan %s %d - %s %s\n".formatted(active, AmbrosiaEmoji.KEY_ID, loan.getId(), statusEmoji, status));
 
         embed.appendDescription("**%s Start:** %s\n".formatted(AmbrosiaEmoji.ANY_DATE, formatDate(loan.getStartDate())));
+        if (!loan.isActive()) {
+            embed.appendDescription("**%s End:** %s\n".formatted(AmbrosiaEmoji.ANY_DATE, formatDate(loan.getEndDate())));
+        }
         String rateMsg = formatPercentage(loan.getLastSection().getRate());
         embed.appendDescription("**%s Current Rate:** %s\n".formatted(AmbrosiaEmoji.LOAN_RATE, rateMsg));
         embed.appendDescription("**%s Initial Amount:** %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount()));
-        String collateral = loan.getCollateral().stream()
-            .map(c -> c.link)
-            .collect(Collectors.joining(", "));
-        String collateralMsg = collateral.isBlank() ? "None" : collateral;
-        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.LOAN_COLLATERAL, collateralMsg));
+        if (loan.isActive()) {
+            embed.appendDescription("**%s Current Balance:** %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getTotalOwed()));
+            embed.appendDescription(
+                "**%s Total Interest:** %s\n".formatted(AmbrosiaEmoji.LOAN_INTEREST, loan.getAccumulatedInterest()));
+        }
+        embed.appendDescription("**%s Total Paid:** %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid()));
 
-        if (!includeHistory()) return;
+        if (includeCollateral()) addCollateralMsg(embed, loan);
+        if (includeHistory()) addHistoryMsg(embed, loan);
+    }
 
+    private void addHistoryMsg(EmbedBuilder embed, DLoan loan) {
         List<LoanEventMsg> history = new ArrayList<>();
         findChangeRateEvents(loan, history);
         findPaymentEvents(loan, history);
         embed.appendDescription("## History\n");
 
         String historyMsg = history.stream()
+            .sorted()
             .map(LoanEventMsg::toString)
             .collect(Collectors.joining("\n"));
         embed.appendDescription(historyMsg);
+    }
+
+    private void addCollateralMsg(EmbedBuilder embed, DLoan loan) {
+        String collateral = loan.getCollateral().stream()
+            .map(c -> c.link)
+            .collect(Collectors.joining(", "));
+        String collateralMsg = collateral.isBlank() ? "None" : collateral;
+        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.LOAN_COLLATERAL, collateralMsg));
     }
 
     private void findChangeRateEvents(DLoan loan, List<LoanEventMsg> history) {
@@ -82,11 +105,16 @@ public interface LoanMessage {
         }
     }
 
-    record LoanEventMsg(AmbrosiaEmoji emoji, String msg, Instant date) {
+    record LoanEventMsg(AmbrosiaEmoji emoji, String msg, Instant date) implements Comparable<LoanEventMsg> {
 
         @Override
         public String toString() {
             return "%s %s %s %s".formatted(emoji, msg, AmbrosiaEmoji.ANY_DATE, formatDate(date));
+        }
+
+        @Override
+        public int compareTo(@NotNull LoanEventMsg other) {
+            return this.date.compareTo(other.date);
         }
     }
 }

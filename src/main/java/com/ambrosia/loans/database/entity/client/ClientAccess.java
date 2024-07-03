@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileInvestPage;
@@ -84,39 +85,43 @@ public interface ClientAccess {
         return discord != null && discord == user.getIdLong();
     }
 
-    default DClientSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
+    default void updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
         try (Transaction transaction = DB.beginTransaction()) {
-            DClientSnapshot snapshot = updateBalance(delta, timestamp, eventType, transaction);
+            updateBalance(delta, timestamp, eventType, transaction);
             transaction.commit();
-            return snapshot;
         }
     }
 
-    default DClientSnapshot updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
+    default void updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
         DClient client = getEntity();
         client.refresh();
 
         BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-
         if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
             long interest = balanceWithInterest.interestAsNegative().amount();
             newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
         }
         if (eventType.isLoanLike()) {
-            DClientSnapshot snapshot = newLoanSnapshot(timestamp, delta, eventType, transaction);
             checkLoansPaid(timestamp, transaction);
-            return snapshot;
+            newLoanSnapshot(timestamp, delta, eventType, transaction);
         } else {
-            return newInvestSnapshot(timestamp, delta, eventType, transaction);
+            newInvestSnapshot(timestamp, delta, eventType, transaction);
         }
     }
 
     private void checkLoansPaid(Instant timestamp, Transaction transaction) {
-        getEntity().getLoans().stream()
+        List<DLoan> paidLoans = getEntity().getLoans().stream()
             .filter(DLoan::isActive)
             .filter(loan -> loan.getStartDate().isBefore(timestamp))
             .filter(loan -> loan.getEndDate() == null)
-            .forEach(loan -> loan.checkIsPaid(timestamp, transaction));
+            .filter(loan -> loan.checkIsPaid(timestamp, transaction)).toList();
+
+        paidLoans.stream()
+            .filter(loan -> loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
+            .forEach(loan -> {
+                long interest = loan.getInterest(null, null, timestamp).negative().amount();
+                newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
+            });
     }
 
     default ClientGui profile(GuiReplyFirstMessage createFirstMessage) {

@@ -40,10 +40,13 @@ public interface BaseModifyRequest extends SendMessage {
             replyError(event, "No changes were specified");
             return;
         }
+
         String description = changes.stream()
             .map(ModifyRequestMsg::toString)
             .collect(Collectors.joining("\n"));
-        replySuccess(event, description);
+        if (changes.stream().anyMatch(ModifyRequestMsg::error))
+            replyError(event, description);
+        else replySuccess(event, description);
         loan.editMessage();
     }
 }

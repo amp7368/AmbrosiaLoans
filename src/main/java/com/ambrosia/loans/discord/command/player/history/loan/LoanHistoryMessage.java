@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
+import com.ambrosia.loans.discord.message.loan.LoanCollateralPage;
 import com.ambrosia.loans.discord.message.loan.LoanMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.scroll.DCFEntry;
@@ -13,17 +14,30 @@ import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.Nullable;
 
 public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> implements ClientMessage {
 
     public LoanHistoryMessage(ClientGui parent) {
         super(parent);
+        registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
+            DLoan loan = currentLoan();
+            if (loan == null) return;
+            parent.addSubPage(new LoanCollateralPage(parent, loan));
+        });
         setEntries(getClient().getLoans());
         sort();
     }
 
+    @Nullable
+    private DLoan currentLoan() {
+        List<DCFEntry<DLoan>> loanPage = getCurrentPageEntries();
+        if (loanPage.isEmpty()) return null;
+        return loanPage.get(0).entry();
+    }
 
     @Override
     public DClient getClient() {
@@ -44,12 +58,14 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
-        embed.setTitle(title("Loan History", entryPage, getMaxPage()));
+        String title = title("Loan History", entryPage, Math.max(getMaxPage(), 0));
+        embed.appendDescription("# %s\n".formatted(title));
+
         clientAuthor(embed);
 
         List<DCFEntry<DLoan>> page = getCurrentPageEntries();
         if (page.isEmpty()) {
-            embed.setDescription("### No Loan History");
+            embed.appendDescription("## No Loan History");
             return makeMessage(embed.build());
         }
         DLoan loan = page.get(0).entry();
@@ -60,9 +76,13 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
     }
 
     private MessageCreateData makeMessage(MessageEmbed embed) {
+        Button collateralBtn = LoanCollateralPage.showCollateralBtn(currentLoan() == null);
         return new MessageCreateBuilder()
             .setEmbeds(embed)
-            .setComponents(ActionRow.of(btnFirst(), btnNext(), btnPrev()))
+            .setComponents(
+                ActionRow.of(btnFirst(), btnNext(), btnPrev()),
+                ActionRow.of(collateralBtn)
+            )
             .build();
     }
 }

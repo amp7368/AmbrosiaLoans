@@ -1,13 +1,15 @@
 package com.ambrosia.loans.service;
 
 import apple.lib.modules.AppleModule;
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.service.loan.LoanFreezeService;
 
 public class ServiceModule extends AppleModule {
 
     @Override
     public void onEnable() {
-        LoanFreezeService.load();
+        if (AmbrosiaConfig.get().isProduction())
+            LoanFreezeService.load();
     }
 
     @Override

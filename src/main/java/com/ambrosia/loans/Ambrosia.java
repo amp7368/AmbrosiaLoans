@@ -29,9 +29,7 @@ public class Ambrosia extends ApplePlugin {
 
     @Override
     public List<AppleModule> createModules() {
-        return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule()
-//            , new ImportModule()
-        );
+        return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule());
     }
 
     @Override

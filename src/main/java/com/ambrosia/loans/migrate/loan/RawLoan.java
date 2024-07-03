@@ -20,9 +20,9 @@ public class RawLoan {
     private double initialRate;
     private Date startDate;
     private Date endDate;
-    private long amount;
-    private Long amountInterest;
-    private Long interestCap;
+    private double amount;
+    private Double amountInterest;
+    private Double interestCap;
     private DLoanStatus status;
     private String vouchId;
     private String discount;
@@ -61,7 +61,7 @@ public class RawLoan {
     }
 
     public Emeralds getAmount() {
-        return Emeralds.of(this.amount * Emeralds.BLOCK);
+        return Emeralds.of((long) (this.amount * Emeralds.BLOCK));
     }
 
     public Instant getStartDate() {
@@ -88,13 +88,13 @@ public class RawLoan {
 
     public Emeralds getFinalPayment() {
         if (this.endDate == null) return Emeralds.zero();
-        long interest = Emeralds.BLOCK * Objects.requireNonNullElse(this.amountInterest, 0L);
+        long interest = (long) (Emeralds.BLOCK * Objects.requireNonNullElse(this.amountInterest, 0d));
         return this.getAmount().add(interest);
     }
 
     public Long getInterestCap() {
         if (this.interestCap == null) return null;
-        return Emeralds.BLOCK * this.interestCap;
+        return (long) (Emeralds.BLOCK * this.interestCap);
     }
 
     public String getReason() {
