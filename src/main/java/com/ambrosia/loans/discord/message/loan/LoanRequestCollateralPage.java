@@ -14,11 +14,10 @@ import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.FileUpload;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
-public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, RequestCollateral> {
+public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, RequestCollateral> implements CollateralMessage {
 
     private final ActiveRequestLoan loanData;
 
@@ -42,6 +41,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
 
     @Override
     public MessageCreateData makeMessage() {
+        ActionRow actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
         EmbedBuilder embed = new EmbedBuilder();
         ClientMessage.of(loanData.getClient()).clientAuthor(embed);
 
@@ -51,7 +51,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         List<DCFEntry<RequestCollateral>> entries = getCurrentPageEntries();
         if (entries.isEmpty()) {
             embed.appendDescription("## No Collateral");
-            return build(embed, null);
+            return build(embed, null, actionRow);
         }
         DCFEntry<RequestCollateral> entry = entries.get(0);
         RequestCollateral collateral = entry.entry();
@@ -60,26 +60,9 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         @Nullable String description = collateral.getDescription();
         @Nullable FileUpload image = collateral.getImage();
 
-        String collateralMsg = "## Collateral (%d/%d) %s %d \n"
+        String title = "## Collateral (%d/%d) %s %d \n"
             .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        embed.appendDescription(collateralMsg);
-        embed.appendDescription("**Status:** %s\n".formatted("Not Collected"));
-
-        embed.appendDescription("**Name:** %s\n".formatted(filename));
-        if (description != null)
-            embed.appendDescription("**Description:** %s\n".formatted(description));
-
-        if (image == null) return build(embed, null);
-        embed.setImage("attachment://" + image.getName());
-        return build(embed, image);
-    }
-
-    public MessageCreateData build(EmbedBuilder embed, FileUpload image) {
-        MessageCreateBuilder msg = new MessageCreateBuilder()
-            .setEmbeds(embed.build())
-            .setComponents(ActionRow.of(btnBackToMain(), btnPrev(), btnNext()));
-        if (image != null) msg.setFiles(image);
-        return msg.build();
+        return collateralDescription(embed, title, filename, description, image, actionRow);
     }
 
     public void toLast() {

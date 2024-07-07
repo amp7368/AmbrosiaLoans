@@ -60,7 +60,6 @@ public class RequestLoanModalType extends DCFModalType<RequestLoanModal> {
 
         String placeholder = "To add collateral, use following command AFTER this form `/collateral add [image] "
             + "[description]`";
-        System.out.println(placeholder.length());
         TextInput collateral = TextInput.create("collateral", "Command: /collateral add [image]", TextInputStyle.PARAGRAPH)
             .setRequired(false)
             .setMaxLength(MAX_LENGTH)

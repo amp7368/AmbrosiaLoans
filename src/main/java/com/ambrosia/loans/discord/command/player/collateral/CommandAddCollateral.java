@@ -1,6 +1,5 @@
 package com.ambrosia.loans.discord.command.player.collateral;
 
-import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
@@ -35,16 +34,6 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
     private static final int BYTES_IN_MB = 1_000_000;
     private static final int MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * BYTES_IN_MB;
 
-    private boolean checkErrorsBadUser(SlashCommandInteractionEvent event, ActiveRequestLoanGui request) {
-        DClient client = request.getData().getClient();
-        boolean isUser = client.isUser(event.getUser());
-        if (!isUser) {
-            ErrorMessages.notCorrectClient(client).replyError(event);
-            return true;
-        }
-        return false;
-    }
-
     private boolean hasErrorsMissingAll(SlashCommandInteractionEvent event, String description, String name, Attachment attachment) {
         if (description != null && name == null && attachment == null) {
             replyError(event, "At least one of the optional fields must be provided.");
@@ -71,7 +60,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
         ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", false);
         if (request == null) return;
-        if (checkErrorsBadUser(event, request)) return;
+        if (isBadUser(event, request.getData())) return;
 
         @Nullable String name = CommandOption.LOAN_COLLATERAL_NAME.getOptional(event);
         if (name != null && name.isBlank()) name = null;
@@ -137,7 +126,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("add", "Add collateral to a loan");
+        SubcommandData command = new SubcommandData("add", "Add collateral to a loan request");
         return CommandOptionList.of(
             List.of(CommandOption.REQUEST),
             List.of(CommandOption.LOAN_COLLATERAL, CommandOption.LOAN_COLLATERAL_NAME, CommandOption.LOAN_COLLATERAL_DESCRIPTION)

@@ -14,12 +14,11 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> {
+public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> implements CollateralMessage {
 
     private final DLoan loan;
 
@@ -56,6 +55,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> {
 
     @Override
     public MessageCreateData makeMessage() {
+        ActionRow actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
         EmbedBuilder embed = new EmbedBuilder();
         ClientMessage.of(loan.getClient()).clientAuthor(embed);
 
@@ -65,7 +65,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> {
         List<DCFEntry<DCollateral>> entries = getCurrentPageEntries();
         if (entries.isEmpty()) {
             embed.appendDescription("## No Collateral");
-            return build(embed, null);
+            return build(embed, null, actionRow);
         }
         DCFEntry<DCollateral> entry = entries.get(0);
         DCollateral collateral = entry.entry();
@@ -76,27 +76,13 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> {
         @Nullable FileUpload image = collateral.getImage();
 
         int index = entry.indexInAll() + 1;
-        String collateralMsg = "## Collateral %s %d (%d/%d)\n"
-            .formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1);
-        embed.appendDescription(collateralMsg);
         String status = Pretty.spaceEnumWords(collateral.status().toString());
-        embed.appendDescription("**Status:** %s\n".formatted(status));
-
-        embed.appendDescription("**Name:** %s\n".formatted(filename));
-        if (description != null)
-            embed.appendDescription("**Description:** %s\n".formatted(description));
-
-        if (image == null) return build(embed, null);
-
-        embed.setImage("attachment://" + image.getName());
-        return build(embed, image);
-    }
-
-    public MessageCreateData build(EmbedBuilder embed, FileUpload image) {
-        MessageCreateBuilder msg = new MessageCreateBuilder()
-            .setEmbeds(embed.build())
-            .setComponents(ActionRow.of(btnBackToMain(), btnPrev(), btnNext()));
-        if (image != null) msg.setFiles(image);
-        return msg.build();
+        String collateralMsg = """
+            ## Collateral %s %d (%d/%d)
+            **Status:** %s
+            """
+            .formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1,
+                status);
+        return collateralDescription(embed, collateralMsg, filename, description, image, actionRow);
     }
 }

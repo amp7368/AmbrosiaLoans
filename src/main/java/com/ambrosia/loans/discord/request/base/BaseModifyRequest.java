@@ -1,7 +1,10 @@
 package com.ambrosia.loans.discord.request.base;
 
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
+import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
@@ -13,6 +16,18 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.jetbrains.annotations.Nullable;
 
 public interface BaseModifyRequest extends SendMessage {
+
+    default boolean isBadUser(SlashCommandInteractionEvent event, ActiveClientRequest<?> request) {
+        DClient client = request.getClient();
+        boolean isUser = client.isUser(event.getUser());
+        if (isUser) return false;
+
+        boolean isStaff = DiscordPermissions.get().isEmployee(event.getMember());
+        if (isStaff) return false;
+
+        ErrorMessages.notCorrectClient(client).replyError(event);
+        return true;
+    }
 
     @Nullable
     default <T extends ActiveRequestGui<?>> T findRequest(SlashCommandInteractionEvent event, Class<T> requestType, String type,

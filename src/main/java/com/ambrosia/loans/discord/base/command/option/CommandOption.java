@@ -65,16 +65,19 @@ public interface CommandOption<R> {
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
+    CommandOption<Boolean> PAYMENT_FULL = full("paying");
+    CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
+    // loan request
     CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
     CommandOption<Attachment> LOAN_COLLATERAL = basic("image", "Image of the collateral to add to the request",
         OptionType.ATTACHMENT, OptionMapping::getAsAttachment);
     CommandOption<String> LOAN_COLLATERAL_DESCRIPTION = basic("description", "Description for the collateral",
         OptionType.STRING, OptionMapping::getAsString);
+    CommandOption<Long> LOAN_COLLATERAL_REQUEST_ID = basic("collateral_id", "The id of the collateral for this request",
+        OptionType.INTEGER, OptionMapping::getAsLong);
     CommandOption<String> LOAN_COLLATERAL_NAME = basic("name", "Name for the collateral",
         OptionType.STRING, OptionMapping::getAsString);
-    CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
-    CommandOption<Boolean> PAYMENT_FULL = full("paying");
-    CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
 
     // loan
     CommandOptionMulti<String, DClient> LOAN_VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",

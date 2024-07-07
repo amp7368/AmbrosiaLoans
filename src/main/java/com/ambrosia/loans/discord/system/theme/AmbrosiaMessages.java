@@ -111,6 +111,13 @@ public class AmbrosiaMessages {
         }
 
         @CheckReturnValue
+        public static AmbrosiaMessage noCollateralWithId(long requestId, long id) {
+            String msg = "There is no collateral in request %s %d with id '%d'!"
+                .formatted(AmbrosiaEmoji.KEY_ID_CHANGES, requestId, id);
+            return error(msg);
+        }
+
+        @CheckReturnValue
         public static AmbrosiaMessage badRequestType(String type, Long requestId) {
             String msg = "Request #%d is not a %s request".formatted(requestId, type);
             return error(msg);

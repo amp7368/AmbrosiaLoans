@@ -12,22 +12,21 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.discord.base.request.ActiveRequest;
-import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
+import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
-public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> implements LoanBuilder {
+public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui> implements LoanBuilder {
 
 
     @Nullable
     protected Double rate;
-    protected long clientId;
     protected long amount;
     protected String reason;
     protected String repayment;
@@ -37,13 +36,12 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     protected Long vouchClientId;
     @Nullable
     protected Instant startDate;
-    protected transient DClient client;
     protected transient DClient vouchClient;
     private Instant acceptedTOSDate;
     private int collateralId = 1;
 
     public ActiveRequestLoan() {
-        super(ActiveRequestType.LOAN, null);
+        super(ActiveRequestType.LOAN);
     }
 
     public ActiveRequestLoan(DClient client,
@@ -51,11 +49,9 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         String reason,
         String repayment,
         @Nullable RequestCollateral collateral) {
-        super(ActiveRequestType.LOAN, new ActiveRequestSender(client));
+        super(ActiveRequestType.LOAN, client);
         setRequestId();
         this.amount = amount;
-        this.clientId = client.getId();
-        this.client = client;
         this.reason = reason;
         this.repayment = repayment;
         if (collateral != null) {
@@ -83,12 +79,6 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     @Override
     public Emeralds getAmount() {
         return Emeralds.of(amount);
-    }
-
-    @Override
-    public DClient getClient() {
-        if (client != null) return client;
-        return this.client = ClientQueryApi.findById(clientId);
     }
 
     public List<RequestCollateral> getCollateral() {
@@ -180,5 +170,15 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         int id = collateralId++;
         save();
         return id;
+    }
+
+    public RequestCollateral removeCollateral(long id) {
+        Optional<RequestCollateral> deleted = getCollateral().stream()
+            .filter(c -> c.getIndex() == id)
+            .findAny();
+        if (deleted.isEmpty()) return null;
+        collateral.removeIf(c -> c.getIndex() == id);
+        save();
+        return deleted.get();
     }
 }
