@@ -1,16 +1,13 @@
-package com.ambrosia.loans.discord.command.staff.list;
+package com.ambrosia.loans.discord.command.player.collateral;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
-import com.ambrosia.loans.discord.command.staff.list.client.ListClientsCommand;
-import com.ambrosia.loans.discord.command.staff.list.loan.ListLoansCommand;
-import com.ambrosia.loans.discord.command.staff.list.request.ListRequestsCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class AListCommand extends BaseCommand {
+public class CommandCollateral extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -18,16 +15,11 @@ public class AListCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new ListLoansCommand(), new ListClientsCommand(), new ListRequestsCommand());
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
+        return List.of(new CommandAddCollateral());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("alist", "List data commands");
+        return Commands.slash("collateral", "Add/list collateral for a loan");
     }
 }

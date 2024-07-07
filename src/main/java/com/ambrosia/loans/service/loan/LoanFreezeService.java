@@ -61,6 +61,10 @@ public class LoanFreezeService {
             Ambrosia.get().logger().error(msg);
             return;
         }
+        if (loan.isPaid()) {
+            String msg = "Ignoring unfreeze action on loan{%d}. Loan is already paid!".formatted(loan.getId());
+            Ambrosia.get().logger().warn(msg);
+        }
         loan.unfreezeLoan(unfreezeToRate, unfreezeDate);
     }
 

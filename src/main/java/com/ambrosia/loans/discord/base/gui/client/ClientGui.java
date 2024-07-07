@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
+import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
@@ -16,6 +17,11 @@ public class ClientGui extends DCFGui {
 
     public ClientGui(DClient client, DCF dcf, GuiReplyFirstMessage createFirstMessage) {
         super(dcf, createFirstMessage);
+        this.client = client;
+    }
+
+    public ClientGui(DClient client, DCF dcf, DCFEditMessage editMessage) {
+        super(dcf, editMessage);
         this.client = client;
     }
 

@@ -152,7 +152,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .toList();
         for (DLoan loan : loans) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
-            if (loanDuration.isNegative()) continue; // todo ??? consider 0 as well
+            if (loanDuration.isNegative()) continue;
             if (loanDuration.isZero()) continue;
 
             // if we call this for running a simulation, we don't want to include payments.

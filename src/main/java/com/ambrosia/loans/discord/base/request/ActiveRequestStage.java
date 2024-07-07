@@ -37,4 +37,8 @@ public enum ActiveRequestStage {
     public AmbrosiaEmoji getEmoji() {
         return this.emoji;
     }
+
+    public boolean isBeforeClaimed() {
+        return this == CREATED || this == UNCLAIMED;
+    }
 }

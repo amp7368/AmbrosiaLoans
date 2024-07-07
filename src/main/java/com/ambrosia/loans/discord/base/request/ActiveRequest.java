@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.database.HasFilename;
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
@@ -78,4 +79,12 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
 
     @Nullable
     public abstract DAlterCreate onComplete() throws Exception;
+
+    @Override
+    public long getServerId() {
+        long serverId = super.getServerId();
+        if (serverId < 0)
+            return AmbrosiaConfig.get().discord.mainServer;
+        return serverId;
+    }
 }

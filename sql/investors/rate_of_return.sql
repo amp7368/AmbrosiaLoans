@@ -1,16 +1,16 @@
-SELECT TO_CHAR(loans.date, 'MM''YYYY')                  period,
-       loans.active_loans,
-       total_investors,
-       CONCAT(COALESCE(rate_of_return, 0), '%')         returns,
-       CONCAT(ROUND(AVG(rate_of_return)
-                    OVER (ORDER BY ptimespan ROWS BETWEEN 11 PRECEDING AND CURRENT ROW),
-                    2), '%')                            returns_moving_avg,
-       COALESCE(pays.interest_payments_stx, 0) * 0.6 AS profits_to_investors
+SELECT TO_CHAR(loans.date, 'MM''YYYY')          period,
+       CONCAT(COALESCE(rate_of_return, 0), '%') returns
+--        loans.active_loans,
+--        total_investors,
+--        CONCAT(ROUND(AVG(rate_of_return)
+--                     OVER (ORDER BY ptimespan ROWS BETWEEN 11 PRECEDING AND CURRENT ROW),
+--                     2), '%')                            returns_moving_avg,
+--        COALESCE(pays.interest_payments_stx, 0) * 0.6 AS profits_to_investors
 FROM (
-     SELECT ROUND(SUM(delta) / 4096 / 64, 2)          total_profits,
-            ROUND(MIN(balance) / 4096 / 64, 2)        total_investors,
-            DATE_TRUNC('MONTH', rate.date)            ptimespan,
-            ROUND(SUM(delta) / MIN(balance) * 100, 2) rate_of_return
+     SELECT ROUND(SUM(delta) / 4096.0 / 64, 2)          total_profits,
+            ROUND(MIN(balance) / 4096.0 / 64, 2)        total_investors,
+            DATE_TRUNC('MONTH', rate.date)              ptimespan,
+            ROUND(SUM(delta) / MIN(balance) * 100.0, 2) rate_of_return
      FROM (
           SELECT SUM(delta)       delta,
                  SUM(balance) + 1 balance,

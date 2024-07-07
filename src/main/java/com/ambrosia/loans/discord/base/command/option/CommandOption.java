@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -65,6 +66,12 @@ public interface CommandOption<R> {
     CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
     CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
+    CommandOption<Attachment> LOAN_COLLATERAL = basic("image", "Image of the collateral to add to the request",
+        OptionType.ATTACHMENT, OptionMapping::getAsAttachment);
+    CommandOption<String> LOAN_COLLATERAL_DESCRIPTION = basic("description", "Description for the collateral",
+        OptionType.STRING, OptionMapping::getAsString);
+    CommandOption<String> LOAN_COLLATERAL_NAME = basic("name", "Name for the collateral",
+        OptionType.STRING, OptionMapping::getAsString);
     CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");

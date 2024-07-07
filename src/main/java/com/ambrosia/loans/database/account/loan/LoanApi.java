@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account.loan;
 
+import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
@@ -17,14 +18,20 @@ import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.collateral.CollateralManager;
+import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public interface LoanApi {
 
@@ -106,14 +113,33 @@ public interface LoanApi {
         static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
             DLoan loan = new DLoan(request);
             DClient client = loan.getClient();
+
+            List<File> targets = new ArrayList<>();
+            List<File> sources = new ArrayList<>();
             try (Transaction transaction = DB.beginTransaction()) {
                 loan.save(transaction);
-                for (String link : request.getCollateral())
-                    new DCollateral(loan, link).save(transaction);
+                for (RequestCollateral col : request.getCollateral()) {
+                    DCollateral dCol = new DCollateral(loan, col);
+                    dCol.save(transaction);
+                    sources.add(col.getImageFile());
+                    targets.add(dCol.getImageFile());
+                    CollateralManager.tryCollectCollateral(col, dCol);
+                }
                 client.addLoan(loan);
                 client.save(transaction);
                 transaction.commit();
+            } catch (IOException e) {
+                targets.stream()
+                    .filter(File::exists)
+                    .forEach(File::delete);
+
+                String msg = "Could not manage collateral!";
+                DatabaseModule.get().logger().error(msg, e);
+                throw new CreateEntityException(msg);
             }
+            sources.stream()
+                .filter(File::exists)
+                .forEach(File::delete);
             loan.refresh();
             client.refresh();
             AlterCreateApi.create(request.getConductor(), AlterCreateType.LOAN, loan.getId());

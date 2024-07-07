@@ -1,16 +1,20 @@
 package com.ambrosia.loans.database.account.loan.collateral;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.system.collateral.CollateralManager;
+import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import io.ebean.Model;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
+import java.io.File;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import net.dv8tion.jda.api.utils.FileUpload;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @History
 @Entity
@@ -19,23 +23,60 @@ public class DCollateral extends Model {
 
     @Id
     @Identity
-    public long id;
+    protected long id;
 
     @ManyToOne
-    public DLoan loan;
+    protected DLoan loan;
     @Column
-    public String link;
+    protected String link;
+    @Column(columnDefinition = "text")
+    protected String name;
     @Column
-    public boolean returned = false;
-    @Lob
-    private byte[] image;
+    protected String description;
+    @Column
+    protected CollateralStatus returned = CollateralStatus.COLLECTED;
 
-    public DCollateral(DLoan loan, String link) {
+    public DCollateral(DLoan loan, RequestCollateral collateral) {
         this.loan = loan;
-        this.link = link.strip();
+        this.name = collateral.getName();
+        this.description = collateral.getDescription();
     }
 
-    private FileUpload getImage() {
-        return FileUpload.fromData(image, this.link);
+    public long getId() {
+        return id;
+    }
+
+    public DLoan getLoan() {
+        return loan;
+    }
+
+    @Nullable
+    public File getImageFile() {
+        File file = CollateralManager.getImageFile(this);
+        return file.exists() ? file : null;
+    }
+
+    @Nullable
+    public String getDescription() {
+        return description;
+    }
+
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    @Nullable
+    public FileUpload getImage() {
+        File imageFile = getImageFile();
+        if (imageFile == null) return null;
+        String filename = this.name == null ? "collateral.png" : this.name;
+        @SuppressWarnings("resource")
+        FileUpload fileUpload = FileUpload.fromData(imageFile, filename);
+        return fileUpload.setDescription(description);
+    }
+
+    public CollateralStatus status() {
+        return returned;
     }
 }

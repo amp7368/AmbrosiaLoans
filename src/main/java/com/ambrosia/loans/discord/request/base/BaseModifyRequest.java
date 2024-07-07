@@ -19,18 +19,19 @@ public interface BaseModifyRequest extends SendMessage {
         boolean isStaff) {
         Long requestId = CommandOption.REQUEST.getMap1(event);
         DCFStoredGui<?> request = CommandOption.REQUEST.getRequired(event, ErrorMessages.noRequestWithId(requestId));
-        if (requestType.isInstance(request)) {
+        if (!requestType.isInstance(request)) {
+            if (request != null)
+                ErrorMessages.badRequestType(type, requestId).replyError(event);
+            return null;
+        } else {
             T activeRequest = requestType.cast(request);
             ActiveRequestStage stage = activeRequest.getData().stage;
-            if (!isStaff && stage != ActiveRequestStage.CREATED) {
+            if (!isStaff && !stage.isBeforeClaimed()) {
                 ErrorMessages.cannotModifyRequestAtStage(stage).replyError(event);
                 return null;
             }
             return activeRequest;
         }
-        if (request != null)
-            ErrorMessages.badRequestType(type, requestId).replyError(event);
-        return null;
     }
 
 

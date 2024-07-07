@@ -5,6 +5,7 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.command.manager.StaffConfigCommand;
+import com.ambrosia.loans.discord.command.player.collateral.CommandCollateral;
 import com.ambrosia.loans.discord.command.player.help.HelpCommand;
 import com.ambrosia.loans.discord.command.player.history.HistoryCommand;
 import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
@@ -131,7 +132,8 @@ public class DiscordModule extends AppleModule {
         // client commands
         commands.addCommand(new HelpCommand(),
             new ProfileCommand(), new HistoryCommand(),
-            new CommandRequest(), new CommandModifyRequest());
+            new CommandRequest(), new CommandModifyRequest(),
+            new CommandCollateral());
         // 35 count commands
 
         dcf.modals().add(new RequestLoanModalType(true));

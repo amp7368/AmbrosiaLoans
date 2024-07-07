@@ -2,10 +2,13 @@ package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.util.Pretty;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
+import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.ArrayList;
 import java.util.List;
@@ -170,7 +173,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             """.formatted(staffCommandName(), data.getRequestId());
     }
 
-    private String clientModifyMessage() {
+    protected String clientModifyMessage() {
         if (clientCommandName() == null) return null;
         if (data.stage.isComplete()) return null;
         return """
@@ -212,7 +215,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         return List.of(BUTTON_BACK, BUTTON_APPROVE.withDisabled(!hasApproveButton()));
     }
 
-
     private List<Button> getInitialComponents() {
         return List.of(BUTTON_DENY, BUTTON_CLAIM.withDisabled(!hasClaimButton()));
     }
@@ -243,7 +245,25 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected abstract String title();
 
     protected void updateSender() {
-        String updateMessage = switch (this.data.stage) {
+        data.sender.getClient().getDiscord().tryOpenDirectMessages(channel -> {
+            DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
+            guiClient(editMessage);
+        }, null);
+    }
+
+    public ClientGui guiClient(DCFEditMessage editMessage) {
+        ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage);
+        gui.addPage(guiClientPage(gui));
+        return gui;
+    }
+
+    protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui) {
+        MessageCreateData message = makeClientMessage(getUpdateMessage());
+        return new ActiveRequestClientPage(gui, data, message);
+    }
+
+    private @NotNull String getUpdateMessage() {
+        String unformattedMessage = switch (data.stage) {
             case DENIED -> "**%s** has denied this request";
             case CLAIMED -> "**%s** has seen your request";
             case APPROVED, CREATED -> "";
@@ -251,9 +271,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             case UNCLAIMED -> "**%s** has stopped working on your request. Someone else will come along to complete it.";
             case ERROR -> "There was an error processing the request D: Message **%s**";
         };
-        updateMessage = String.format(updateMessage, data.getEndorser());
-        MessageCreateData message = makeClientMessage(updateMessage);
-        data.sender.getClient().getDiscord().sendDm(message);
+        return String.format(unformattedMessage, data.getEndorser());
     }
 
     @Override

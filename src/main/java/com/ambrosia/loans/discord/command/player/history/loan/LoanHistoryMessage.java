@@ -80,7 +80,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         return new MessageCreateBuilder()
             .setEmbeds(embed)
             .setComponents(
-                ActionRow.of(btnFirst(), btnNext(), btnPrev()),
+                ActionRow.of(btnFirst(), btnPrev(), btnNext()),
                 ActionRow.of(collateralBtn)
             )
             .build();

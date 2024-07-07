@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 
 public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements ClientMessage {
 
-
     public static final Button OVERVIEW = Button.primary("overview", "Overview");
     public static final Button LOANS = Button.primary("loans", "Loans");
     public static final Button INVESTMENTS = Button.primary("investments", "Investments");

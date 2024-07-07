@@ -10,6 +10,7 @@ import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestSender;
@@ -17,6 +18,7 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +31,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     protected long amount;
     protected String reason;
     protected String repayment;
-    protected List<String> collateral;
+    protected List<RequestCollateral> collateral = new ArrayList<>();
     protected String discount;
     @Nullable
     protected Long vouchClientId;
@@ -38,6 +40,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
     protected transient DClient client;
     protected transient DClient vouchClient;
     private Instant acceptedTOSDate;
+    private int collateralId = 1;
 
     public ActiveRequestLoan() {
         super(ActiveRequestType.LOAN, null);
@@ -47,7 +50,7 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         long amount,
         String reason,
         String repayment,
-        List<String> collateral) {
+        @Nullable RequestCollateral collateral) {
         super(ActiveRequestType.LOAN, new ActiveRequestSender(client));
         setRequestId();
         this.amount = amount;
@@ -55,7 +58,10 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         this.client = client;
         this.reason = reason;
         this.repayment = repayment;
-        this.collateral = collateral;
+        if (collateral != null) {
+            this.collateralId++;
+            this.collateral.add(collateral);
+        }
     }
 
     @Override
@@ -85,8 +91,8 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
         return this.client = ClientQueryApi.findById(clientId);
     }
 
-    public List<String> getCollateral() {
-        return collateral;
+    public List<RequestCollateral> getCollateral() {
+        return this.collateral;
     }
 
     @Override
@@ -163,5 +169,16 @@ public class ActiveRequestLoan extends ActiveRequest<ActiveRequestLoanGui> imple
 
     public void acceptTOS() {
         this.acceptedTOSDate = Instant.now();
+    }
+
+    public void addCollateral(RequestCollateral collateral) {
+        this.collateral.add(collateral);
+        save();
+    }
+
+    public synchronized int assignCollateralId() {
+        int id = collateralId++;
+        save();
+        return id;
     }
 }
