@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.player.history.transaction;
+package com.ambrosia.loans.discord.command.player.show.transaction;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
@@ -6,7 +6,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class TransactionHistoryCommand extends BaseClientSubCommand {
+public class ShowTransactionsCommand extends BaseClientSubCommand {
 
     @Override
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {

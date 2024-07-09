@@ -20,14 +20,21 @@ import org.jetbrains.annotations.Nullable;
 public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, RequestCollateral> implements CollateralMessage {
 
     private final ActiveRequestLoan loanData;
+    private final boolean includeBackToMainBtn;
 
-    public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData) {
+    public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData, boolean includeBackToMainBtn) {
         super(parent);
         this.loanData = loanData;
+        this.includeBackToMainBtn = includeBackToMainBtn;
         registerButton(btnBackToMain().getId(), e -> parent.popSubPage());
         setEntries(this.loanData.getCollateral());
         sort();
     }
+
+    public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData) {
+        this(parent, loanData, true);
+    }
+
 
     @Override
     protected Comparator<? super RequestCollateral> entriesComparator() {
@@ -41,7 +48,10 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
 
     @Override
     public MessageCreateData makeMessage() {
-        ActionRow actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
+        ActionRow actionRow;
+        if (includeBackToMainBtn) actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
+        else actionRow = ActionRow.of(btnPrev(), btnNext());
+
         EmbedBuilder embed = new EmbedBuilder();
         ClientMessage.of(loanData.getClient()).clientAuthor(embed);
 
@@ -60,9 +70,11 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         @Nullable String description = collateral.getDescription();
         @Nullable FileUpload image = collateral.getImage();
 
-        String title = "## Collateral (%d/%d) %s %d \n"
+        String header = """
+            ## Collateral (%d/%d) %s %d
+            **Status:** Not Collected"""
             .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        return collateralDescription(embed, title, filename, description, image, actionRow);
+        return collateralDescription(embed, header, filename, description, image, actionRow);
     }
 
     public void toLast() {

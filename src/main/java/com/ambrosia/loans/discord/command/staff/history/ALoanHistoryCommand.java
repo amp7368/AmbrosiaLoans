@@ -5,7 +5,7 @@ import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
-import com.ambrosia.loans.discord.command.player.history.loan.LoanHistoryMessage;
+import com.ambrosia.loans.discord.command.player.show.loan.LoanHistoryMessage;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;

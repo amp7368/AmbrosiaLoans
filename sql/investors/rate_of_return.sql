@@ -1,14 +1,12 @@
-SELECT TO_CHAR(loans.date, 'MM''YYYY')          period,
-       CONCAT(COALESCE(rate_of_return, 0), '%') returns
+SELECT TO_CHAR(loans.date, 'MM''YYYY')                   period,
+       CONCAT(COALESCE(rate_of_return, 0), '%')          returns,
 --        loans.active_loans,
---        total_investors,
---        CONCAT(ROUND(AVG(rate_of_return)
---                     OVER (ORDER BY ptimespan ROWS BETWEEN 11 PRECEDING AND CURRENT ROW),
---                     2), '%')                            returns_moving_avg,
---        COALESCE(pays.interest_payments_stx, 0) * 0.6 AS profits_to_investors
+       ROUND(total_invested_stx, 2)                      "Total Invested (STX)",
+       CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') one_stx_stake,
+       COALESCE(profits.total_profits, 0) * 0.6 AS       "Investor Profits (STX)"
 FROM (
-     SELECT ROUND(SUM(delta) / 4096.0 / 64, 2)          total_profits,
-            ROUND(MIN(balance) / 4096.0 / 64, 2)        total_investors,
+     SELECT SUM(delta) / 4096.0 / 64.0                  total_profits,
+            MIN(balance) / 4096.0 / 64                  total_invested_stx,
             DATE_TRUNC('MONTH', rate.date)              ptimespan,
             ROUND(SUM(delta) / MIN(balance) * 100.0, 2) rate_of_return
      FROM (

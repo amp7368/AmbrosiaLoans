@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public interface LoanApi {
 
@@ -130,6 +131,7 @@ public interface LoanApi {
                 transaction.commit();
             } catch (IOException e) {
                 targets.stream()
+                    .filter(Objects::nonNull)
                     .filter(File::exists)
                     .forEach(File::delete);
 
@@ -138,6 +140,7 @@ public interface LoanApi {
                 throw new CreateEntityException(msg);
             }
             sources.stream()
+                .filter(Objects::nonNull)
                 .filter(File::exists)
                 .forEach(File::delete);
             loan.refresh();

@@ -165,7 +165,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui) {
         ActiveRequestClientPage page = super.guiClientPage(gui);
         page.registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
-            gui.addSubPage(new LoanRequestCollateralPage(gui, getData()));
+            gui.addPage(new LoanRequestCollateralPage(gui, getData(), false));
         });
         return page;
     }

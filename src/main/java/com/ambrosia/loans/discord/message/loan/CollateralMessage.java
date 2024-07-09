@@ -13,11 +13,10 @@ import org.slf4j.helpers.CheckReturnValue;
 public interface CollateralMessage {
 
     @CheckReturnValue
-    default MessageCreateData collateralDescription(EmbedBuilder embed, String title, @NotNull String filename,
-        @Nullable String description, @Nullable FileUpload image, @Nullable ActionRow actionRow) {
+    default MessageCreateData collateralDescription(EmbedBuilder embed, String header, @NotNull String filename,
+        @Nullable String description, @Nullable FileUpload image, ActionRow... actionRow) {
         embed.setColor(AmbrosiaColor.GREEN);
-        embed.appendDescription(title);
-        embed.appendDescription("**Status:** %s\n".formatted("Not Collected"));
+        embed.appendDescription(header);
 
         embed.appendDescription("**Name:** %s\n".formatted(filename));
         if (description != null)
@@ -28,10 +27,13 @@ public interface CollateralMessage {
         return build(embed, image, actionRow);
     }
 
-    default MessageCreateData build(EmbedBuilder embed, FileUpload image, @Nullable ActionRow actionRow) {
+    default MessageCreateData build(EmbedBuilder embed, FileUpload image, @Nullable ActionRow... actionRow) {
         MessageCreateBuilder msg = new MessageCreateBuilder()
             .setEmbeds(embed.build());
-        if (actionRow != null) msg.setComponents(actionRow);
+        for (ActionRow row : actionRow) {
+            if (row == null) continue;
+            msg.addComponents(row);
+        }
         if (image != null) msg.setFiles(image);
         return msg.build();
     }

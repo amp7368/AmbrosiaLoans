@@ -7,6 +7,8 @@ import io.ebean.Model;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import java.io.File;
+import java.sql.Timestamp;
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -29,6 +31,10 @@ public class DCollateral extends Model {
     protected DLoan loan;
     @Column
     protected String link;
+    @Column
+    protected Timestamp returnedDate;
+    @Column
+    protected Timestamp collectionDate = Timestamp.from(Instant.now());
     @Column(columnDefinition = "text")
     protected String name;
     @Column
@@ -51,9 +57,15 @@ public class DCollateral extends Model {
     }
 
     @Nullable
-    public File getImageFile() {
-        File file = CollateralManager.getImageFile(this);
-        return file.exists() ? file : null;
+    public Instant getCollectionDate() {
+        if (collectionDate == null) return null;
+        return collectionDate.toInstant();
+    }
+
+    @Nullable
+    public Instant getReturnedDate() {
+        if (returnedDate == null) return null;
+        return returnedDate.toInstant();
     }
 
     @Nullable
@@ -76,7 +88,13 @@ public class DCollateral extends Model {
         return fileUpload.setDescription(description);
     }
 
-    public CollateralStatus status() {
+    @Nullable
+    public File getImageFile() {
+        File file = CollateralManager.getImageFile(this);
+        return file.exists() ? file : null;
+    }
+
+    public CollateralStatus getStatus() {
         return returned;
     }
 }

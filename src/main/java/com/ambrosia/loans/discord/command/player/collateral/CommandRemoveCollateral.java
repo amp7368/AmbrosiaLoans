@@ -35,7 +35,7 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
         String title = "## Removed Collateral %s %d \n"
             .formatted(AmbrosiaEmoji.KEY_ID, collateral.getIndex());
         MessageCreateData msg = collateralDescription(embed, title, collateral.getName(), collateral.getDescription(),
-            collateral.getImage(), null);
+            collateral.getImage());
         event.reply(msg).queue();
     }
 

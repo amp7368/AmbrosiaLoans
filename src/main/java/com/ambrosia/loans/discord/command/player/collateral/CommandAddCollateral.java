@@ -35,7 +35,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
     private static final int MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * BYTES_IN_MB;
 
     private boolean hasErrorsMissingAll(SlashCommandInteractionEvent event, String description, String name, Attachment attachment) {
-        if (description != null && name == null && attachment == null) {
+        if (description == null && name == null && attachment == null) {
             replyError(event, "At least one of the optional fields must be provided.");
             return true;
         }
@@ -71,6 +71,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
         @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL.getOptional(event);
         if (hasErrorsAttachment(event, attachment)) return;
         if (hasErrorsMissingAll(event, description, name, attachment)) return;
+        if (hasErrorsArgLength(event, description, name)) return;
 
         int id = request.getData().assignCollateralId();
         RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
@@ -91,6 +92,10 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
             ClientGui gui = request.guiClient(editMessage);
             gui.send(msg -> afterDefer(downloadAction, gui, collateral, request.getData()), null);
         }
+    }
+
+    private boolean hasErrorsArgLength(SlashCommandInteractionEvent event, String description, String name) {
+        return false;
     }
 
     private void afterDefer(CompletableFuture<File> downloadAction, ClientGui gui, RequestCollateral collateral,

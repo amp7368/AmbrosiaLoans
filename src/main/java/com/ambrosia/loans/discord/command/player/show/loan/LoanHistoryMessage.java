@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.player.history.loan;
+package com.ambrosia.loans.discord.command.player.show.loan;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;

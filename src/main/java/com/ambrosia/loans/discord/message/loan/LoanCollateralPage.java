@@ -76,13 +76,11 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
         @Nullable FileUpload image = collateral.getImage();
 
         int index = entry.indexInAll() + 1;
-        String status = Pretty.spaceEnumWords(collateral.status().toString());
+        String status = Pretty.spaceEnumWords(collateral.getStatus().toString());
         String collateralMsg = """
             ## Collateral %s %d (%d/%d)
             **Status:** %s
-            """
-            .formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1,
-                status);
+            """.formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1, status);
         return collateralDescription(embed, collateralMsg, filename, description, image, actionRow);
     }
 }
