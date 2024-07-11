@@ -16,3 +16,7 @@ ALTER TABLE collateral_history
 CREATE VIEW collateral_with_history AS
 SELECT (returned)
 FROM collateral_history;
+
+SELECT *
+FROM db_migration;
+DROP TABLE db_migration;

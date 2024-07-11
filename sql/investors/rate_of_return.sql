@@ -1,9 +1,9 @@
-SELECT TO_CHAR(loans.date, 'MM''YYYY')                   period,
-       CONCAT(COALESCE(rate_of_return, 0), '%')          returns,
+SELECT TO_CHAR(loans.date, 'MM/YYYY')                    period,
+       CONCAT(COALESCE(rate_of_return, 0), '%')          "Return on Investment",
 --        loans.active_loans,
        ROUND(total_invested_stx, 2)                      "Total Invested (STX)",
-       CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') one_stx_stake,
-       COALESCE(profits.total_profits, 0) * 0.6 AS       "Investor Profits (STX)"
+       CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') "Stake of 1 STX",
+       COALESCE(profits.total_profits, 0) AS             "Investor Profits (STX)"
 FROM (
      SELECT SUM(delta) / 4096.0 / 64.0                  total_profits,
             MIN(balance) / 4096.0 / 64                  total_invested_stx,

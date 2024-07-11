@@ -8,7 +8,6 @@ import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.SendMessage;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -51,8 +50,7 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     public void onAccept(ButtonInteractionEvent event) {
         request.acceptTOS();
         ActiveRequestLoanGui finishedGui = request.create();
-        ClientGui gui = finishedGui.guiClient(DCFEditMessage.ofReply(event::reply));
-        gui.send();
+        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply)).send();
         finishedGui.send(ActiveRequestDatabase::sendRequest);
     }
 

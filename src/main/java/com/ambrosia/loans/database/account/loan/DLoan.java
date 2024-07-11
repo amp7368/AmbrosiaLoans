@@ -405,10 +405,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return false;
     }
 
-    public DLoan setDefaulted(Instant endDate, boolean defaulted) {
+    public DLoan setDefaulted(@Nullable Instant endDate, boolean defaulted) {
         if (defaulted) {
-            this.status = DLoanStatus.DEFAULTED;
             Instant endDateInstant = Objects.requireNonNullElseGet(endDate, Instant::now);
+            this.status = DLoanStatus.DEFAULTED;
             this.endDate = Timestamp.from(endDateInstant);
         } else {
             this.status = DLoanStatus.ACTIVE;

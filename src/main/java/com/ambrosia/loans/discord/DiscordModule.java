@@ -12,13 +12,14 @@ import com.ambrosia.loans.discord.command.player.request.CommandModifyRequest;
 import com.ambrosia.loans.discord.command.player.request.CommandRequest;
 import com.ambrosia.loans.discord.command.player.request.loan.RequestLoanModalType;
 import com.ambrosia.loans.discord.command.player.show.ShowCommand;
+import com.ambrosia.loans.discord.command.staff.alter.collateral.ACollateralCommand;
 import com.ambrosia.loans.discord.command.staff.alter.investment.AInvestCommand;
 import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
 import com.ambrosia.loans.discord.command.staff.alter.payment.APaymentCommand;
 import com.ambrosia.loans.discord.command.staff.alter.withdrawal.AWithdrawalSetCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
-import com.ambrosia.loans.discord.command.staff.history.AHistoryCommand;
+import com.ambrosia.loans.discord.command.staff.history.AShowCommand;
 import com.ambrosia.loans.discord.command.staff.list.AListCommand;
 import com.ambrosia.loans.discord.command.staff.modify.AModifyRequestCommand;
 import com.ambrosia.loans.discord.command.staff.profile.ACommandLink;
@@ -120,11 +121,12 @@ public class DiscordModule extends AppleModule {
             new AProfileCreateCommand(),
             new ABlacklistCommand());
         // employee alter commands
-        commands.addCommand(new ALoanCommand(), new AInvestCommand(), new AWithdrawalSetCommand(), new APaymentCommand());
+        commands.addCommand(new ALoanCommand(), new ACollateralCommand(), new AInvestCommand(), new AWithdrawalSetCommand(),
+            new APaymentCommand());
         // employee undo redo
         commands.addCommand(new AUndoCommand(), new ARedoCommand(), new ADeleteCommand());
         // employee view commands
-        commands.addCommand(new AProfileCommand(), new AHistoryCommand());
+        commands.addCommand(new AProfileCommand(), new AShowCommand());
         commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());

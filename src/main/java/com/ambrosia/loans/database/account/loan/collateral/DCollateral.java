@@ -26,9 +26,9 @@ public class DCollateral extends Model {
     @Id
     @Identity
     protected long id;
-
     @ManyToOne
     protected DLoan loan;
+    @Deprecated
     @Column
     protected String link;
     @Column
@@ -40,7 +40,7 @@ public class DCollateral extends Model {
     @Column
     protected String description;
     @Column
-    protected CollateralStatus returned = CollateralStatus.COLLECTED;
+    protected DCollateralStatus returned = DCollateralStatus.COLLECTED;
 
     public DCollateral(DLoan loan, RequestCollateral collateral) {
         this.loan = loan;
@@ -94,7 +94,26 @@ public class DCollateral extends Model {
         return file.exists() ? file : null;
     }
 
-    public CollateralStatus getStatus() {
+    public DCollateralStatus getStatus() {
         return returned;
     }
+
+    public DCollateral setCollected() {
+        this.returnedDate = null;
+        this.returned = DCollateralStatus.COLLECTED;
+        return this;
+    }
+
+    public DCollateral setReturned(Instant endDate) {
+        this.returnedDate = Timestamp.from(endDate);
+        this.returned = DCollateralStatus.RETURNED;
+        return this;
+    }
+
+    public DCollateral setSold(Instant endDate) {
+        this.returnedDate = Timestamp.from(endDate);
+        this.returned = DCollateralStatus.SOLD;
+        return this;
+    }
+
 }

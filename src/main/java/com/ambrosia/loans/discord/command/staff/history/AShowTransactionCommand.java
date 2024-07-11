@@ -10,7 +10,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class ATransactionHistoryCommand extends BaseSubCommand {
+public class AShowTransactionCommand extends BaseSubCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {

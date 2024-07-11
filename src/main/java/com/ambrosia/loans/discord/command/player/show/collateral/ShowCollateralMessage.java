@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.command.player.show.collateral;
 
 import apple.utilities.util.Pretty;
-import com.ambrosia.loans.database.account.loan.collateral.CollateralStatus;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
@@ -51,11 +51,11 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         Collection<DCollateral> collateral;
         if (selected.equals("returned")) {
             collateral = allCollateral.stream()
-                .filter(c -> c.getStatus() == CollateralStatus.RETURNED)
+                .filter(c -> c.getStatus() == DCollateralStatus.RETURNED)
                 .toList();
         } else if (selected.equals("collected")) {
             collateral = allCollateral.stream()
-                .filter(c -> c.getStatus() == CollateralStatus.COLLECTED)
+                .filter(c -> c.getStatus() == DCollateralStatus.COLLECTED)
                 .toList();
         } else collateral = allCollateral;
         setEntries(collateral);

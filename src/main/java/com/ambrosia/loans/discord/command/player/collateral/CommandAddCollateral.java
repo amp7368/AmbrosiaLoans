@@ -68,7 +68,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
         @Nullable String description = CommandOption.LOAN_COLLATERAL_DESCRIPTION.getOptional(event);
         if (description != null && description.isBlank()) description = null;
 
-        @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL.getOptional(event);
+        @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL_IMAGE.getOptional(event);
         if (hasErrorsAttachment(event, attachment)) return;
         if (hasErrorsMissingAll(event, description, name, attachment)) return;
         if (hasErrorsArgLength(event, description, name)) return;
@@ -107,7 +107,9 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
                     downloadError(gui, downloadAction, collateral);
                 } else {
                     request.addCollateral(collateral);
-                    gui.addSubPage(new LoanRequestCollateralPage(gui, request));
+                    LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request);
+                    page.toLast();
+                    gui.addSubPage(page);
                     gui.editMessage();
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
@@ -134,7 +136,7 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
         SubcommandData command = new SubcommandData("add", "Add collateral to a loan request");
         return CommandOptionList.of(
             List.of(CommandOption.REQUEST),
-            List.of(CommandOption.LOAN_COLLATERAL, CommandOption.LOAN_COLLATERAL_NAME, CommandOption.LOAN_COLLATERAL_DESCRIPTION)
+            List.of(CommandOption.LOAN_COLLATERAL_IMAGE, CommandOption.LOAN_COLLATERAL_NAME, CommandOption.LOAN_COLLATERAL_DESCRIPTION)
         ).addToCommand(command);
     }
 }

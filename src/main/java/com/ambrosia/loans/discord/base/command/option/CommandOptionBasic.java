@@ -42,7 +42,7 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
 
     @Override
     public void addOption(SubcommandData command, boolean required) {
-        command.addOption(type, name, description, required, autoComplete);
+        command.addOptions(createOption(required));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.account.loan;
 
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterCollateralStatus;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
@@ -9,6 +10,8 @@ import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanStartDate
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanUnfreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterPaymentAmount;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
+import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
@@ -53,6 +56,12 @@ public interface LoanApi {
                 .where().id.eq(id)
                 .findOne();
         }
+
+        static DCollateral findCollateralById(long id) {
+            return new QDCollateral()
+                .where().id.eq(id)
+                .findOne();
+        }
     }
 
     interface LoanAlterApi {
@@ -94,6 +103,12 @@ public interface LoanApi {
             Double unfreezeToRate, Instant previousUnfreezeDate) {
             AlterLoanUnfreeze change = new AlterLoanUnfreeze(loan, effectiveDate, beforeFreezeRate, unfreezeToRate,
                 previousUnfreezeDate);
+            return AlterCreateApi.applyChange(staff, change);
+        }
+
+        static DAlterChange markCollateral(DStaffConductor staff, DCollateral collateral, Instant effectiveDate,
+            DCollateralStatus status) {
+            AlterCollateralStatus change = new AlterCollateralStatus(collateral, effectiveDate, status);
             return AlterCreateApi.applyChange(staff, change);
         }
     }
@@ -145,7 +160,10 @@ public interface LoanApi {
                 .forEach(File::delete);
             loan.refresh();
             client.refresh();
-            AlterCreateApi.create(request.getConductor(), AlterCreateType.LOAN, loan.getId());
+            DStaffConductor staff = request.getConductor();
+
+            loan.getCollateral().forEach(col -> AlterCreateApi.create(staff, AlterCreateType.COLLATERAL, col.getId()));
+            AlterCreateApi.create(staff, AlterCreateType.LOAN, loan.getId());
             RunBankSimulation.simulateAsync(loan.getStartDate());
             return loan;
         }
