@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
+import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -34,6 +35,10 @@ public class AmbrosiaMessages {
 
     public static String formatPercentage(double perc) {
         return "%.2f%%".formatted(perc * 100);
+    }
+
+    public static AmbrosiaMessage stringMessage(String msg) {
+        return new AmbrosiaStringMessage(msg);
     }
 
     public static class ErrorMessages {
@@ -197,6 +202,20 @@ public class AmbrosiaMessages {
         @CheckReturnValue
         public static AmbrosiaMessage onlyUploadImages() {
             String msg = "Images are the only filetype allowed!";
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage textTooLong(int length, int maxLength, CommandOption<?> option) {
+            return textTooLong(length, maxLength, option.getOptionName());
+        }
+
+        public static AmbrosiaMessage textTooLong(int length, int maxLength, String arg) {
+            String msg = "%s is too long! %d characters is greater than the %d limit".formatted(arg, length, maxLength);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage emeraldsFormat() {
+            String msg = "Use the format \"23 STX 12 LE 8 EB 56 E\" or \"12.75 STX\".";
             return error(msg);
         }
     }

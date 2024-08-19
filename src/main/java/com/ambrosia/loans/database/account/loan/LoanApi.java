@@ -126,6 +126,24 @@ public interface LoanApi {
             return loan;
         }
 
+        static DCollateral createCollateral(DStaffConductor staff, DLoan loan, RequestCollateral col) throws CreateEntityException {
+            DCollateral dCol = new DCollateral(loan, col);
+            try (Transaction transaction = DB.beginTransaction()) {
+                dCol.save(transaction);
+                CollateralManager.tryCollectCollateral(col, dCol);
+                transaction.commit();
+            } catch (IOException e) {
+                File file = dCol.getImageFile();
+                if (file != null) file.delete();
+
+                String msg = "Could not manage collateral!";
+                DatabaseModule.get().logger().error(msg, e);
+                throw new CreateEntityException(msg);
+            }
+            AlterCreateApi.create(staff, AlterCreateType.COLLATERAL, dCol.getId());
+            return dCol;
+        }
+
         static DLoan createLoan(ActiveRequestLoan request) throws CreateEntityException, InvalidStaffConductorException {
             DLoan loan = new DLoan(request);
             DClient client = loan.getClient();

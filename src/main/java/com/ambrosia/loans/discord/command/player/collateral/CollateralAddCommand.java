@@ -10,7 +10,6 @@ import com.ambrosia.loans.discord.message.loan.LoanRequestCollateralPage;
 import com.ambrosia.loans.discord.request.base.BaseModifyRequest;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessageCreate;
 import discord.util.dcf.gui.lamda.DCFLambdaGuiPage;
@@ -28,33 +27,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRequest {
-
-    public static final int MAX_UPLOAD_MB = 25;
-    private static final int BYTES_IN_MB = 1_000_000;
-    private static final int MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * BYTES_IN_MB;
-
-    private boolean hasErrorsMissingAll(SlashCommandInteractionEvent event, String description, String name, Attachment attachment) {
-        if (description == null && name == null && attachment == null) {
-            replyError(event, "At least one of the optional fields must be provided.");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean hasErrorsAttachment(SlashCommandInteractionEvent event, Attachment attachment) {
-        if (attachment == null) return false;
-        if (attachment.getSize() > MAX_UPLOAD_BYTES) {
-            double actualUploadMB = attachment.getSize() / (double) BYTES_IN_MB;
-            ErrorMessages.uploadSizeTooLarge(MAX_UPLOAD_MB, actualUploadMB).replyError(event);
-            return true;
-        }
-        if (!attachment.isImage()) {
-            ErrorMessages.onlyUploadImages().replyError(event);
-            return true;
-        }
-        return false;
-    }
+public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRequest {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -69,9 +42,9 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
         if (description != null && description.isBlank()) description = null;
 
         @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL_IMAGE.getOptional(event);
-        if (hasErrorsAttachment(event, attachment)) return;
-        if (hasErrorsMissingAll(event, description, name, attachment)) return;
-        if (hasErrorsArgLength(event, description, name)) return;
+        if (IAddCollateral.hasErrorsAttachment(event, attachment)) return;
+        if (IAddCollateral.hasErrorsMissingAll(event, description, name, attachment)) return;
+        if (IAddCollateral.hasErrorsArgLength(event, description, name)) return;
 
         int id = request.getData().assignCollateralId();
         RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
@@ -92,10 +65,6 @@ public class CommandAddCollateral extends BaseSubCommand implements BaseModifyRe
             ClientGui gui = request.guiClient(editMessage);
             gui.send(msg -> afterDefer(downloadAction, gui, collateral, request.getData()), null);
         }
-    }
-
-    private boolean hasErrorsArgLength(SlashCommandInteractionEvent event, String description, String name) {
-        return false;
     }
 
     private void afterDefer(CompletableFuture<File> downloadAction, ClientGui gui, RequestCollateral collateral,

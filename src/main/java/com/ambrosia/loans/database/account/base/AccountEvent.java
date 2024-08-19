@@ -76,10 +76,12 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
         this.amount = amount.amount();
     }
 
+    @Override
     public long getId() {
         return this.id;
     }
 
+    @Override
     public DClient getClient() {
         return client;
     }

@@ -15,6 +15,7 @@ import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import com.ambrosia.loans.util.emerald.EmeraldsParser;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.modal.DCFModal;
 import java.util.HashSet;
@@ -67,17 +68,17 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     public void setEmeralds(ModalMapping modalMapping) {
         final String value = modalMapping.getAsString();
         try {
-            final double stx = Double.parseDouble(value);
-            if (stx > 150) {
-                this.error = "'Amount in STX' must be less than 150";
+            Emeralds amount = EmeraldsParser.parse(value);
+            if (amount.gt(Emeralds.stxToEmeralds(150).amount())) {
+                this.error = "'Amount with units' must be less than 150 stx";
                 return;
-            } else if (stx <= 0) {
-                this.error = "'Amount in STX' must be positive";
+            } else if (amount.lte(0)) {
+                this.error = "'Amount with units' must be positive";
                 return;
             }
-            this.emeralds = Emeralds.stxToEmeralds(stx).amount();
+            this.emeralds = amount.amount();
         } catch (NumberFormatException e) {
-            this.error = "'Amount in STX' must be a decimal number";
+            this.error = e.getMessage();
         }
     }
 

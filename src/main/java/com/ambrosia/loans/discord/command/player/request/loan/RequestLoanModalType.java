@@ -46,8 +46,8 @@ public class RequestLoanModalType extends DCFModalType<RequestLoanModal> {
     @NotNull
     protected List<TextInput> getInputs() {
         TextInput ign = TextInput.create("ign", "In-Game-Name", TextInputStyle.SHORT).setRequired(true).build();
-        TextInput emeraldsInput = TextInput.create("emeralds", "Amount in STX", TextInputStyle.SHORT).setRequired(true)
-            .setPlaceholder("Example: 0.5 = 32 LE")
+        TextInput emeraldsInput = TextInput.create("emeralds", "Amount with units", TextInputStyle.SHORT).setRequired(true)
+            .setPlaceholder("\"23 STX 12 LE 8 EB 56 E\" or \"12.75 STX\"")
             .build();
         TextInput reasonForLoan = TextInput.create("reason", "Reason for Loan", TextInputStyle.PARAGRAPH).setRequired(true)
             .setMaxLength(MAX_LENGTH)

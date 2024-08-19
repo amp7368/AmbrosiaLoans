@@ -21,7 +21,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class CollateralStatusCommand extends BaseAlterCommand {
+public class ACollateralStatusCommand extends BaseAlterCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {

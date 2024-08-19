@@ -62,6 +62,16 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         sort();
     }
 
+    public void setPageTo(DCollateral collateral) {
+        List<DCollateral> entries = getEntriesCopy();
+        for (int i = 0; i < entries.size(); i++) {
+            if (collateral.equals(entries.get(i))) {
+                entryPage = i;
+                verifyPageNumber();
+            }
+        }
+    }
+
     public StringSelectMenu filter() {
         return StringSelectMenu.create("filter")
             .setPlaceholder("Filter")

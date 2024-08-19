@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import io.ebean.Model;
+import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import java.io.File;
@@ -35,9 +36,10 @@ public class DCollateral extends Model {
     protected Timestamp returnedDate;
     @Column
     protected Timestamp collectionDate = Timestamp.from(Instant.now());
-    @Column(columnDefinition = "text")
+    @DbDefault("collateral description")
+    @Column(nullable = false, columnDefinition = "text")
     protected String name;
-    @Column
+    @Column(columnDefinition = "text")
     protected String description;
     @Column
     protected DCollateralStatus returned = DCollateralStatus.COLLECTED;

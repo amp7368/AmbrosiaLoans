@@ -7,7 +7,10 @@ import java.util.Comparator;
 public interface IAccountChange {
 
     Comparator<? super IAccountChange> ORDER = Comparator.comparing(IAccountChange::getDate)
-        .thenComparing(IAccountChange::getEventType, AccountEventType.ORDER);
+        .thenComparing(IAccountChange::getEventType, AccountEventType.ORDER)
+        .thenComparing(IAccountChange::getId);
+
+    long getId();
 
     DClient getClient();
 

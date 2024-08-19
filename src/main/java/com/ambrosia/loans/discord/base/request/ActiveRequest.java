@@ -44,12 +44,12 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
 
     @Override
     public int hashCode() {
-        return (int) (this.getId() % Integer.MAX_VALUE);
+        return (int) (this.getRequestId() % Integer.MAX_VALUE);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ActiveRequest<?> other && other.getId() == this.getId();
+        return obj instanceof ActiveRequest<?> other && other.getRequestId() == this.getRequestId();
     }
 
     public String getEndorser() {

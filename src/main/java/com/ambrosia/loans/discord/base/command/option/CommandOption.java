@@ -56,13 +56,13 @@ public interface CommandOption<R> {
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
-    CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
-    CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
-    CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
+    CommandOptionMulti<String, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
+    CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
     // loan request
-    CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
+    CommandOptionMulti<String, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
     CommandOption<Attachment> LOAN_COLLATERAL_IMAGE = basic("image", "Image of the collateral to add to the request",
         OptionType.ATTACHMENT, OptionMapping::getAsAttachment);
     CommandOption<String> LOAN_COLLATERAL_DESCRIPTION = basic("description", "Description for the collateral",
@@ -133,10 +133,9 @@ public interface CommandOption<R> {
     }
 
     @NotNull
-    static CommandOptionMulti<Double, Emeralds> emeraldsAmount(String type) {
-        String desc = "The amount to %s. Expressed in STX. (Enter 0.5 for 32LE)".formatted(type);
-        return multi("amount", desc, OptionType.NUMBER,
-            OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
+    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String type) {
+        String desc = "The amount to %s. %s".formatted(type, ErrorMessages.emeraldsFormat());
+        return new CommandOptionEmeralds("amount", desc, OptionType.STRING);
     }
 
 

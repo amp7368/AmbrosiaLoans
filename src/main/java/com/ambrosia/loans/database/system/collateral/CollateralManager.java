@@ -13,8 +13,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class CollateralManager {
 
-    public static final File REQUEST_FOLDER = DatabaseModule.get().getFile("Collateral", "Request");
-    public static final File CLIENTS_FOLDER = DatabaseModule.get().getFile("Collateral", "Clients");
+    private static final File REQUEST_FOLDER = DatabaseModule.get().getFile("Collateral", "Request");
+    private static final File CLIENTS_FOLDER = DatabaseModule.get().getFile("Collateral", "Clients");
 
     public static void load() {
         REQUEST_FOLDER.mkdirs();

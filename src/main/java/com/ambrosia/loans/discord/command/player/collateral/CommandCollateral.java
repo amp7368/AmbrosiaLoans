@@ -15,7 +15,7 @@ public class CommandCollateral extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CommandAddCollateral(), new CommandRemoveCollateral());
+        return List.of(new CollateralAddCommand(), new CommandRemoveCollateral());
     }
 
     @Override

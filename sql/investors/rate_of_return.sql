@@ -1,14 +1,14 @@
-SELECT TO_CHAR(loans.date, 'MM/YYYY')                    period,
-       CONCAT(COALESCE(rate_of_return, 0), '%')          "Return on Investment",
---        loans.active_loans,
-       ROUND(total_invested_stx, 2)                      "Total Invested (STX)",
-       CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') "Stake of 1 STX",
-       COALESCE(profits.total_profits, 0) AS             "Investor Profits (STX)"
+SELECT TO_CHAR(loans.date, 'MM/YYYY')                     period,
+       CONCAT(COALESCE(ROUND(rate_of_return, 2), 0), '%') "Investor Return",
+       CONCAT(ROUND(100.0 / total_invested_stx, 3), '%')  "Investor Stake of 1 STX",
+       ROUND(total_invested_stx / 100.0, 3)               "STX for 1% Investor Stake",
+       ROUND(total_invested_stx, 2)                       "Ambrosia Investment Pool",
+       COALESCE(profits.total_profits / 0.6, 0) AS        "Ambrosia Profits (STX)"
 FROM (
-     SELECT SUM(delta) / 4096.0 / 64.0                  total_profits,
-            MIN(balance) / 4096.0 / 64                  total_invested_stx,
-            DATE_TRUNC('MONTH', rate.date)              ptimespan,
-            ROUND(SUM(delta) / MIN(balance) * 100.0, 2) rate_of_return
+     SELECT SUM(delta) / 4096.0 / 64.0        total_profits,
+            MIN(balance) / 4096.0 / 64        total_invested_stx,
+            DATE_TRUNC('MONTH', rate.date)    ptimespan,
+            SUM(delta) / MIN(balance) * 100.0 rate_of_return
      FROM (
           SELECT SUM(delta)       delta,
                  SUM(balance) + 1 balance,
@@ -39,7 +39,7 @@ FROM (
               GROUP BY date
               ORDER BY date DESC) loans
               ON profits.ptimespan = loans.date
-ORDER BY loans.date DESC;
+ORDER BY loans.date;
 
 SELECT SUM(invest_delta)                                                             delta,
        MIN(invest_balance) - MIN(invest_delta)                                       balance,

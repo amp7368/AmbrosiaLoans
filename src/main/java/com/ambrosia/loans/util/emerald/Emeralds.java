@@ -1,7 +1,7 @@
 package com.ambrosia.loans.util.emerald;
 
+import com.ambrosia.loans.Bank;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import org.jetbrains.annotations.NotNull;
 
 public final class Emeralds implements Comparable<Emeralds> {
@@ -76,14 +76,14 @@ public final class Emeralds implements Comparable<Emeralds> {
     public double toStacks() {
         BigDecimal stackAmount = BigDecimal.valueOf(Emeralds.STACK);
         return toBigDecimal()
-            .divide(stackAmount, MathContext.DECIMAL128)
+            .divide(stackAmount, Bank.FLOOR_CONTEXT)
             .doubleValue();
     }
 
     public double toLiquids() {
         BigDecimal liquidAmount = BigDecimal.valueOf(Emeralds.LIQUID);
         return toBigDecimal()
-            .divide(liquidAmount, MathContext.DECIMAL128)
+            .divide(liquidAmount, Bank.FLOOR_CONTEXT)
             .doubleValue();
     }
 
@@ -96,7 +96,6 @@ public final class Emeralds implements Comparable<Emeralds> {
     public int hashCode() {
         return (int) (this.amount % Integer.MAX_VALUE);
     }
-
 
     public boolean lte(long compareAmount) {
         return this.amount <= compareAmount;

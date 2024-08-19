@@ -38,7 +38,7 @@ dependencies {
     implementation "io.ebean:ebean-querybean:${ebean_version}"
     implementation "io.ebean:ebean-postgres:${ebean_version}"
     // sql driver
-    implementation 'org.postgresql:postgresql:42.5.4'
+    implementation 'org.postgresql:postgresql:42.7.2'
 
     // migration
     implementation "io.ebean:ebean-ddl-generator:${ebean_version}"

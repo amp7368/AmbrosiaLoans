@@ -24,6 +24,6 @@ public record ImportedLoanAdjustment(DLoan loan, Instant date, Emeralds amount, 
 
     @Override
     public void createAdjustment(Emeralds difference, Instant date) {
-        AdjustApi.createAdjustment(loan, difference, client(), date, true);
+        AdjustApi.createMigrationAdjustment(loan, difference, client(), date, true);
     }
 }

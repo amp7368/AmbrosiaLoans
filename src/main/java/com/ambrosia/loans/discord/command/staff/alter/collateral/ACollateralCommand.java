@@ -16,7 +16,7 @@ public class ACollateralCommand extends BaseStaffCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new CollateralStatusCommand());
+        return List.of(new ACollateralStatusCommand(), new ACollateralAddCommand());
     }
 
     @Override

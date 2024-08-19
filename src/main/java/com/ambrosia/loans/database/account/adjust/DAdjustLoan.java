@@ -29,6 +29,12 @@ import javax.persistence.Table;
 @Table(name = "adjust_loan")
 public class DAdjustLoan extends Model implements Commentable, IAccountChange {
 
+    @OneToMany
+    private final List<DComment> comments = new ArrayList<>();
+    @ManyToOne(optional = false)
+    private final DLoan loan;
+    @Column(nullable = false)
+    private final long amount;
     @Id
     protected long id;
     @Column(nullable = false)
@@ -40,19 +46,11 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
     @Column(nullable = false)
     protected AccountEventType type;
 
-    @OneToMany
-    private final List<DComment> comments = new ArrayList<>();
-    @ManyToOne(optional = false)
-    private final DLoan loan;
-
-    @Column(nullable = false)
-    private final long amount;
-
 
     public DAdjustLoan(DLoan loan, Instant date,
-        DStaffConductor conductor, Emeralds amount, AccountEventType type) {
+        DStaffConductor staff, Emeralds amount, AccountEventType type) {
         this.date = Timestamp.from(date);
-        this.conductor = conductor;
+        this.conductor = staff;
         this.amount = amount.amount();
         this.loan = loan;
         this.type = type;
@@ -96,6 +94,7 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
         return Emeralds.of(amount);
     }
 
+    @Override
     public long getId() {
         return this.id;
     }

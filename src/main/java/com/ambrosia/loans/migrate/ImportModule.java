@@ -135,7 +135,7 @@ public class ImportModule extends AppleModule {
     private void manualAdditions() {
         DClient client = ClientQueryApi.findById(250);
         Instant date = Instant.from(ImportedLoan.UTC_DATE.parse("2024-06-08"));
-        AdjustApi.createAdjustment(Emeralds.of(28812), client, date, true);
+        AdjustApi.createMigrationAdjustment(Emeralds.of(28812), client, date, true);
         try {
             WithdrawalApi.createWithdrawal(client, date.plusSeconds(1), DStaffConductor.MIGRATION, Emeralds.of(353894));
         } catch (NotEnoughFundsException e) {
