@@ -49,10 +49,11 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
         int id = request.getData().assignCollateralId();
         RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
 
+        String msgOverride = "Added collateral!";
         if (attachment == null) {
             request.getData().addCollateral(collateral);
             DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);
-            ClientGui gui = request.guiClient(editMessage);
+            ClientGui gui = request.guiClient(editMessage, msgOverride);
             LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData());
             page.toLast();
             gui.addSubPage(page);
@@ -62,7 +63,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
             if (imageFile == null) throw new IllegalStateException("imageFile is null, while attachment exists");
             CompletableFuture<File> downloadAction = attachment.getProxy().downloadToFile(imageFile);
             DCFEditMessage editMessage = DCFEditMessage.ofReply(msg -> event.deferReply());
-            ClientGui gui = request.guiClient(editMessage);
+            ClientGui gui = request.guiClient(editMessage, msgOverride);
             gui.send(msg -> afterDefer(downloadAction, gui, collateral, request.getData()), null);
         }
     }

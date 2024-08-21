@@ -51,8 +51,9 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     public void onAccept(ButtonInteractionEvent event) {
         request.acceptTOS();
         ActiveRequestLoanGui finishedGui = request.create();
-        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply)).send();
+        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null).send();
         finishedGui.send(ActiveRequestDatabase::sendRequest);
+        finishedGui.updateSender();
     }
 
     private void onReject(ButtonInteractionEvent event) {

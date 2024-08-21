@@ -39,6 +39,7 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     protected transient DClient vouchClient;
     private Instant acceptedTOSDate;
     private int collateralId = 1;
+    private String overrideUpdateMessage = "";
 
     public ActiveRequestLoan() {
         super(ActiveRequestType.LOAN);
@@ -97,6 +98,7 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
 
     public void setRate(double rate) {
         this.rate = rate;
+        this.overrideUpdateMessage = "";
         this.save();
     }
 

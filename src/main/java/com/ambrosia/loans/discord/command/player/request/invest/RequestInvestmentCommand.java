@@ -46,6 +46,7 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         ActiveRequestInvestmentGui finishedGui = request.create();
         event.reply(finishedGui.makeClientMessage()).queue();
         finishedGui.send(ActiveRequestDatabase::sendRequest);
+        finishedGui.updateSender();
     }
 
     private void onReject(ButtonInteractionEvent event, ActiveRequestInvestment request) {
