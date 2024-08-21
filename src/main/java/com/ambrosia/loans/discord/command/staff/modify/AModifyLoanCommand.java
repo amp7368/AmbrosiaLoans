@@ -53,6 +53,7 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
         if (rate < 0)
             return ModifyRequestMsg.error("Rate must be positive!");
         loan.getData().setRate(rate / 100);
+        loan.updateSender("**{endorser}** has set the interest rate as %s.".formatted(formatPercentage(rate / 100)));
         if (rate < 1) {
             String msg = "Set rate as %s. Are you sure you want to set it less than 1%%?".formatted(formatPercentage(rate / 100));
             return ModifyRequestMsg.warning(msg);

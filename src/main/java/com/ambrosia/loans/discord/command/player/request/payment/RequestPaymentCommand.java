@@ -55,7 +55,7 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
         ActiveRequestPaymentGui gui = request.create();
         event.reply(gui.makeClientMessage()).queue();
         gui.send(ActiveRequestDatabase::sendRequest);
-
+        gui.updateSender();
     }
 
     @Override

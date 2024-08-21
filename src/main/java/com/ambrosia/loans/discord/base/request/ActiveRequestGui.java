@@ -12,6 +12,7 @@ import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -244,34 +245,40 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     protected abstract String title();
 
-    protected void updateSender() {
+    public void updateSender() {
+        updateSender(null);
+    }
+
+    public void updateSender(@Nullable String msgOverride) {
         data.sender.getClient().getDiscord().tryOpenDirectMessages(channel -> {
             DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
-            guiClient(editMessage);
+            guiClient(editMessage, msgOverride).send();
         }, null);
     }
 
-    public ClientGui guiClient(DCFEditMessage editMessage) {
+    public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {
         ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage);
-        gui.addPage(guiClientPage(gui));
+        gui.addPage(guiClientPage(gui, msgOverride));
         return gui;
     }
 
-    protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui) {
-        MessageCreateData message = makeClientMessage(getUpdateMessage());
+    protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui, @Nullable String msgOverride) {
+        String updateMessage = Objects.requireNonNullElseGet(msgOverride, this::getUpdateMessage);
+        MessageCreateData message = makeClientMessage(updateMessage);
         return new ActiveRequestClientPage(gui, data, message);
     }
 
     private @NotNull String getUpdateMessage() {
         String unformattedMessage = switch (data.stage) {
-            case DENIED -> "**%s** has denied this request";
-            case CLAIMED -> "**%s** has seen your request";
+            case DENIED -> "**{endorser}** has denied this request";
+            case CLAIMED -> "**{endorser}** has seen your request";
             case APPROVED, CREATED -> "";
-            case COMPLETED -> "**%s** has completed request";
-            case UNCLAIMED -> "**%s** has stopped working on your request. Someone else will come along to complete it.";
-            case ERROR -> "There was an error processing the request D: Message **%s**";
+            case COMPLETED -> "**{endorser}** has completed request";
+            case UNCLAIMED -> "**{endorser}** has stopped working on your request. Someone else will come along to complete it.";
+            case ERROR -> "There was an error processing the request D: Message **{endorser}**";
         };
-        return String.format(unformattedMessage, data.getEndorser());
+        String endorser = Objects.requireNonNullElse(data.getEndorser(), "");
+        return unformattedMessage.replace("{endorser}", endorser);
     }
 
     @Override

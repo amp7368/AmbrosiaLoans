@@ -23,6 +23,7 @@ import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
@@ -162,8 +163,8 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     }
 
     @Override
-    protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui) {
-        ActiveRequestClientPage page = super.guiClientPage(gui);
+    protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui, @Nullable String msgOverride) {
+        ActiveRequestClientPage page = super.guiClientPage(gui, msgOverride);
         page.registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
             gui.addSubPage(new LoanRequestCollateralPage(gui, getData(), false));
         });

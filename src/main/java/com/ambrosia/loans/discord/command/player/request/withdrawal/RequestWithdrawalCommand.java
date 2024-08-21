@@ -33,7 +33,7 @@ public class RequestWithdrawalCommand extends BaseClientSubCommand implements Ba
         ActiveRequestWithdrawalGui gui = request.create();
         event.reply(gui.makeClientMessage()).queue();
         gui.send(ActiveRequestDatabase::sendRequest);
-
+        gui.updateSender();
     }
 
     @Override
