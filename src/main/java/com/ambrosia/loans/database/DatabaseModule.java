@@ -6,7 +6,7 @@ import apple.lib.modules.configs.factory.AppleConfigLike;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.AmbrosiaDatabase.AmbrosiaDatabaseConfig;
-import com.ambrosia.loans.database.system.init.ExampleData;
+import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.init.InitDatabase;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import java.time.Instant;
@@ -36,10 +36,10 @@ public class DatabaseModule extends AppleModule {
         new AmbrosiaDatabase();
         InitDatabase.init();
 
+        CollateralManager.load();
+
         if (AmbrosiaConfig.get().shouldResimulate())
             RunBankSimulation.simulate(Instant.EPOCH);
-        if (AmbrosiaDatabaseConfig.get().isExample())
-            ExampleData.loadExample();
     }
 
     @Override

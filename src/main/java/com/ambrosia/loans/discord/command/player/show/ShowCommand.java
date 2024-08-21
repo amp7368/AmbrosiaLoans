@@ -1,15 +1,16 @@
-package com.ambrosia.loans.discord.command.player.history;
+package com.ambrosia.loans.discord.command.player.show;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
-import com.ambrosia.loans.discord.command.player.history.loan.LoanHistoryCommand;
-import com.ambrosia.loans.discord.command.player.history.transaction.TransactionHistoryCommand;
+import com.ambrosia.loans.discord.command.player.show.collateral.ShowCollateralCommand;
+import com.ambrosia.loans.discord.command.player.show.loan.ShowLoansCommand;
+import com.ambrosia.loans.discord.command.player.show.transaction.ShowTransactionsCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class HistoryCommand extends BaseCommand {
+public class ShowCommand extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -17,11 +18,11 @@ public class HistoryCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new LoanHistoryCommand(), new TransactionHistoryCommand());
+        return List.of(new ShowLoansCommand(), new ShowCollateralCommand(), new ShowTransactionsCommand());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("history", "List past entries");
+        return Commands.slash("show", "Various commands to show information");
     }
 }

@@ -21,6 +21,7 @@ services:
       - '${MOUNT_DIR}/java:${WORKINGDIR}'
       - '/dev/urandom:/dev/random'
   postgres:
+    restart: unless-stopped
     image: ${POSTGRES_VERSION}
     container_name: ${COMPOSE_NAME}.${DATABASE_IMAGE}
     env_file: '.env'

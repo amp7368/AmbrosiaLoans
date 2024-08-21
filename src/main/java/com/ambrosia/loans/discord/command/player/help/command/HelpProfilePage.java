@@ -20,11 +20,14 @@ public class HelpProfilePage extends HelpGuiPage {
         eb.addField("/request account [minecraft] (display_name)",
             "Register an account linked with your discord and minecraft.",
             false);
-        eb.addField("/history loans",
+        eb.addField("/show loans",
             "View detailed information about your borrowing history.",
             false);
-        eb.addField("/history transactions",
+        eb.addField("/show transactions",
             "View detailed information about past transactions.",
+            false);
+        eb.addField("/show collateral",
+            "View detailed information about loan collateral.",
             false);
         return eb.build();
     }

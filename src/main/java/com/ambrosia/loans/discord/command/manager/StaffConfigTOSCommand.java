@@ -46,6 +46,7 @@ public class StaffConfigTOSCommand extends BaseStaffSubCommand {
         return true;
     }
 
+
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("set_tos", "Set the TOS link & version");

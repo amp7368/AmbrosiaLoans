@@ -20,13 +20,13 @@ WHERE (
       FROM client_invest_snapshot
       WHERE c.id = client_id
       ORDER BY date DESC, event DESC
-      LIMIT 1) BETWEEN 1 AND 4096
+      LIMIT 1) BETWEEN 1 AND 4096 * 16
    OR (
       SELECT balance
       FROM client_loan_snapshot
       WHERE c.id = client_id
       ORDER BY date DESC, event DESC
-      LIMIT 1) BETWEEN -1 AND -4096;
+      LIMIT 1) BETWEEN -1 AND -4096 * 16;
 
 SELECT *
 FROM adjust_balance
@@ -39,4 +39,4 @@ ORDER BY date DESC;
 
 SELECT *
 FROM loan
-WHERE id = 293
+WHERE id = 293;

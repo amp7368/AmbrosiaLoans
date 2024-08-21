@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.staff.history;
+package com.ambrosia.loans.discord.command.player.collateral;
 
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class AHistoryCommand extends BaseCommand {
+public class CommandCollateral extends BaseCommand {
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
@@ -15,16 +15,11 @@ public class AHistoryCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new ALoanHistoryCommand(), new ATransactionHistoryCommand());
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
+        return List.of(new CollateralAddCommand(), new CommandRemoveCollateral());
     }
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("ahistory", "[Staff] List past entries");
+        return Commands.slash("collateral", "Add/list collateral for a loan");
     }
 }

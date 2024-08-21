@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.player.history.loan;
+package com.ambrosia.loans.discord.command.player.show.loan;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -80,7 +80,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         return new MessageCreateBuilder()
             .setEmbeds(embed)
             .setComponents(
-                ActionRow.of(btnFirst(), btnNext(), btnPrev()),
+                ActionRow.of(btnFirst(), btnPrev(), btnNext()),
                 ActionRow.of(collateralBtn)
             )
             .build();

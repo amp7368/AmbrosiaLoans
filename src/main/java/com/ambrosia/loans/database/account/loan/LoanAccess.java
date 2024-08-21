@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account.loan;
 
+import com.ambrosia.loans.database.account.adjust.AdjustApi;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
@@ -122,6 +123,14 @@ public interface LoanAccess {
         loan.refresh();
         AlterCreateApi.create(conductor, AlterCreateType.PAYMENT, payment.getId());
         loan.getClient().refresh();
+
+        if (loan.isPaid()) {
+            Emeralds adjustment = loan.getTotalOwed();
+            if (adjustment.isZero()) {
+                AdjustApi.createAdjustment(conductor, loan, adjustment, payment.getDate());
+            }
+        }
+
         RunBankSimulation.simulateAsync(payment.getDate());
         return payment;
     }

@@ -9,7 +9,8 @@ public enum AlterCreateType {
     PAYMENT("PAYMENT"),
     INVEST("INVEST"),
     ADJUST_BALANCE("ADJUST_BALANCE"),
-    WITHDRAWAL("WITHDRAWAL");
+    WITHDRAWAL("WITHDRAWAL"),
+    COLLATERAL("COLLATERAL");
 
     private final String typeName;
 

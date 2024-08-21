@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.base.IAccountChange;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
@@ -100,6 +101,7 @@ public class DAlterCreate extends Model {
             case INVEST -> DInvestment.class;
             case ADJUST_BALANCE -> DAdjustBalance.class;
             case WITHDRAWAL -> DWithdrawal.class;
+            case COLLATERAL -> DCollateral.class;
         };
         Object entity = DB.find(entityClass, entityId);
         if (entity == null)
@@ -108,7 +110,7 @@ public class DAlterCreate extends Model {
         Instant date = switch (AlterCreateType.valueOf(entityType)) {
             case PAYMENT -> ((DLoanPayment) entity).getDate();
             case LOAN, WITHDRAWAL, ADJUST_BALANCE, INVEST, ADJUST_LOAN -> ((IAccountChange) entity).getDate();
-            case CLIENT -> Instant.now();
+            case CLIENT, COLLATERAL -> Instant.now();
         };
         DB.delete(entityClass, entityId);
         this.isCreated = false;

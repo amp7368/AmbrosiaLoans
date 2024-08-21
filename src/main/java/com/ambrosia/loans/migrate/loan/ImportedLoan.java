@@ -3,7 +3,6 @@ package com.ambrosia.loans.migrate.loan;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanBuilder;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -89,7 +88,6 @@ public class ImportedLoan implements LoanBuilder {
         try (Transaction transaction = DB.beginTransaction()) {
             long payments = additionalPayment(transaction);
             if (this.endDate != null) {
-                // todo
                 this.additionalPayment(transaction, this.endDate, this.finalPayment - payments);
                 this.confirm = new ImportedLoanAdjustment(this.db, this.endDate, Emeralds.zero(), client);
                 this.db.markPaid(endDate, transaction);
@@ -104,9 +102,6 @@ public class ImportedLoan implements LoanBuilder {
     public void addCollateralToLoan() {
         try (Transaction transaction = DB.beginTransaction()) {
             this.db.save(transaction);
-            for (String link : this.collateral) {
-                new DCollateral(this.db, link).save(transaction);
-            }
             for (String comment : raw.getComments()) {
                 CommentApi.comment(getConductor(), this.db, comment, transaction);
             }

@@ -7,6 +7,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import java.math.BigDecimal;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -75,8 +76,10 @@ public class ProfileInvestPage extends ProfilePage {
 
     private String profitsMsg(Month month, Emeralds profitsDelta) {
         String monthDisplay = month.getDisplayName(TextStyle.FULL, Locale.getDefault());
-        double profits = profitsDelta.toLiquids();
-        return "%s +%.2fLE %s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_PROFITS, profits, AmbrosiaEmoji.ANY_DATE, monthDisplay);
+
+        String profits = EmeraldsFormatter.of().setRounding(true).format(profitsDelta);
+        return "%s +%s %s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_PROFITS, profits, AmbrosiaEmoji.ANY_DATE,
+            monthDisplay);
     }
 
     public void stakePercentage(EmbedBuilder embed) {

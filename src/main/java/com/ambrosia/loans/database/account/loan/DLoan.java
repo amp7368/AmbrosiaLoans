@@ -120,8 +120,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
 
-    public static boolean isWithinPaidBounds(long loanBalance) {
-        return loanBalance < Emeralds.BLOCK;
+    private static boolean isWithinPaidBounds(long loanBalance) {
+        return Math.abs(loanBalance) < Emeralds.BLOCK;
     }
 
     @Override
@@ -190,11 +190,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        return getTotalOwed(getStartDate(), Instant.now());
+        return getTotalOwed(null, Instant.now());
     }
 
     public Emeralds getTotalOwed(@Nullable Instant start, Instant endDate) {
-        Emeralds owedAtStart = start == null ? getInitialAmount() : getTotalOwed(null, start);
+        boolean isIllegalStart = start == null || !start.isAfter(getStartDate());
+        Emeralds owedAtStart = isIllegalStart ? getInitialAmount() : getTotalOwed(null, start);
         BigDecimal accountBalanceAtStart = owedAtStart.negative().toBigDecimal();
 
         Instant startDate = Objects.requireNonNullElseGet(start, this::getStartDate);
@@ -237,11 +238,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         for (DLoanSection section : sections) {
             Instant estimatedCheckpoint = section.getEndDate(end);
             Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(checkpoint, estimatedCheckpoint));
-            Instant nextCheckpoint = estimatedCheckpoint.plus(duration);
+            Instant nextCheckpoint = checkpoint.plus(duration);
             BigDecimal sectionInterest = section.getInterest(checkpoint, nextCheckpoint, principal);
             checkpoint = nextCheckpoint;
             totalInterest = totalInterest.add(sectionInterest);
         }
+
         return Emeralds.of(totalInterest);
     }
 
@@ -335,6 +337,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return sections.get(sections.size() - 1);
     }
 
+    @Override
     public long getId() {
         return this.id;
     }
@@ -405,10 +408,10 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return false;
     }
 
-    public DLoan setDefaulted(Instant endDate, boolean defaulted) {
+    public DLoan setDefaulted(@Nullable Instant endDate, boolean defaulted) {
         if (defaulted) {
-            this.status = DLoanStatus.DEFAULTED;
             Instant endDateInstant = Objects.requireNonNullElseGet(endDate, Instant::now);
+            this.status = DLoanStatus.DEFAULTED;
             this.endDate = Timestamp.from(endDateInstant);
         } else {
             this.status = DLoanStatus.ACTIVE;

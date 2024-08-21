@@ -75,13 +75,14 @@ public class ProfileLoanPage extends ProfilePage {
                 hitMaxLoans = true;
                 break;
             }
+            String idLine = "**Loan:** " + AmbrosiaEmoji.KEY_ID.spaced(loan.getId());
+            String startDate = formatDate(loan.getStartDate());
             String endDate = formatDate(loan.getEndDate());
-            String startDate = formatDate(loan.getStartDate(), true);
-            String line1 = "%s to %s\n".formatted(startDate, endDate);
-            String line2 = "%s Amount: %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount());
-            String line3 = "%s Total Paid: %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid());
+            String line1 = "%s **Timespan:** %s to %s".formatted(AmbrosiaEmoji.ANY_DATE, startDate, endDate);
+            String line2 = "%s **Amount:** %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, loan.getInitialAmount());
+            String line3 = "%s **Total Paid:** %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid());
 
-            summaries.add(line1 + line2 + line3);
+            summaries.add(String.join("\n", idLine, line1, line2, line3));
         }
         embed.appendDescription("## Past Loans\n");
 

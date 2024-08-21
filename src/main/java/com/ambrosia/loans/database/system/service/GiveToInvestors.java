@@ -7,8 +7,8 @@ import io.ebean.DB;
 import io.ebean.SqlQuery;
 import io.ebean.SqlRow;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class GiveToInvestors {
 
-    private static final BigDecimal CHANGE_PROFITS_RATE = BigDecimal.valueOf(0.20);
+    private static final BigDecimal CHANGE_PROFITS_RATE = BigDecimal.valueOf(0.30);
     private static final SqlQuery FIND_ADJUSTMENT_DELTA = DB.sqlQuery("""
         SELECT SUM(delta) AS delta, client_id
         FROM client_invest_snapshot
@@ -36,6 +36,7 @@ public class GiveToInvestors {
         this.currentTime = currentTime;
         this.investors = clients.stream()
             .map(GiveInvestor::new)
+            .sorted(Comparator.comparing(GiveInvestor::getId))
             .toList();
         this.totalInvested = calcTotalInvested();
     }
@@ -127,8 +128,8 @@ public class GiveToInvestors {
 
         public void profits(BigDecimal amountToInvestors) {
             BigDecimal profits = investorBalance()
-                .multiply(amountToInvestors)
-                .divide(totalInvested, RoundingMode.FLOOR);
+                .multiply(amountToInvestors, Bank.FLOOR_CONTEXT)
+                .divide(totalInvested, Bank.FLOOR_CONTEXT);
             amountToInvestor = amountToInvestor.add(profits);
         }
 
@@ -136,7 +137,7 @@ public class GiveToInvestors {
             int compare = this.adjusted.compareTo(BigDecimal.ZERO);
             if (compare == 0) return BigDecimal.ZERO;
 
-            BigDecimal maxAdjust = this.amountToInvestor.multiply(CHANGE_PROFITS_RATE);
+            BigDecimal maxAdjust = this.amountToInvestor.multiply(CHANGE_PROFITS_RATE, Bank.FLOOR_CONTEXT);
             BigDecimal adjust;
             if (compare > 0) {
                 // overpaid
@@ -151,6 +152,10 @@ public class GiveToInvestors {
 
         public void setAdjusted(BigDecimal adjusted) {
             this.adjusted = adjusted;
+        }
+
+        public long getId() {
+            return this.client.getId();
         }
     }
 }

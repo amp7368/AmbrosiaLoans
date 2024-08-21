@@ -4,6 +4,8 @@ import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.collateral.CollateralManager;
+import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
@@ -13,11 +15,12 @@ import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import com.ambrosia.loans.util.emerald.EmeraldsParser;
+import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.modal.DCFModal;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
@@ -38,17 +41,17 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
 
     private long emeralds;
     private String repayment;
-    private List<String> collateral;
     private String error = null;
     private String minecraft;
     private String reason;
 
     private ActiveRequestLoan request;
+    private RequestCollateral collateral;
 
     public void onAccept(ButtonInteractionEvent event) {
         request.acceptTOS();
         ActiveRequestLoanGui finishedGui = request.create();
-        event.reply(finishedGui.makeClientMessage()).queue();
+        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply)).send();
         finishedGui.send(ActiveRequestDatabase::sendRequest);
     }
 
@@ -65,17 +68,17 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     public void setEmeralds(ModalMapping modalMapping) {
         final String value = modalMapping.getAsString();
         try {
-            final double stx = Double.parseDouble(value);
-            if (stx > 150) {
-                this.error = "'Amount in STX' must be less than 150";
+            Emeralds amount = EmeraldsParser.parse(value);
+            if (amount.gt(Emeralds.stxToEmeralds(150).amount())) {
+                this.error = "'Amount with units' must be less than 150 stx";
                 return;
-            } else if (stx <= 0) {
-                this.error = "'Amount in STX' must be positive";
+            } else if (amount.lte(0)) {
+                this.error = "'Amount with units' must be positive";
                 return;
             }
-            this.emeralds = Emeralds.stxToEmeralds(stx).amount();
+            this.emeralds = amount.amount();
         } catch (NumberFormatException e) {
-            this.error = "'Amount in STX' must be a decimal number";
+            this.error = e.getMessage();
         }
     }
 
@@ -88,18 +91,9 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     }
 
     public void setCollateral(ModalMapping modalMapping) {
-        this.collateral = new ArrayList<>();
-        
-        StringBuilder url = new StringBuilder();
-        for (char c : modalMapping.getAsString().toCharArray()) {
-            if (URL_CHARACTERS.contains(c))
-                url.append(c);
-            else if (!url.isEmpty()) {
-                collateral.add(url.toString());
-                url = new StringBuilder();
-            }
-        }
-        if (!url.isEmpty()) collateral.add(url.toString());
+        String mapping = modalMapping.getAsString();
+        if (mapping.isBlank()) return;
+        this.collateral = CollateralManager.newCollateral(1, null, null, mapping);
     }
 
     @Override
@@ -109,15 +103,22 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             return;
         }
         DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
-        if (client == null) {
-            try {
-                client = ClientCreateApi.createClient(minecraft, minecraft, event.getMember());
-            } catch (CreateEntityException e) {
-                event.replyEmbeds(error(e.getMessage())).setEphemeral(true).queue();
-                return;
-            }
+        if (client != null) {
+            openTOS(event, client);
+            return;
         }
+        DiscordBot.getAmbrosiaServer().retrieveMemberById(event.getUser().getIdLong()).queue(member -> {
+            try {
+                DClient newClient = ClientCreateApi.createClient(minecraft, minecraft, member);
+                openTOS(event, newClient);
+            } catch (CreateEntityException e) {
+                MessageEmbed msg = error(e.getMessage());
+                event.replyEmbeds(msg).setEphemeral(true).queue();
+            }
+        });
+    }
 
+    public void openTOS(ModalInteractionEvent event, DClient client) {
         request = new ActiveRequestLoan(
             client,
             this.emeralds,

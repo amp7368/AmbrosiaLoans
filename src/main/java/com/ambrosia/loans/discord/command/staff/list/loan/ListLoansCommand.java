@@ -1,21 +1,17 @@
 package com.ambrosia.loans.discord.command.staff.list.loan;
 
-import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class ListLoansCommand extends BaseSubCommand {
+public class ListLoansCommand extends BaseStaffSubCommand {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         ListLoansGui gui = new ListLoansGui(dcf, event::reply);
         gui.addPage(new ListLoansPage(gui));
         gui.send();
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     @Override

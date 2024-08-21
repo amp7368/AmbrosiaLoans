@@ -3,6 +3,7 @@ package com.ambrosia.loans.discord.command.staff.list;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.command.staff.list.client.ListClientsCommand;
 import com.ambrosia.loans.discord.command.staff.list.loan.ListLoansCommand;
+import com.ambrosia.loans.discord.command.staff.list.request.ListRequestsCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -17,7 +18,7 @@ public class AListCommand extends BaseCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new ListLoansCommand(), new ListClientsCommand());
+        return List.of(new ListLoansCommand(), new ListClientsCommand(), new ListRequestsCommand());
     }
 
     @Override

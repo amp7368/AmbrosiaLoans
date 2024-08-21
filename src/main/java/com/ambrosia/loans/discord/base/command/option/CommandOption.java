@@ -1,9 +1,12 @@
 package com.ambrosia.loans.discord.base.command.option;
 
+import apple.utilities.util.Pretty;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi.WithdrawalQueryApi;
@@ -21,7 +24,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -32,17 +37,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface CommandOption<R> {
-
-    // help
-    CommandOptionBasic<Integer> HELP_PAGE = basic("page", "The page to jump to", OptionType.STRING, OptionMapping::getAsInt)
-        .addChoices(List.of(
-            new Choice("Home", 0),
-            new Choice("Loan Information", 0),
-            new Choice("Loan Commands", 0),
-            new Choice("Investor Information", 0),
-            new Choice("Investor Commands", 0),
-            new Choice("Extra", 0)
-        ));
 
     // client
     CommandOptionMulti<String, DClient> CLIENT = multi("client", "Client associated with this action", OptionType.STRING,
@@ -62,12 +56,21 @@ public interface CommandOption<R> {
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
-    CommandOptionMulti<Double, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
-    CommandOptionMulti<Double, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
-    CommandOptionMulti<Double, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
-    CommandOptionMulti<Double, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
+    CommandOptionMulti<String, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
+    CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
+    CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
+    // loan request
+    CommandOptionMulti<String, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
+    CommandOption<Attachment> LOAN_COLLATERAL_IMAGE = basic("image", "Image of the collateral to add to the request",
+        OptionType.ATTACHMENT, OptionMapping::getAsAttachment);
+    CommandOption<String> LOAN_COLLATERAL_DESCRIPTION = basic("description", "Description for the collateral",
+        OptionType.STRING, OptionMapping::getAsString);
+    CommandOption<Long> LOAN_COLLATERAL_REQUEST_ID = basic("collateral_id", "The id of the collateral for this request",
+        OptionType.INTEGER, OptionMapping::getAsLong);
+    CommandOption<String> LOAN_COLLATERAL_NAME = basic("name", "Name for the collateral",
+        OptionType.STRING, OptionMapping::getAsString);
 
     // loan
     CommandOptionMulti<String, DClient> LOAN_VOUCH = multi("vouch", "Referral/vouch from someone with credit with Ambrosia",
@@ -78,34 +81,40 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
     CommandOptionMulti<Double, Duration> LOAN_FREEZE_DURATION = multi("duration_days", "The number of days to freeze the loan for",
         OptionType.NUMBER, OptionMapping::getAsDouble, d -> Duration.ofMillis((long) (86400L * d) * 1000));
-
+    CommandOptionMulti<String, DCollateralStatus> LOAN_COLLATERAL_STATUS = new CommandOptionCollateralStatus();
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
+    CommandOptionMulti<Long, DCollateral> COLLATERAL_ID = multi("collateral_id", "The id of the collateral", OptionType.INTEGER,
+        OptionMapping::getAsLong, LoanQueryApi::findCollateralById);
     CommandOptionMulti<Long, DLoanPayment> PAYMENT_ID = multi("payment_id", "The id of the payment", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findPaymentById);
     CommandOptionMulti<Long, DWithdrawal> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
         OptionMapping::getAsLong, WithdrawalQueryApi::findById);
     CommandOptionMulti<Long, DInvestment> INVESTMENT_ID = multi("investment_id", "The id of the investment", OptionType.INTEGER,
         OptionMapping::getAsLong, InvestQueryApi::findById);
-
-
     // undo/redo
     CommandOptionMulti<Long, DAlterChange> MODIFICATION_ID = multi("modification_id", "The modification target",
         OptionType.INTEGER, OptionMapping::getAsLong, AlterQueryApi::findChangeById);
     CommandOption<Long> DELETE_ENTITY_ID = basic("entity_id", "The id of the entity to delete", OptionType.STRING,
         OptionMapping::getAsLong);
     CommandOption<AlterCreateType> DELETE_ENTITY_TYPE = deleteEntity();
-
     // comments
     CommandOption<String> COMMENT = basic("comment", "The comment you want to make", OptionType.STRING,
         OptionMapping::getAsString);
-
     // config
     CommandOption<String> CONFIG_TOS_LINK = basic("link", "The link for this version of the TOS", OptionType.STRING,
         OptionMapping::getAsString);
     CommandOption<String> CONFIG_TOS_VERSION = basic("version", "The version (ie: 'v1.2') for this version of the TOS",
         OptionType.STRING, OptionMapping::getAsString);
+
+    static @Nullable DCollateralStatus parseCollateral(String s) {
+        try {
+            return DCollateralStatus.valueOf(s.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
@@ -124,10 +133,9 @@ public interface CommandOption<R> {
     }
 
     @NotNull
-    static CommandOptionMulti<Double, Emeralds> emeraldsAmount(String type) {
-        String desc = "The amount to %s. Expressed in STX. (Enter 0.5 for 32LE)".formatted(type);
-        return multi("amount", desc, OptionType.NUMBER,
-            OptionMapping::getAsDouble, Emeralds::stxToEmeralds);
+    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String type) {
+        String desc = "The amount to %s. %s".formatted(type, ErrorMessages.emeraldsFormat());
+        return new CommandOptionEmeralds("amount", desc, OptionType.STRING);
     }
 
 
@@ -176,4 +184,17 @@ public interface CommandOption<R> {
 
     void addOption(SlashCommandData command, boolean required);
 
+    class CommandOptionCollateralStatus extends CommandOptionMulti<String, DCollateralStatus> {
+
+        CommandOptionCollateralStatus() {
+            super("status", "The status of the collateral",
+                OptionType.STRING, OptionMapping::getAsString, CommandOption::parseCollateral);
+            addChoices(Stream.of(DCollateralStatus.values())
+                .map(Enum::name)
+                .map(Pretty::spaceEnumWords)
+                .map(c -> new Choice(c, c))
+                .toList()
+            );
+        }
+    }
 }

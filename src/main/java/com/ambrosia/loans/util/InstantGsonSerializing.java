@@ -30,5 +30,4 @@ public class InstantGsonSerializing implements JsonSerializing<Instant> {
     public JsonElement serialize(Instant src, Type typeOfSrc, JsonSerializationContext context) {
         return new JsonPrimitive(src.toString());
     }
-
 }

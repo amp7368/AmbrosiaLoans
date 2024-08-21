@@ -29,7 +29,6 @@ import io.ebean.CallableSql;
 import io.ebean.DB;
 import io.ebean.SqlUpdate;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -129,7 +128,7 @@ public class RunBankSimulation {
 
         // divide payment to investors
         BigDecimal profits = calcProfits(loanPayment).toBigDecimal();
-        BigDecimal amountToInvestors = profits.multiply(Bank.INVESTOR_SHARE, MathContext.DECIMAL128);
+        BigDecimal amountToInvestors = profits.multiply(Bank.INVESTOR_SHARE, Bank.FLOOR_CONTEXT);
         long amountGiven = GiveToInvestors.giveToInvestors(investors, amountToInvestors, currentDate);
         // difference is leftover from rounding errors
         BigDecimal bankProfits = profits.subtract(BigDecimal.valueOf(amountGiven));

@@ -11,7 +11,7 @@ import java.math.MathContext;
 public class EmeraldsFormatter {
 
 
-    public static final EmeraldsFormatter STACKS = EmeraldsFormatter.of().setStacksOnly().seNoNegative();
+    public static final EmeraldsFormatter STACKS = EmeraldsFormatter.of().setStacksOnly().setNoNegative();
     public static final EmeraldsFormatter PLUS_MINUS = EmeraldsFormatter.of().setPlusMinus();
     private boolean sign = false;
     private boolean isBold = false;
@@ -20,6 +20,7 @@ public class EmeraldsFormatter {
     private boolean inline = false;
     private boolean stacksOnly = false;
     private boolean noNegativeSign = false;
+    private boolean roundingEmeralds = false;
 
     private EmeraldsFormatter() {
     }
@@ -63,6 +64,11 @@ public class EmeraldsFormatter {
         return this;
     }
 
+    public EmeraldsFormatter setRounding(boolean roundingEmeralds) {
+        this.roundingEmeralds = roundingEmeralds;
+        return this;
+    }
+
     public String format(Emeralds emeralds) {
         if (this.stacksOnly) {
             boolean removeNegative = emeralds.isNegative() && this.noNegativeSign;
@@ -88,7 +94,10 @@ public class EmeraldsFormatter {
         if (eb != 0) fieldsLeft -= append(message, eb, fieldsLeft, EmeraldsUnit.BLOCKS, creditsLeft);
 
         long e = creditsLeft;
-        if (e != 0 || message.isEmpty()) append(message, e, fieldsLeft, EmeraldsUnit.EMERALDS, creditsLeft);
+        if (e != 0 || message.isEmpty()) {
+            if (!roundingEmeralds || message.isEmpty())
+                append(message, e, fieldsLeft, EmeraldsUnit.EMERALDS, creditsLeft);
+        }
 
         if (includeTotal) {
             message.append(inline ? " " : "\n");
@@ -106,12 +115,15 @@ public class EmeraldsFormatter {
         if (!message.isEmpty()) message.append(", ");
 
         String amountPretty;
-        boolean shouldConvert = fieldsLeft == 1 && !unit.isBase();
+        boolean shouldConvert = (fieldsLeft == 1 && !unit.isBase()) || (roundingEmeralds && unit == EmeraldsUnit.BLOCKS);
         if (shouldConvert) {
             double totalInUnits = amount + unit.convert(creditsLeft);
             if (totalInUnits == (int) totalInUnits)
                 amountPretty = String.valueOf((int) totalInUnits);
-            else amountPretty = "%.2f".formatted(totalInUnits);
+            else {
+                String format = unit == EmeraldsUnit.BLOCKS ? "%.1f" : "%.2f";
+                amountPretty = format.formatted(totalInUnits);
+            }
         } else amountPretty = Pretty.commas(amount);
 
         String format = isBold ? "**%s** " : "%s ";
@@ -124,7 +136,7 @@ public class EmeraldsFormatter {
         return this;
     }
 
-    public EmeraldsFormatter seNoNegative() {
+    public EmeraldsFormatter setNoNegative() {
         this.noNegativeSign = true;
         return this;
     }

@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.check.CheckErrorList;
 import com.ambrosia.loans.discord.check.base.CheckDate;
+import com.ambrosia.loans.discord.check.base.CheckDateRange;
 import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;
 import com.ambrosia.loans.discord.command.staff.alter.BaseAlterCommand;
 import com.ambrosia.loans.discord.command.staff.alter.ReplyAlterMessage;
@@ -27,7 +28,15 @@ public class LoanDefaultCommand extends BaseAlterCommand {
 
         CheckErrorList errors = getAndCheckErrors(event, List.of(loan), List.of(date));
         if (errors.hasError()) return;
+
         Instant dateValue = date.getOrDefault(Instant.now());
+        new CheckDateRange(loan.get().getStartDate(), loan.get().getEndDate())
+            .checkAll(dateValue, errors);
+        if (errors.hasError()) {
+            errors.reply(event);
+            return;
+        }
+
         DAlterChange change = LoanAlterApi.setDefaulted(staff, loan.get(), dateValue);
         String successMsg = "Set loan as defaulted on %s".formatted(formatDate(dateValue));
 

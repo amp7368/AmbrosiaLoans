@@ -21,6 +21,6 @@ public class AInvestCommand extends BaseStaffCommand {
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("ainvestment", "Modify anything about an investment");
+        return Commands.slash("ainvestment", "[Staff] Modify anything about an investment");
     }
 }

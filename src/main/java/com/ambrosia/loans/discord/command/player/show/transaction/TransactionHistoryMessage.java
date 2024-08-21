@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.player.history.transaction;
+package com.ambrosia.loans.discord.command.player.show.transaction;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 

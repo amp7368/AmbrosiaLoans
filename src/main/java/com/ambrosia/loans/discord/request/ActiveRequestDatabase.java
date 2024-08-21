@@ -12,6 +12,7 @@ import discord.util.dcf.gui.stored.DCFStoredGui;
 import discord.util.dcf.gui.stored.DCFStoredGuiFactory;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
@@ -71,5 +72,9 @@ public class ActiveRequestDatabase {
         Long messageId = this.requestIdToMessageId.get(requestId);
         if (messageId == null) return null;
         return this.requests.fetchGui(messageId);
+    }
+
+    public List<ActiveRequest<?>> listRequests() {
+        return requests.getAllMessagesCopy();
     }
 }

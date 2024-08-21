@@ -17,12 +17,13 @@ public class HelpInvestmentPage extends HelpGuiPage {
     protected MessageEmbed makeEmbed(EmbedBuilder eb) {
         String hyperlink = AmbrosiaConfig.staff().getCurrentTOS().hyperlink();
         eb.addField("/request investment [amount]",
-            "Request to invest with Ambrosia Loans or to add to your current investment. Specify an amount in STX. (For example, 1"
-                + ".25 = 1 STX 16 LE) Please review our " + hyperlink
+            "Request to invest with Ambrosia Loans or to add to your current investment. Specify an amount with units like \"23 STX "
+                + "12 LE 8 EB 56 E\" or \"12.75 STX\". Please review our " + hyperlink
                 + " for more information, or DM inquiries to @tealycraft.",
             false);
         eb.addField("/request withdrawal (amount) (full)",
-            "Request to withdraw from your investment. Specify an amount to withdraw in STX or in full to withdraw your entire "
+            "Request to withdraw from your investment. Specify an amount Specify an amount with units like \"23 STX 12 LE 8 EB 56 "
+                + "E\" or \"12.75 STX\" or in full to withdraw your entire "
                 + "balance. Partial withdrawals will pull out of your investor profits first, then investment. Please review our "
                 + hyperlink + " for rules regarding withdrawing, and DM any inquiries to @tealycraft.",
             false);

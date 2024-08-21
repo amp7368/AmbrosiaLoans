@@ -71,11 +71,6 @@ public interface LoanMessage {
     }
 
     private void addCollateralMsg(EmbedBuilder embed, DLoan loan) {
-        String collateral = loan.getCollateral().stream()
-            .map(c -> c.link)
-            .collect(Collectors.joining(", "));
-        String collateralMsg = collateral.isBlank() ? "None" : collateral;
-        embed.appendDescription("%s **Collateral:** %s\n".formatted(AmbrosiaEmoji.LOAN_COLLATERAL, collateralMsg));
     }
 
     private void findChangeRateEvents(DLoan loan, List<LoanEventMsg> history) {

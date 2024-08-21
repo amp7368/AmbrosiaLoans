@@ -5,6 +5,7 @@ import apple.utilities.gson.adapter.GsonEnumTypeHolder;
 import apple.utilities.json.gson.GsonBuilderDynamic;
 import com.ambrosia.loans.database.account.investment.alter.AlterInvestmentAmount;
 import com.ambrosia.loans.database.account.investment.alter.AlterInvestmentDate;
+import com.ambrosia.loans.database.account.loan.alter.variant.AlterCollateralStatus;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanInitialAmount;
@@ -25,7 +26,8 @@ public enum AlterChangeType implements GsonEnumTypeHolder<AlterDBChange<?, ?>> {
     LOAN_START_DATE(AlterLoanStartDate.class),
     LOAN_DEFAULTED(AlterLoanDefaulted.class),
     PAYMENT_AMOUNT(AlterPaymentAmount.class),
-    LOAN_FREEZE(AlterLoanFreeze.class);
+    LOAN_FREEZE(AlterLoanFreeze.class),
+    COLLATERAL_STATUS(AlterCollateralStatus.class);
 
     private final Class<? extends AlterDBChange<?, ?>> typeClass;
 
