@@ -4,7 +4,8 @@ import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
-import com.ambrosia.loans.discord.command.manager.StaffConfigCommand;
+import com.ambrosia.loans.discord.command.manager.config.StaffConfigCommand;
+import com.ambrosia.loans.discord.command.manager.system.ManagerSystemCommand;
 import com.ambrosia.loans.discord.command.player.collateral.CommandCollateral;
 import com.ambrosia.loans.discord.command.player.help.HelpCommand;
 import com.ambrosia.loans.discord.command.player.profile.ProfileCommand;
@@ -114,6 +115,7 @@ public class DiscordModule extends AppleModule {
         DCFCommandManager commands = dcf.commands();
         // manager config commands
         commands.addCommand(new StaffConfigCommand());
+        commands.addCommand(new ManagerSystemCommand());
 
         // employee client commands
         commands.addCommand(

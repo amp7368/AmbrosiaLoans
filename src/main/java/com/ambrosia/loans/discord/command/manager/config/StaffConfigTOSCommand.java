@@ -1,11 +1,11 @@
-package com.ambrosia.loans.discord.command.manager;
+package com.ambrosia.loans.discord.command.manager.config;
 
 import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
+import com.ambrosia.loans.discord.base.command.staff.BaseManagerSubCommand;
 import com.ambrosia.loans.discord.message.tos.TOSMessage;
 import java.util.List;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class StaffConfigTOSCommand extends BaseStaffSubCommand {
+public class StaffConfigTOSCommand extends BaseManagerSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
@@ -40,12 +40,6 @@ public class StaffConfigTOSCommand extends BaseStaffSubCommand {
 
         event.reply(msg).queue();
     }
-
-    @Override
-    public boolean isOnlyManager() {
-        return true;
-    }
-
 
     @Override
     public SubcommandData getData() {
