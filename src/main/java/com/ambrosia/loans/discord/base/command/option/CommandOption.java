@@ -59,6 +59,7 @@ public interface CommandOption<R> {
     CommandOptionMulti<String, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
     CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
     CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
+    CommandOptionMulti<String, Emeralds> LOAN_INTEREST_CAP = emeraldsAmount("interest_cap");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
     // loan request
