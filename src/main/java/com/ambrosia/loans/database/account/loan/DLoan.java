@@ -323,6 +323,16 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.save(transaction);
     }
 
+    public void makeAdjustment(DAdjustLoan adjustment, Transaction transaction) {
+        this.adjustments.add(adjustment);
+        long loanBalance = getTotalOwed(null, adjustment.getDate()).amount();
+        if (isWithinPaidBounds(loanBalance)) {
+            markPaid(adjustment.getDate(), transaction);
+        }
+        adjustment.save(transaction);
+        this.save(transaction);
+    }
+
     public DLoan markPaid(Instant endDate, Transaction transaction) {
         this.status = DLoanStatus.PAID;
         this.endDate = Timestamp.from(endDate);

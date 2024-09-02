@@ -43,10 +43,12 @@ public interface AdjustApi {
         DAdjustLoan adjustment;
         try (Transaction transaction = DB.beginTransaction()) {
             adjustment = new DAdjustLoan(loan, date, staff, amount, AccountEventType.ADJUST_LOAN);
-            adjustment.save(transaction);
+            loan.makeAdjustment(adjustment, transaction);
             transaction.commit();
         }
         AlterCreateApi.create(staff, AlterCreateType.ADJUST_LOAN, adjustment.getId());
+        
+        adjustment.getClient().updateBalance(amount.amount(), date, adjustment.getEventType());
         return adjustment;
     }
 }

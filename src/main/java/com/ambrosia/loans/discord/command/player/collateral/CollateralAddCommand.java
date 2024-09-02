@@ -37,6 +37,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
 
         @Nullable String name = CommandOption.LOAN_COLLATERAL_NAME.getOptional(event);
         if (name != null && name.isBlank()) name = null;
+        else if (name != null) name = name.replaceAll("\\s+", "_");
 
         @Nullable String description = CommandOption.LOAN_COLLATERAL_DESCRIPTION.getOptional(event);
         if (description != null && description.isBlank()) description = null;

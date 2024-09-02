@@ -77,6 +77,7 @@ public abstract class IAddCollateral {
     public static void createCollateral(SlashCommandInteractionEvent event, DStaffConductor staff, DLoan loan, int id) {
         @Nullable String name = CommandOption.LOAN_COLLATERAL_NAME.getOptional(event);
         if (name != null && name.isBlank()) name = null;
+        else if (name != null) name = name.replaceAll("\\s+", "_");
 
         @Nullable String description = CommandOption.LOAN_COLLATERAL_DESCRIPTION.getOptional(event);
         if (description != null && description.isBlank()) description = null;

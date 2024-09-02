@@ -21,7 +21,8 @@ public class ALoanCommand extends BaseStaffCommand {
             new LoanAlterCommand(),
             new LoanDefaultCommand(),
             new LoanFreezeCommand(),
-            new LoanUnfreezeCommand()
+            new LoanUnfreezeCommand(),
+            new LoanInterestCommand()
         );
     }
 

@@ -1,5 +1,6 @@
-SELECT *
-FROM client;
+SELECT ROUND(balance_invest_amount / 4096.0 / 64, 2) stx, minecraft_username, *
+FROM client
+ORDER BY balance_invest_amount DESC;
 
 SELECT *
 FROM loan
