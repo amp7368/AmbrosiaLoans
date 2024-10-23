@@ -40,7 +40,7 @@ public class RawInvestment implements RawMakeAdjustment {
 
     @Override
     public Emeralds getBalanceAt(Instant date) {
-        return client().getInvestBalance(date);
+        return client().getInvestBalanceNow();
     }
 
     @Override

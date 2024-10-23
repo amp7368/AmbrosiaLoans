@@ -14,7 +14,7 @@ public class EmeraldsParser {
     private static final BigDecimal BIG_STACK = BigDecimal.valueOf(Emeralds.STACK);
     private static final BigDecimal BIG_LIQUID = BigDecimal.valueOf(Emeralds.LIQUID);
     private static final BigDecimal BIG_BLOCK = BigDecimal.valueOf(Emeralds.BLOCK);
-    private static final BigDecimal MAX_EMERALDS = BIG_STACK.multiply(BigDecimal.valueOf(64));
+    private static final BigDecimal MAX_EMERALDS = BIG_STACK.multiply(BigDecimal.valueOf(256));
 
     private static final Pattern EMERALDS_PATTERN = Pattern.compile(
         "^\\s*((\\d+(\\.\\d*)?|\\.\\d+)\\s*STX)?\\s*((\\d+(\\.\\d*)?|\\.\\d+)\\s*LE)?\\s*((\\d+(\\.\\d*)?|\\.\\d+)\\s*EB)?\\s*("

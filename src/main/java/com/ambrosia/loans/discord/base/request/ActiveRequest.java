@@ -1,16 +1,20 @@
 package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.database.HasFilename;
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import discord.util.dcf.gui.stored.DCFStoredDormantGui;
+import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,10 +26,15 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
     protected Long id;
     protected String endorser;
     protected long endorserId;
+    protected Instant dateCreated = Instant.now();
 
     public ActiveRequest(ActiveRequestType typeId, ActiveRequestSender sender) {
         this.typeId = typeId.getTypeId();
         this.sender = sender;
+    }
+
+    public Instant getDateCreated() {
+        return dateCreated;
     }
 
     @Override
@@ -52,6 +61,7 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
         return obj instanceof ActiveRequest<?> other && other.getRequestId() == this.getRequestId();
     }
 
+    @Nullable
     public String getEndorser() {
         return endorser;
     }
@@ -67,6 +77,16 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
             this.endorserId = 0;
             return false;
         }
+    }
+
+    public CompletableFuture<User> getEndorserUser() {
+        CompletableFuture<User> future = new CompletableFuture<>();
+        // get off the event thread rather than run whatever is listening to the future
+        DiscordBot.jda().retrieveUserById(endorserId).queue(
+            user -> Ambrosia.get().submit(() -> future.complete(user)),
+            error -> Ambrosia.get().submit(() -> future.completeExceptionally(error)));
+        return future;
+
     }
 
     public void saveArchive() {
@@ -86,5 +106,9 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
         if (serverId < 0)
             return AmbrosiaConfig.get().discord.mainServer;
         return serverId;
+    }
+
+    public boolean shouldDeferOnComplete() {
+        return false;
     }
 }

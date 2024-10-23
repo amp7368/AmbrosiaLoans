@@ -16,7 +16,7 @@ public class AShowCommand extends BaseStaffCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new AShowCollateralCommand(), new AShowLoanCommand(), new AShowTransactionCommand());
+        return List.of(new AShowCollateralCommand(), new AShowLoanCommand(), new AShowNameHistory(), new AShowTransactionCommand());
     }
 
     @Override

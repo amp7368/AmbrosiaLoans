@@ -33,7 +33,7 @@ public class WithdrawalMakeCommand extends BaseStaffSubCommand {
         if (client == null) return;
         Boolean isFull = CommandOption.WITHDRAWAL_FULL.getOptional(event);
         Emeralds amount;
-        if (isFull != null && isFull) amount = client.getInvestBalance(Instant.now());
+        if (isFull != null && isFull) amount = client.getInvestBalanceNow();
         else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
         if (amount == null) {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");
@@ -49,7 +49,7 @@ public class WithdrawalMakeCommand extends BaseStaffSubCommand {
             return;
         }
         CheckErrorList error = CheckErrorList.of();
-        Emeralds investBalance = client.getInvestBalance(date);
+        Emeralds investBalance = client.getInvestBalanceNow();
         new CheckWithdrawalAmount(investBalance).checkAll(amount, error);
         new CheckDate().checkAll(date, error);
         if (error.hasError()) {

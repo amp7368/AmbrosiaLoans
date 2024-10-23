@@ -7,6 +7,7 @@ import com.ambrosia.loans.database.account.loan.LoanBuilder;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterQueryApi;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.CreateEntityException;
@@ -15,6 +16,7 @@ import com.ambrosia.loans.database.system.exception.InvalidStaffConductorExcepti
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -70,7 +72,13 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     @Override
     public DAlterCreate onComplete() throws CreateEntityException, InvalidStaffConductorException {
         DLoan loan = LoanCreateApi.createLoan(this);
-        return AlterQueryApi.findCreateByEntityId(loan.getId(), AlterCreateType.LOAN);
+        DAlterCreate alter = AlterQueryApi.findCreateByEntityId(loan.getId(), AlterCreateType.LOAN);
+        DiscordLogBuilder.createLoan(loan, UserActor.of(getEndorserUser()));
+        return alter;
+    }
+
+    public boolean shouldDeferOnComplete() {
+        return true;
     }
 
     public AccountEventType transactionType() {
@@ -144,6 +152,11 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     public void setStartDate(@Nullable Instant startDate) {
         this.startDate = startDate;
         this.save();
+    }
+
+    public void setInitialAmount(Emeralds amount) {
+        this.amount = amount.amount();
+        save();
     }
 
     public boolean hasAcceptedTOS() {

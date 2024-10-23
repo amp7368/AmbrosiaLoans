@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.command.player.collateral;
 
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
@@ -17,7 +18,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import net.dv8tion.jda.api.entities.Message.Attachment;
@@ -71,7 +71,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
 
     private void afterDefer(CompletableFuture<File> downloadAction, ClientGui gui, RequestCollateral collateral,
         ActiveRequestLoan request) {
-        ForkJoinPool.commonPool().execute(() -> {
+        Ambrosia.get().submit(() -> {
             try {
                 File file = downloadAction.get(10, TimeUnit.SECONDS);
                 if (file == null) {

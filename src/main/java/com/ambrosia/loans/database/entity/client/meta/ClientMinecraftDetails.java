@@ -1,8 +1,11 @@
 package com.ambrosia.loans.database.entity.client.meta;
 
+import com.ambrosia.loans.database.entity.client.DClient;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -18,6 +21,7 @@ public class ClientMinecraftDetails {
     private String username;
     @Column
     private Timestamp lastUpdated;
+    private transient DClient client;
 
     private ClientMinecraftDetails(UUID uuid, String username) {
         this.uuid = uuid;
@@ -36,14 +40,15 @@ public class ClientMinecraftDetails {
         return new ClientMinecraftDetails(uuid, username);
     }
 
+    public ClientMinecraftDetails setClient(DClient client) {
+        this.client = client;
+        return this;
+    }
+
     public Instant getLastUpdated() {
         if (lastUpdated == null)
             return Instant.EPOCH;
         return lastUpdated.toInstant();
-    }
-
-    public void resetLastUpdated() {
-        this.lastUpdated = Timestamp.from(Instant.now());
     }
 
     public String skinUrl() {
@@ -58,9 +63,25 @@ public class ClientMinecraftDetails {
         return uuid;
     }
 
-    public void update(ClientMinecraftDetails other) {
-        this.uuid = other.uuid;
-        this.username = other.username;
-        this.lastUpdated = Timestamp.from(Instant.now());
+    public boolean isNewName(ClientMinecraftDetails other) {
+        if (!Objects.equals(this.uuid, other.uuid)) return true;
+        return !Objects.equals(this.username, other.username);
+    }
+
+    public ClientMinecraftDetails updated() {
+        return new ClientMinecraftDetails(this.uuid, this.username);
+    }
+
+    public Object json() {
+        return Map.of(
+            "uuid", uuid,
+            "username", username
+        );
+    }
+
+    public void setAll(ClientMinecraftDetails minecraft) {
+        this.uuid = minecraft.uuid;
+        this.username = minecraft.username;
+        this.lastUpdated = minecraft.lastUpdated;
     }
 }

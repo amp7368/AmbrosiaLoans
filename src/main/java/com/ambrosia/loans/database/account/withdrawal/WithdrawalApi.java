@@ -19,7 +19,7 @@ public interface WithdrawalApi {
 
     static DWithdrawal createWithdrawal(DClient client, Instant date, DStaffConductor conductor, Emeralds emeralds)
         throws NotEnoughFundsException {
-        Emeralds balance = client.getInvestBalance(date);
+        Emeralds balance = client.getInvestBalanceNow();
         if (balance.amount() < emeralds.amount()) {
             NotEnoughFundsException e = new NotEnoughFundsException(emeralds, balance);
             DatabaseModule.get().logger().warn("", e);

@@ -9,7 +9,6 @@ import com.ambrosia.loans.discord.request.withdrawal.ActiveRequestWithdrawal;
 import com.ambrosia.loans.discord.request.withdrawal.ActiveRequestWithdrawalGui;
 import com.ambrosia.loans.discord.request.withdrawal.BaseModifyWithdrawalRequest;
 import com.ambrosia.loans.util.emerald.Emeralds;
-import java.time.Instant;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -20,7 +19,7 @@ public class RequestWithdrawalCommand extends BaseClientSubCommand implements Ba
     public void onClientCommand(SlashCommandInteractionEvent event, DClient client) {
         Emeralds amount;
         Boolean isFull = CommandOption.WITHDRAWAL_FULL.getOptional(event);
-        if (isFull != null && isFull) amount = client.getInvestBalance(Instant.now());
+        if (isFull != null && isFull) amount = client.getInvestBalanceNow();
         else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
         if (amount == null) {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");

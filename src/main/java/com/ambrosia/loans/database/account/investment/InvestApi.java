@@ -1,5 +1,6 @@
 package com.ambrosia.loans.database.account.investment;
 
+import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.base.AccountEventApi;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.investment.alter.AlterInvestmentAmount;
@@ -9,10 +10,10 @@ import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.time.Instant;
 
 public interface InvestApi {
@@ -29,20 +30,25 @@ public interface InvestApi {
     interface InvestQueryApi {
 
         static BigDecimal getInvestorStake(DClient investor) {
-            Emeralds balance = investor.getInvestBalance(Instant.now());
+            Emeralds balance = investor.getInvestBalanceNow();
             if (!balance.isPositive()) return BigDecimal.ZERO;
-            Emeralds totalInvested = new QDClient().where()
+
+            BigDecimal maxInvestment = DVersionInvestorCap.getEffectiveVersionNow().getInvestorCap();
+
+            BigDecimal totalInvested = new QDClient().where()
                 .where().balance.investAmount.gt(0)
                 .findStream()
-                .map(c -> c.getInvestBalance(Instant.now()))
-                .reduce(Emeralds.zero(), Emeralds::add);
+                .map(DClient::getInvestBalanceNow)
+                .map(Emeralds::toBigDecimal)
+                .map(maxInvestment::min)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            if (totalInvested.isZero()) {
+            if (totalInvested.compareTo(BigDecimal.ZERO) == 0) {
                 return BigDecimal.valueOf(100);
             }
-            BigDecimal bigTotalInvested = totalInvested.toBigDecimal();
             return balance.toBigDecimal()
-                .divide(bigTotalInvested, MathContext.DECIMAL128);
+                .min(maxInvestment)
+                .divide(totalInvested, Bank.FLOOR_CONTEXT);
         }
 
         static DInvestment findById(Long id) {

@@ -60,7 +60,12 @@ public class DStaffConductor extends Model {
 
     public String getName() {
         if (this.client == null) return this.username;
-        return this.client.getEffectiveName();
+        String username = this.client.getEffectiveName();
+        if (!this.username.equals(username)) {
+            this.username = username;
+            this.save();
+        }
+        return username;
     }
 
     @Nullable

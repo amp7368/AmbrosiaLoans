@@ -1,8 +1,6 @@
 package com.ambrosia.loans.discord.request.withdrawal;
 
-import com.ambrosia.loans.database.system.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
-import java.time.Instant;
 import java.util.List;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 
@@ -14,12 +12,7 @@ public class ActiveRequestWithdrawalGui extends ActiveRequestGui<ActiveRequestWi
 
     @Override
     protected List<Field> fields() {
-        String balance;
-        try {
-            balance = data.getBalance(Instant.now()).toString();
-        } catch (BadDateAccessException e) {
-            balance = "Error! Cannot check balance!";
-        }
+        String balance = data.getBalance().toString();
         return List.of(
             new Field("Withdrawal", data.getAmount().negative().toString(), true),
             new Field("Investment Balance", balance, true)

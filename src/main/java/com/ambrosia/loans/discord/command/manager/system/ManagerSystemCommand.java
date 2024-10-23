@@ -12,7 +12,6 @@ public class ManagerSystemCommand extends BaseManagerCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
-
     }
 
     @Override

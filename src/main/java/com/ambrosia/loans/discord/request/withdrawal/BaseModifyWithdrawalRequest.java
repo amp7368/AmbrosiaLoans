@@ -2,13 +2,11 @@ package com.ambrosia.loans.discord.request.withdrawal;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.system.exception.BadDateAccessException;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.request.base.BaseModifyRequest;
 import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
-import java.time.Instant;
 import java.util.Optional;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +24,7 @@ public interface BaseModifyWithdrawalRequest extends BaseModifyRequest {
             ErrorMessages.amountNotPositive(amount).replyError(event);
             return true;
         }
-        Emeralds balance = client.getInvestBalance(Instant.now());
+        Emeralds balance = client.getInvestBalanceNow();
         if (balance.lt(amount.amount())) {
             ErrorMessages.withdrawalTooMuch(amount, balance).replyError(event);
             return true;
@@ -37,12 +35,7 @@ public interface BaseModifyWithdrawalRequest extends BaseModifyRequest {
     default ModifyRequestMsg setAmount(ActiveRequestWithdrawalGui withdrawal, SlashCommandInteractionEvent event) {
         Emeralds amount = CommandOption.INVESTMENT_AMOUNT.getRequired(event);
         if (amount == null) return null;
-        Emeralds balance;
-        try {
-            balance = withdrawal.getData().getBalance(Instant.now());
-        } catch (BadDateAccessException e) {
-            return ModifyRequestMsg.error("Cannot check balance");
-        }
+        Emeralds balance = withdrawal.getData().getBalance();
         if (balance.gt(amount.amount())) {
             String msg = "Cannot withdrawal back %s. You only have %s!".formatted(withdrawal, balance);
             return ModifyRequestMsg.error(msg);

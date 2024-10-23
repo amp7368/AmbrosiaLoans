@@ -60,7 +60,7 @@ dependencies {
     // rate limiting client
     implementation 'com.bucket4j:bucket4j_jdk17-core:8.13.1'
     // discord
-    implementation 'net.dv8tion:JDA:5.0.0-beta.19'
+    implementation 'net.dv8tion:JDA:5.1.2'
     // fuzzy string matching
     implementation 'me.xdrop:fuzzywuzzy:1.4.0'
     // charts

@@ -59,6 +59,7 @@ public class LoanFreezeService {
         if (unfreezeToRate == null || unfreezeDate == null) {
             String msg = "Error trying to unfreeze loan{%d}. unfreezeToRate or unfreezeDate is null".formatted(loan.getId());
             Ambrosia.get().logger().error(msg);
+            // todo more logs
             return;
         }
         if (loan.isPaid()) {

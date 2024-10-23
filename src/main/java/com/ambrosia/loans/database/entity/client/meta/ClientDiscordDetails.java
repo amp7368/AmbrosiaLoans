@@ -1,10 +1,16 @@
 package com.ambrosia.loans.database.entity.client.meta;
 
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.entity.actor.UserActor;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -17,7 +23,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 import org.jetbrains.annotations.Nullable;
 
-@Embeddable()
+@Embeddable
 public class ClientDiscordDetails {
 
     @Index
@@ -31,6 +37,7 @@ public class ClientDiscordDetails {
     public String username;
     @Column
     private Timestamp lastUpdated;
+    private transient DClient client;
 
     private ClientDiscordDetails(Long id, String avatarUrl, String username) {
         this.id = id;
@@ -57,11 +64,13 @@ public class ClientDiscordDetails {
         return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
 
-    public void update(ClientDiscordDetails other) {
-        this.id = other.id;
-        this.avatarUrl = other.avatarUrl;
-        this.username = other.username;
-        this.lastUpdated = Timestamp.from(Instant.now());
+    public ClientDiscordDetails setClient(DClient client) {
+        this.client = client;
+        return this;
+    }
+
+    public boolean isNewName(ClientDiscordDetails other) {
+        return !Objects.equals(this.username, other.username);
     }
 
     public String getUsername() {
@@ -98,21 +107,40 @@ public class ClientDiscordDetails {
         @Nullable Consumer<Message> onSuccess,
         @Nullable Consumer<Throwable> onError) {
         tryOpenDirectMessages(
-            dm -> dm.sendMessage(message).queue(onSuccess, this::sendDmError),
+            dm -> dm.sendMessage(message).queue(onSuccess, f -> {
+                sendDmError(f);
+                if (onError != null) onError.accept(f);
+            }),
             onError
         );
     }
 
     private void sendDmError(Throwable e) {
-        ParameterizedMessage msg = new ParameterizedMessage("Failed to send message to @{}", getUsername());
+        ParameterizedMessage msg = new ParameterizedMessage("Failed to send message to @{}.", getUsername());
         Ambrosia.get().logger().error(msg, e);
+        DiscordLogBuilder.error(msg.getFormattedMessage(), UserActor.of(DStaffConductor.SYSTEM));
     }
 
     public Instant getLastUpdated() {
         return lastUpdated.toInstant();
     }
 
-    public void resetLastUpdated() {
-        this.lastUpdated = Timestamp.from(Instant.now());
+    public ClientDiscordDetails updated() {
+        return new ClientDiscordDetails(this.id, this.avatarUrl, this.username);
+    }
+
+    public Object json() {
+        return Map.of(
+            "id", id,
+            "username", username,
+            "avatarUrl", avatarUrl
+        );
+    }
+
+    public void setAll(ClientDiscordDetails other) {
+        this.id = other.id;
+        this.avatarUrl = other.avatarUrl;
+        this.username = other.username;
+        this.lastUpdated = other.lastUpdated;
     }
 }

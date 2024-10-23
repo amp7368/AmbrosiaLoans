@@ -1,11 +1,12 @@
 package com.ambrosia.loans.discord.command.staff.profile;
 
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.system.DiscordLog;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -24,7 +25,8 @@ public class CommandLinkDiscord extends BaseSubCommand {
         client.save();
 
         client.profile(event::reply).send();
-        DiscordLog.log(client, event.getUser()).modifyDiscord();
+
+        DiscordLogBuilder.modifyDiscord(client, UserActor.of(event.getUser()));
     }
 
     @Override

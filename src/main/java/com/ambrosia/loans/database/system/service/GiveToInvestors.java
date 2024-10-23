@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.system.service;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import io.ebean.DB;
 import io.ebean.SqlQuery;
 import io.ebean.SqlRow;
@@ -30,12 +31,14 @@ public class GiveToInvestors {
     private final Instant currentTime;
 
     private final List<GiveInvestor> investors;
+    private final BigDecimal maxInvestorBalance;
 
     private GiveToInvestors(List<DClient> clients, BigDecimal amountToInvestors, Instant currentTime) {
         this.amountToInvestors = amountToInvestors;
         this.currentTime = currentTime;
+        this.maxInvestorBalance = DVersionInvestorCap.getEffectiveVersion(currentTime).getInvestorCap();
         this.investors = clients.stream()
-            .map(GiveInvestor::new)
+            .map(client -> new GiveInvestor(this, client))
             .sorted(Comparator.comparing(GiveInvestor::getId))
             .toList();
         this.totalInvested = calcTotalInvested();
@@ -109,27 +112,29 @@ public class GiveToInvestors {
         return amountGiven;
     }
 
-    private class GiveInvestor {
+    private static class GiveInvestor {
 
         private final BigDecimal balance;
+        private final GiveToInvestors parent;
         private final DClient client;
         private BigDecimal amountToInvestor = BigDecimal.ZERO;
         private BigDecimal newlyAdjusted = BigDecimal.ZERO;
         private BigDecimal adjusted = BigDecimal.ZERO;
 
-        public GiveInvestor(DClient client) {
+        public GiveInvestor(GiveToInvestors parent, DClient client) {
+            this.parent = parent;
             this.client = client;
-            this.balance = client.getInvestBalance(currentTime).toBigDecimal();
+            this.balance = client.getInvestBalanceNow().toBigDecimal();
         }
 
         public BigDecimal investorBalance() {
-            return balance.add(adjusted).add(newlyAdjusted);
+            return balance.add(adjusted).add(newlyAdjusted).min(parent.maxInvestorBalance);
         }
 
         public void profits(BigDecimal amountToInvestors) {
             BigDecimal profits = investorBalance()
                 .multiply(amountToInvestors, Bank.FLOOR_CONTEXT)
-                .divide(totalInvested, Bank.FLOOR_CONTEXT);
+                .divide(parent.totalInvested, Bank.FLOOR_CONTEXT);
             amountToInvestor = amountToInvestor.add(profits);
         }
 

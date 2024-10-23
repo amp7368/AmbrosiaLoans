@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPaymentGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -50,10 +51,10 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
             return;
         }
 
-        ActiveRequestPayment request = new ActiveRequestPayment(client, payment, timestamp);
+        ActiveRequestPayment request = new ActiveRequestPayment(client, loan.get().getId(), payment, timestamp);
 
         ActiveRequestPaymentGui gui = request.create();
-        event.reply(gui.makeClientMessage()).queue();
+        gui.guiClient(DCFEditMessage.ofReply(event::reply), null).send();
         gui.send(ActiveRequestDatabase::sendRequest);
         gui.updateSender();
     }
