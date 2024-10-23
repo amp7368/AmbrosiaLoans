@@ -34,7 +34,7 @@ public class BlacklistSetCommand extends BaseStaffSubCommand {
         ClientAlterApi.setBlacklisted(staff, client, blacklisted);
 
         String msg;
-        if (client.isBlacklisted()) msg = "Set %s as blacklisted";
+        if (blacklisted) msg = "Set %s as blacklisted";
         else msg = "Set %s as not blacklisted";
         replySuccess(event, msg.formatted(client.getEffectiveName()));
     }

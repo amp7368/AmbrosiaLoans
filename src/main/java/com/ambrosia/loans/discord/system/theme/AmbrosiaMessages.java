@@ -20,7 +20,7 @@ import org.slf4j.helpers.CheckReturnValue;
 public class AmbrosiaMessages {
 
     public static final String NULL_MSG = "N/A";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLLL dd yyyy")
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLL dd yyyy")
         .withZone(DiscordModule.TIME_ZONE);
 
     public static String formatDate(Instant date) {
@@ -68,7 +68,7 @@ public class AmbrosiaMessages {
         @CheckReturnValue
         public static AmbrosiaMessage registerWithStaff() {
             return error("To register your account use **/request account** and fill in your Minecraft "
-                + "username.");
+                         + "username.");
         }
 
         @CheckReturnValue
@@ -91,7 +91,7 @@ public class AmbrosiaMessages {
         public static AmbrosiaMessage rejectedTOSRequest(String type) {
             String desc =
                 ("Since TOS was rejected, your %s request cannot be accepted"
-                    + " and was deleted. Staff have not been notified of your request.")
+                 + " and was deleted. Staff have not been notified of your request.")
                     .formatted(type);
             MessageEmbed embed = new EmbedBuilder()
                 .setColor(AmbrosiaColor.RED)

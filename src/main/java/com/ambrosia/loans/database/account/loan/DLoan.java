@@ -11,7 +11,9 @@ import com.ambrosia.loans.database.account.base.IAccountChange;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.Commentable;
 import com.ambrosia.loans.database.message.DComment;
@@ -22,6 +24,7 @@ import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.VersionEntityType;
 import com.ambrosia.loans.discord.message.loan.LoanMessage;
 import com.ambrosia.loans.discord.message.loan.LoanMessageBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.service.loan.LoanFreezeService;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -119,9 +122,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.checkIsFrozen(false);
     }
 
-
-    private static boolean isWithinPaidBounds(long loanBalance) {
+    public static boolean isWithinPaidBounds(long loanBalance) {
         return Math.abs(loanBalance) < Emeralds.BLOCK;
+    }
+
+    public DStaffConductor getConductor() {
+        return conductor;
     }
 
     @Override
@@ -487,6 +493,14 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         // todo log channel to inform staff
         //      also record messages in db
         Ambrosia.get().logger().info("Sent unfreeze loan message");
-        this.getClient().getDiscord().sendDm(message);
+        DiscordLogBuilder.unfreezeLoan(this, UserActor.of(DStaffConductor.SYSTEM));
+        ClientDiscordDetails discord = this.getClient().getDiscord();
+        if (discord == null) {
+            String msg = "Cannot attempt to send DM to unfreeze loan for @%s\nClientDiscordDetails is null.".formatted(
+                client.getEffectiveName());
+            DiscordLogBuilder.error(msg, UserActor.of(DStaffConductor.SYSTEM));
+            throw new IllegalStateException(msg);
+        }
+        discord.sendDm(message);
     }
 }

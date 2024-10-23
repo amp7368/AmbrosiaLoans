@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class SimulationOptions {
 
+    public static final SimulationOptions DEFAULT = options();
     private Instant endDate;
 
     public static SimulationOptions options() {

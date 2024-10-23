@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import io.ebean.CacheMode;
+import io.ebean.DuplicateKeyException;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 
@@ -94,8 +95,12 @@ public interface ClientApi {
             if (client.getMinecraft() == null)
                 throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
             client.setDiscord(ClientDiscordDetails.fromMember(discord));
-
-            client.save();
+            try {
+                client.save();
+            } catch (DuplicateKeyException e) {
+                throw new CreateEntityException(
+                    "That account already exists! If this is your account, it may just need to be linked to your discord");
+            }
             AlterCreateApi.create(DStaffConductor.SYSTEM, AlterCreateType.CLIENT, client.getId());
             return client;
         }

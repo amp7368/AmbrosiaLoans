@@ -78,26 +78,43 @@ public class RunBankSimulation {
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final List<Runnable> simulations = new ArrayList<>();
+    private static final Object ON_COMPLETE = new Object();
     private static boolean isRunning = false;
 
+    public static void complete() {
+        // double verify that isRunning is false. probably not needed?
+        while (true) {
+            synchronized (ON_COMPLETE) {
+                if (!isRunning) return;
+                try {
+                    ON_COMPLETE.wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     public static void simulateAsync(Instant simulateStartDate) {
-        synchronized (simulations) {
+        synchronized (ON_COMPLETE) {
             simulations.add(() -> simulate(simulateStartDate));
             if (!isRunning) checkSimulationQueue();
         }
     }
 
     private static void checkSimulationQueue() {
-        synchronized (simulations) {
+        synchronized (ON_COMPLETE) {
             isRunning = !simulations.isEmpty();
-            if (!isRunning) return;
-            Runnable run = simulations.remove(0);
-            executor.submit(run);
+            if (isRunning) {
+                Runnable run = simulations.remove(0);
+                executor.submit(run);
+            } else
+                ON_COMPLETE.notifyAll();
         }
     }
 
     public static void simulate(Instant simulateStartDate) {
-        simulate(simulateStartDate, SimulationOptions.options());
+        simulate(simulateStartDate, SimulationOptions.DEFAULT);
     }
 
     public static void simulate(Instant simulateStartDate, SimulationOptions options) {

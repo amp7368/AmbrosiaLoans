@@ -23,7 +23,8 @@ public abstract class DCFScrollGuiFixed<Parent extends IDCFGui, Entry> extends D
         this.verifyPageNumber();
     }
 
-    protected Button btnReversed() {
+    @Override
+    public Button btnReversed() {
         return Button.secondary("reverse", "Reverse")
             .withEmoji(AmbrosiaEmoji.TRADE.getEmoji());
     }

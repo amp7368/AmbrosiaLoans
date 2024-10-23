@@ -1,7 +1,9 @@
 package com.ambrosia.loans.discord.base.request;
 
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
@@ -10,6 +12,7 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
+import discord.util.dcf.util.TimeMillis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -66,6 +69,12 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         }
     }
 
+    @Override
+    public boolean editOnInteraction() {
+        boolean shouldDefer = data.shouldDeferOnComplete() && data.stage.isComplete();
+        return !shouldDefer;
+    }
+
     private void reset(ButtonInteractionEvent event) {
         this.data.stage = ActiveRequestStage.CREATED;
         this.error = null;
@@ -105,6 +114,10 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     private void complete(ButtonInteractionEvent event) {
         if (!setEndorser(event)) return;
+        synchronized (this) {
+            if (this.data.stage.isComplete())
+                throw new IllegalStateException("Stage is already completed!");
+        }
         this.data.stage = ActiveRequestStage.COMPLETED;
         try {
             this.create = this.data.onComplete();
@@ -113,8 +126,22 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             this.error = e.getMessage();
             DiscordModule.get().logger().error("", e);
         }
-        this.remove();
-        this.updateSender();
+        if (!this.data.shouldDeferOnComplete()) {
+            this.remove();
+            this.updateSender();
+            return;
+        }
+        event.deferEdit().queue(
+            defer -> {
+                Ambrosia.get().submit(() -> {
+                        RunBankSimulation.complete();
+                        this.editMessage();
+                        this.remove();
+                        this.updateSender();
+                    }
+                );
+            }
+        );
     }
 
     @Override
@@ -152,6 +179,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
         this.fields().forEach(embed::addField);
 
+        this.finalizeEmbed(embed);
+
         MessageCreateBuilder message = new MessageCreateBuilder()
             .setEmbeds(embed.build());
 
@@ -159,6 +188,9 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         if (components.isEmpty()) message.setComponents();
         else message.setActionRow(components);
         return message.build();
+    }
+
+    protected void finalizeEmbed(EmbedBuilder embed) {
     }
 
     protected abstract String staffCommandName();
@@ -170,7 +202,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         if (data.stage.isComplete()) return null;
         return """
             `/amodify_request %s request_id:%d`
-            Staff, use the above command to modify the request.
             """.formatted(staffCommandName(), data.getRequestId());
     }
 
@@ -194,7 +225,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             case CREATED, UNCLAIMED -> this.getInitialComponents();
         };
     }
-
 
     private String generateDescription(String[] extra) {
         StringBuilder description = new StringBuilder();
@@ -257,19 +287,24 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     }
 
     public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {
-        ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage);
+        ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage) {
+            @Override
+            public long getMillisToOld() {
+                return TimeMillis.DAY * 7;
+            }
+        };
         gui.addPage(guiClientPage(gui, msgOverride));
         return gui;
     }
 
     protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui, @Nullable String msgOverride) {
         String updateMessage = Objects.requireNonNullElseGet(msgOverride, this::getUpdateMessage);
-        MessageCreateData message = makeClientMessage(updateMessage);
+        MessageCreateData message = makeClientMessage(formatMessage(updateMessage));
         return new ActiveRequestClientPage(gui, data, message);
     }
 
     private @NotNull String getUpdateMessage() {
-        String unformattedMessage = switch (data.stage) {
+        return switch (data.stage) {
             case DENIED -> "**{endorser}** has denied this request";
             case CLAIMED -> "**{endorser}** has seen your request";
             case APPROVED, CREATED -> "";
@@ -277,6 +312,9 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             case UNCLAIMED -> "**{endorser}** has stopped working on your request. Someone else will come along to complete it.";
             case ERROR -> "There was an error processing the request D: Message **{endorser}**";
         };
+    }
+
+    private @NotNull String formatMessage(String unformattedMessage) {
         String endorser = Objects.requireNonNullElse(data.getEndorser(), "");
         return unformattedMessage.replace("{endorser}", endorser);
     }

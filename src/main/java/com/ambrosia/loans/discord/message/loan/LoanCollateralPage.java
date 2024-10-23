@@ -21,10 +21,12 @@ import org.jetbrains.annotations.Nullable;
 public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> implements CollateralMessage {
 
     private final DLoan loan;
+    private final boolean includeBackToMainBtn;
 
-    public LoanCollateralPage(DCFGui parent, DLoan loan) {
+    public LoanCollateralPage(DCFGui parent, DLoan loan, boolean includeBackToMainBtn) {
         super(parent);
         this.loan = loan;
+        this.includeBackToMainBtn = includeBackToMainBtn;
         registerButton(btnBackToMain().getId(), e -> parent.popSubPage());
         setEntries(loan.getCollateral());
         sort();
@@ -55,7 +57,10 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
 
     @Override
     public MessageCreateData makeMessage() {
-        ActionRow actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
+        ActionRow actionRow;
+        if (includeBackToMainBtn) actionRow = ActionRow.of(btnBackToMain(), btnPrev(), btnNext());
+        else actionRow = ActionRow.of(btnPrev(), btnNext());
+
         EmbedBuilder embed = new EmbedBuilder();
         ClientMessage.of(loan.getClient()).clientAuthor(embed);
 

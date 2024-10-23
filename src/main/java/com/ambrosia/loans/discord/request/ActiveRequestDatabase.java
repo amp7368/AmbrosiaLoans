@@ -11,6 +11,7 @@ import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import discord.util.dcf.gui.stored.DCFStoredGuiFactory;
 import java.io.File;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,8 @@ public class ActiveRequestDatabase {
     }
 
     public List<ActiveRequest<?>> listRequests() {
-        return requests.getAllMessagesCopy();
+        return requests.getAllMessagesCopy().stream()
+            .sorted(Comparator.comparing(ActiveRequest::getRequestId))
+            .toList();
     }
 }

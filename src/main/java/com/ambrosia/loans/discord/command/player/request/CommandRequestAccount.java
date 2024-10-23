@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.command.player.request;
 
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -10,7 +11,9 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.account.ActiveRequestAccount;
 import com.ambrosia.loans.discord.request.account.ActiveRequestAccountGui;
 import com.ambrosia.loans.discord.request.account.UpdateAccountException;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -40,6 +43,8 @@ public class CommandRequestAccount extends BaseSubCommand {
                     if (displayName == null) displayName = minecraft;
                     if (displayName == null) displayName = event.getMember().getEffectiveName();
                     client = ClientCreateApi.createClient(displayName, minecraft, event.getMember());
+                    User actor = event.getUser();
+                    DiscordLogBuilder.createAccount(client, UserActor.of(actor));
                     reply.editOriginalEmbeds(success("Successfully registered as %s".formatted(client.getEffectiveName()))).queue();
                     return;
                 }

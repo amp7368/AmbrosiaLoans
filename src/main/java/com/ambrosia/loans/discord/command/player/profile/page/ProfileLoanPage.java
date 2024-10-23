@@ -26,7 +26,7 @@ public class ProfileLoanPage extends ProfilePage {
         registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
             Optional<DLoan> loan = getClient().getActiveLoan();
             if (loan.isEmpty()) return;
-            parent.addSubPage(new LoanCollateralPage(parent, loan.get()));
+            parent.addSubPage(new LoanCollateralPage(parent, loan.get(), true));
         });
     }
 

@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
-import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
 
-
     public ActiveRequestLoanGui(long message, ActiveRequestLoan activeRequestLoan) {
         super(message, activeRequestLoan);
         registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
@@ -35,18 +33,6 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
             gui.addPage(new LoanRequestCollateralPage(gui, getData(), false));
             gui.send();
         });
-    }
-
-    @Override
-    public void onButtonInteraction(ButtonInteractionEvent event) {
-        super.onButtonInteraction(event);
-        if (Objects.equals(event.getButton().getId(), LoanCollateralPage.showCollateralBtnId())) return;
-        this.editMessage(event);
-    }
-
-    @Override
-    public boolean editOnInteraction() {
-        return false;
     }
 
     @Override
@@ -166,7 +152,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui, @Nullable String msgOverride) {
         ActiveRequestClientPage page = super.guiClientPage(gui, msgOverride);
         page.registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
-            gui.addSubPage(new LoanRequestCollateralPage(gui, getData(), false));
+            gui.addSubPage(new LoanRequestCollateralPage(gui, getData(), true));
         });
         return page;
     }

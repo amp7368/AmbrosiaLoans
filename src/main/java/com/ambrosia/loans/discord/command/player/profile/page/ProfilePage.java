@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
+import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
@@ -46,13 +47,19 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
         BalanceWithInterest balance = getClient().getBalanceWithRecentInterest(Instant.now());
         Emeralds investBalance = balance.investTotal();
         Emeralds loanBalance = balance.loanTotal();
-        String msg = "";
+        StringBuilder msg = new StringBuilder();
         if (!investBalance.isZero())
-            msg += "## Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
+            msg.append("## Investment Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance));
+        long investorCap = DVersionInvestorCap.getEffectiveVersionNow().getInvestorCapLong();
+        if (investBalance.gt(investorCap)) {
+            Emeralds overCap = investBalance.minus(investorCap);
+            msg.append("*Passive asset: %s*\n".formatted(Emeralds.of(investorCap)));
+            msg.append("*Liquid asset: %s*\n".formatted(overCap));
+        }
         if (!loanBalance.isZero())
-            msg += "## Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative());
+            msg.append("## Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative()));
         if (investBalance.isZero() && loanBalance.isZero())
-            msg += "## Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance);
+            msg.append("## Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance));
         embed.appendDescription(msg);
     }
 

@@ -1,58 +1,104 @@
 package com.ambrosia.loans.database.entity.client.meta;
 
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.username.DNameHistory;
+import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import io.ebean.DB;
+import io.ebean.Transaction;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 
 public class UpdateClientDiscordHook {
 
-    private static final Duration HOURS_TILL_UPDATE = Duration.ofHours(24);
+    private static final Duration HOURS_TILL_UPDATE = Duration.ofHours(1);
 
-    public static void discordUpdate(DClient client) {
+    public static Future<Void> discordUpdate(DClient client) {
         ClientDiscordDetails discord = client.getDiscord(false);
-        if (discord == null) return;
+        if (discord == null) return null;
         Long discordId = discord.getDiscordId();
-        if (discordId == null) return;
+        if (discordId == null) return null;
 
         Duration between = Duration.between(discord.getLastUpdated(), Instant.now());
-        if (between.compareTo(HOURS_TILL_UPDATE) < 0) return;
+        if (between.compareTo(HOURS_TILL_UPDATE) < 0) return null;
 
         DatabaseModule.get().logger().info("Updating discord {}{{}}", discord.getUsername(), discordId);
 
+        CompletableFuture<Void> task = new CompletableFuture<>();
         Member cachedMember = DiscordBot.getAmbrosiaServer().getMemberById(discordId);
         if (cachedMember != null) {
-            updateAmbrosiaMember(client, cachedMember);
-            return;
+            updateAmbrosiaMember(client, cachedMember, task);
+            return task;
         }
 
         DiscordBot.getAmbrosiaServer().retrieveMemberById(discordId)
-            .queue(member -> updateAmbrosiaMember(client, member),
-                fail -> updateAmbrosiaMemberFailed(client, discordId));
+            .queue(member -> updateAmbrosiaMember(client, member, task),
+                fail -> updateAmbrosiaMemberFailed(client, discordId, task));
+        return task;
     }
 
-    private static void updateAmbrosiaMember(DClient client, Member cachedMember) {
-        ClientDiscordDetails disc = ClientDiscordDetails.fromMember(cachedMember);
-        client.getDiscord(false).update(disc);
-        client.save();
+    private static void updateAmbrosiaMember(DClient client, Member cachedMember, CompletableFuture<Void> task) {
+        Ambrosia.get().submit(() -> {
+            ClientDiscordDetails disc = ClientDiscordDetails.fromMember(cachedMember);
+            updateDiscord(client, disc, task);
+        });
     }
 
-    private static void updateAmbrosiaMemberFailed(DClient client, long discordId) {
-        DiscordBot.jda().retrieveUserById(discordId)
-            .queue(user -> updateFromUser(client, user), e -> {
-                DiscordModule.get().logger().error("Could not update discord for: client {} discord{{}}",
-                    client.getEffectiveName(), discordId);
-                client.getDiscord(false).resetLastUpdated();
-                client.save();
-            });
+    private static void updateAmbrosiaMemberFailed(DClient client, long discordId, CompletableFuture<Void> task) {
+        DiscordBot.jda().retrieveUserById(discordId).queue(
+            user -> updateFromUser(client, user, task),
+            e -> retrieveUserFailed(client, discordId, task));
     }
 
-    private static void updateFromUser(DClient client, User user) {
-        client.getDiscord(false).update(ClientDiscordDetails.fromUser(user));
-        client.save();
+    private static void retrieveUserFailed(DClient client, long discordId, CompletableFuture<Void> task) {
+        try {
+            DiscordModule.get().logger().error("Could not update discord for: client {} discord{{}}",
+                client.getEffectiveName(), discordId);
+            ClientDiscordDetails discord = client.getDiscord(false);
+            client.setDiscord(discord.updated());
+            client.save();
+        } catch (Exception e) {
+            Ambrosia.get().logger().error("", e);
+            DiscordLogBuilder.errorSystem("Cannot save Discord");
+        } finally {
+            task.complete(null);
+        }
+    }
+
+    private static void updateFromUser(DClient client, User user, CompletableFuture<Void> task) {
+        Ambrosia.get().submit(() -> {
+            ClientDiscordDetails disc = ClientDiscordDetails.fromUser(user);
+            updateDiscord(client, disc, task);
+        });
+    }
+
+    private static void updateDiscord(DClient client, ClientDiscordDetails disc, CompletableFuture<Void> task) {
+        try (Transaction transaction = DB.beginTransaction()) {
+            client.refresh();
+            boolean isNewName = client.getDiscord(false).isNewName(disc);
+            if (isNewName) {
+                DNameHistory lastName = client.getNameNow(NameHistoryType.DISCORD_USER);
+                client.setDiscord(disc);
+                DNameHistory newName = NameHistoryType.DISCORD_USER.updateName(client, lastName, transaction);
+                DiscordLogBuilder.updateName(lastName, newName);
+            }
+            client.setDiscord(disc);
+            client.save(transaction);
+            transaction.commit();
+            client.refresh();
+        } catch (Exception e) {
+            Ambrosia.get().logger().error("", e);
+            DiscordLogBuilder.errorSystem("Cannot save Discord");
+        } finally {
+            task.complete(null);
+        }
     }
 }

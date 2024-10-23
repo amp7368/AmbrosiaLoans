@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.command.player.request.loan;
 
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -13,6 +14,7 @@ import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import com.ambrosia.loans.util.emerald.EmeraldsParser;
@@ -21,6 +23,7 @@ import discord.util.dcf.modal.DCFModal;
 import java.util.HashSet;
 import java.util.Set;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
@@ -112,6 +115,8 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             try {
                 DClient newClient = ClientCreateApi.createClient(minecraft, minecraft, member);
                 openTOS(event, newClient);
+                User actor = event.getUser();
+                DiscordLogBuilder.createAccount(newClient, UserActor.of(actor));
             } catch (CreateEntityException e) {
                 MessageEmbed msg = error(e.getMessage());
                 event.replyEmbeds(msg).setEphemeral(true).queue();

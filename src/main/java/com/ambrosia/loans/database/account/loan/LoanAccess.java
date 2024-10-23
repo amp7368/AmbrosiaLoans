@@ -125,9 +125,10 @@ public interface LoanAccess {
         loan.getClient().refresh();
 
         if (loan.isPaid()) {
-            Emeralds adjustment = loan.getTotalOwed();
-            if (adjustment.isZero()) {
-                AdjustApi.createAdjustment(conductor, loan, adjustment, payment.getDate());
+            Instant adjustmentDate = payment.getDate().plusMillis(1);
+            Emeralds adjustment = loan.getTotalOwed(null, adjustmentDate);
+            if (!adjustment.isZero()) {
+                AdjustApi.createAdjustment(conductor, loan, adjustment, adjustmentDate);
             }
         }
 

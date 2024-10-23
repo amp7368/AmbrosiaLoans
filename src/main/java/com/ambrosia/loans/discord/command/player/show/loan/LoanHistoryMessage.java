@@ -26,7 +26,7 @@ public class LoanHistoryMessage extends DCFScrollGuiFixed<ClientGui, DLoan> impl
         registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
             DLoan loan = currentLoan();
             if (loan == null) return;
-            parent.addSubPage(new LoanCollateralPage(parent, loan));
+            parent.addSubPage(new LoanCollateralPage(parent, loan, true));
         });
         setEntries(getClient().getLoans());
         sort();

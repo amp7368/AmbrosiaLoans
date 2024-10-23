@@ -25,7 +25,9 @@ import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DCheckInMessage;
 import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.system.log.DLog;
 import com.ambrosia.loans.database.version.DApiVersion;
+import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import io.ebean.DB;
 import io.ebean.config.AutoTuneConfig;
 import io.ebean.config.AutoTuneMode;
@@ -78,12 +80,14 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         // message
         entities.add(DCheckInMessage.class);
         entities.add(DComment.class);
+        entities.add(DLog.class);
 
         // simulation
         entities.add(DClientSnapshot.class);
 
         // misc
         entities.add(DApiVersion.class);
+        entities.add(DVersionInvestorCap.class);
         entities.add(DBankSnapshot.class);
     }
 

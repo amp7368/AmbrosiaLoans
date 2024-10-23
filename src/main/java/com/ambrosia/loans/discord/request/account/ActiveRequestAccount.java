@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.request.account;
 
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
@@ -8,6 +9,7 @@ import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
+import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,6 +59,7 @@ public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccou
         updateField(DClient::getDisplayName, displayName, newVersion::setDisplayName);
         try {
             newVersion.save();
+            DiscordLogBuilder.updateAccount(newVersion, UserActor.of(getEndorserUser()));
         } catch (Exception e) {
             DiscordModule.get().logger().error("", e);
             throw new UpdateAccountException("Client is not unique");

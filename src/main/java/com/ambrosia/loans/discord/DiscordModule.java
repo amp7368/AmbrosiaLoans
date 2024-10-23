@@ -22,6 +22,7 @@ import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
 import com.ambrosia.loans.discord.command.staff.history.AShowCommand;
 import com.ambrosia.loans.discord.command.staff.list.AListCommand;
+import com.ambrosia.loans.discord.command.staff.misc.TestDMCommand;
 import com.ambrosia.loans.discord.command.staff.modify.AModifyRequestCommand;
 import com.ambrosia.loans.discord.command.staff.profile.ACommandLink;
 import com.ambrosia.loans.discord.command.staff.profile.AProfileCommand;
@@ -33,7 +34,7 @@ import com.ambrosia.loans.discord.misc.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.misc.context.user.UserContextListener;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
-import com.ambrosia.loans.discord.system.DiscordLog;
+import com.ambrosia.loans.discord.system.log.LogService;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import discord.util.dcf.slash.DCFAbstractCommand;
@@ -132,6 +133,8 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());
+        // employee message commands
+        commands.addCommand(new TestDMCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),
@@ -146,7 +149,7 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnablePost() {
-        DiscordLog.load();
+        LogService.load();
         CommandData viewProfileCommand = Commands.user("view_profile");
         DiscordBot.dcf.commands().updateCommands(
             action -> action.addCommands(viewProfileCommand),

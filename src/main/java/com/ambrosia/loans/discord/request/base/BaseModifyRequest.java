@@ -11,11 +11,16 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.jetbrains.annotations.Nullable;
 
 public interface BaseModifyRequest extends SendMessage {
+
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     default boolean isBadUser(SlashCommandInteractionEvent event, ActiveClientRequest<?> request) {
         DClient client = request.getClient();
@@ -45,12 +50,13 @@ public interface BaseModifyRequest extends SendMessage {
                 ErrorMessages.cannotModifyRequestAtStage(stage).replyError(event);
                 return null;
             }
+            activeRequest.getData().setEndorser(event.getUser());
             return activeRequest;
         }
     }
 
 
-    default void replyChanges(SlashCommandInteractionEvent event, List<ModifyRequestMsg> changes, ActiveRequestGui<?> loan) {
+    default void replyChanges(SlashCommandInteractionEvent event, List<ModifyRequestMsg> changes, ActiveRequestGui<?> request) {
         changes.removeIf(Objects::isNull);
         if (changes.isEmpty()) {
             replyError(event, "No changes were specified");
@@ -63,6 +69,13 @@ public interface BaseModifyRequest extends SendMessage {
         if (changes.stream().anyMatch(ModifyRequestMsg::error))
             replyError(event, description);
         else replySuccess(event, description);
-        loan.editMessage();
+
+        schedule(request::editMessage);
+        request.save();
     }
+
+    default void schedule(Runnable task) {
+        executor.schedule(task, 50L, TimeUnit.MILLISECONDS);
+    }
+
 }
