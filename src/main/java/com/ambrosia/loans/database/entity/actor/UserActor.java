@@ -25,6 +25,10 @@ public interface UserActor {
         return new UserActorImpl(CompletableFuture.completedFuture(discord));
     }
 
+    static UserActor system() {
+        return of(DStaffConductor.SYSTEM);
+    }
+
     void fetch();
 
     @Nullable

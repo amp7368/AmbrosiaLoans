@@ -15,8 +15,8 @@ import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.Commentable;
-import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.message.comment.Commentable;
+import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
@@ -24,7 +24,7 @@ import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.VersionEntityType;
 import com.ambrosia.loans.discord.message.loan.LoanMessage;
 import com.ambrosia.loans.discord.message.loan.LoanMessageBuilder;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.service.loan.LoanFreezeService;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -283,7 +283,6 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             if (sectionIndex >= sections.size()) break; // payments in future means running simulation
             DLoanSection section = sections.get(sectionIndex);
             DLoanPayment payment = payments.get(paymentIndex);
-
             Instant sectionEndDate = section.getEndDateOrNow();
             boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
             principal = principal.min(runningBalance);
@@ -490,15 +489,15 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         msgBuilder.loanDescription(embed);
 
         MessageCreateData message = MessageCreateData.fromEmbeds(embed.build());
-        // todo log channel to inform staff
+        // todo log dest to inform staff
         //      also record messages in db
         Ambrosia.get().logger().info("Sent unfreeze loan message");
-        DiscordLogBuilder.unfreezeLoan(this, UserActor.of(DStaffConductor.SYSTEM));
+        DiscordLog.unfreezeLoan(this, UserActor.of(DStaffConductor.SYSTEM));
         ClientDiscordDetails discord = this.getClient().getDiscord();
         if (discord == null) {
             String msg = "Cannot attempt to send DM to unfreeze loan for @%s\nClientDiscordDetails is null.".formatted(
                 client.getEffectiveName());
-            DiscordLogBuilder.error(msg, UserActor.of(DStaffConductor.SYSTEM));
+            DiscordLog.errorSystem(msg);
             throw new IllegalStateException(msg);
         }
         discord.sendDm(message);

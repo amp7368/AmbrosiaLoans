@@ -44,7 +44,7 @@ public class RawClient {
         }
         ImportModule.get().logger().info("Loading discord: {}", discordId);
         try {
-            Member member = DiscordBot.getAmbrosiaServer()
+            Member member = DiscordBot.getMainServer()
                 .retrieveMemberById(discordId)
                 .complete();
             if (member != null) {

@@ -7,7 +7,7 @@ import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -34,7 +34,7 @@ public class AProfileCreateCommand extends BaseCommand {
         }
         event.replyEmbeds(this.success(String.format("Successfully created %s", client.getDisplayName()))).queue();
         User actor = event.getUser();
-        DiscordLogBuilder.createAccount(client, UserActor.of(actor));
+        DiscordLog.createAccount(client, UserActor.of(actor));
     }
 
 

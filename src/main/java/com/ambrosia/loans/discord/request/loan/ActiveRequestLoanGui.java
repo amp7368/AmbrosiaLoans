@@ -30,7 +30,8 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         super(message, activeRequestLoan);
         registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
             DCFGui gui = new DCFGui(dcf, e::reply);
-            gui.addPage(new LoanRequestCollateralPage(gui, getData(), false));
+            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, getData(), false);
+            gui.addPage(page);
             gui.send();
         });
     }

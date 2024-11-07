@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.message;
+package com.ambrosia.loans.database.message.comment;
 
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import io.ebean.DB;

@@ -7,7 +7,7 @@ import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Duration;
@@ -33,13 +33,13 @@ public class UpdateClientDiscordHook {
         DatabaseModule.get().logger().info("Updating discord {}{{}}", discord.getUsername(), discordId);
 
         CompletableFuture<Void> task = new CompletableFuture<>();
-        Member cachedMember = DiscordBot.getAmbrosiaServer().getMemberById(discordId);
+        Member cachedMember = DiscordBot.getMainServer().getMemberById(discordId);
         if (cachedMember != null) {
             updateAmbrosiaMember(client, cachedMember, task);
             return task;
         }
 
-        DiscordBot.getAmbrosiaServer().retrieveMemberById(discordId)
+        DiscordBot.getMainServer().retrieveMemberById(discordId)
             .queue(member -> updateAmbrosiaMember(client, member, task),
                 fail -> updateAmbrosiaMemberFailed(client, discordId, task));
         return task;
@@ -67,7 +67,7 @@ public class UpdateClientDiscordHook {
             client.save();
         } catch (Exception e) {
             Ambrosia.get().logger().error("", e);
-            DiscordLogBuilder.errorSystem("Cannot save Discord");
+            DiscordLog.errorSystem("Cannot save Discord");
         } finally {
             task.complete(null);
         }
@@ -88,7 +88,7 @@ public class UpdateClientDiscordHook {
                 DNameHistory lastName = client.getNameNow(NameHistoryType.DISCORD_USER);
                 client.setDiscord(disc);
                 DNameHistory newName = NameHistoryType.DISCORD_USER.updateName(client, lastName, transaction);
-                DiscordLogBuilder.updateName(lastName, newName);
+                DiscordLog.updateName(lastName, newName);
             }
             client.setDiscord(disc);
             client.save(transaction);
@@ -96,7 +96,7 @@ public class UpdateClientDiscordHook {
             client.refresh();
         } catch (Exception e) {
             Ambrosia.get().logger().error("", e);
-            DiscordLogBuilder.errorSystem("Cannot save Discord");
+            DiscordLog.errorSystem("Cannot save Discord");
         } finally {
             task.complete(null);
         }

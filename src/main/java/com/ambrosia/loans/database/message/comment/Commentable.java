@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.message;
+package com.ambrosia.loans.database.message.comment;
 
 import java.util.Comparator;
 import java.util.List;

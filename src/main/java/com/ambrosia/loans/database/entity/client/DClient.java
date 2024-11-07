@@ -14,12 +14,13 @@ import com.ambrosia.loans.database.entity.client.balance.ClientBalance;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.meta.UpdateClientMetaHook;
+import com.ambrosia.loans.database.entity.client.settings.DClientSettings;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
-import com.ambrosia.loans.database.message.Commentable;
-import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.message.comment.Commentable;
+import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
@@ -41,6 +42,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,8 +91,17 @@ public class DClient extends Model implements ClientAccess, Commentable {
     @Column(nullable = false)
     private boolean blacklisted = false;
 
+    @OneToOne(mappedBy = "client")
+    private DClientSettings settings;
+
     public DClient(String displayName) {
         this.displayName = displayName;
+    }
+
+    public DClient(String displayName, ClientMinecraftDetails minecraft, ClientDiscordDetails discord) {
+        this.displayName = displayName;
+        this.minecraft = minecraft;
+        this.discord = discord;
     }
 
     public DClient(ImportedClient imported) {
@@ -100,13 +111,22 @@ public class DClient extends Model implements ClientAccess, Commentable {
         this.dateCreated = imported.getDateCreated();
     }
 
+    public DClientSettings getSettings() {
+        refresh();
+        if (settings != null) return settings;
+        settings = new DClientSettings(this);
+        settings.save();
+        save();
+        return settings;
+    }
+
     public DNameHistory getNameNow(NameHistoryType nameType) {
         List<DNameHistory> history = getNameHistory(nameType);
         if (!history.isEmpty()) {
             DNameHistory now = history.get(0);
             if (!now.isCurrent()) {
                 String msg = "First entry in name history is not currently in use!";
-                DiscordLogBuilder.error(msg, UserActor.of(this));
+                DiscordLog.error(msg, UserActor.of(this));
             }
             return now;
         }

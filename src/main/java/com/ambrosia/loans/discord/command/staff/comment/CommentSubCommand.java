@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.command.staff.comment;
 
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.CommentApi;
-import com.ambrosia.loans.database.message.Commentable;
-import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.message.comment.CommentApi;
+import com.ambrosia.loans.database.message.comment.Commentable;
+import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;

@@ -71,7 +71,6 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
             return ModifyRequestMsg.error("Rate must be positive!");
         loan.getData().setInitialAmount(amount);
         schedule(() -> {
-            System.out.println("start");
             loan.updateSender("**{endorser}** has set the initial amount to %s.".formatted(amount));
         });
         if (amount.gte(Emeralds.stxToEmeralds(64).amount())) {

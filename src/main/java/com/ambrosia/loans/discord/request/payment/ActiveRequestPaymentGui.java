@@ -89,7 +89,9 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
     protected @NotNull ActiveRequestClientPage guiClientPage(ClientGui gui, @Nullable String msgOverride) {
         ActiveRequestClientPage page = super.guiClientPage(gui, msgOverride);
         page.registerButton(LoanCollateralPage.showCollateralBtnId(), e -> {
-            gui.addSubPage(new LoanCollateralPage(gui, getData().getLoan(), true));
+            DCFGui newGui = new DCFGui(dcf, e::reply);
+            newGui.addPage(new LoanCollateralPage(newGui, getData().getLoan(), false));
+            newGui.send();
         });
         return page;
     }

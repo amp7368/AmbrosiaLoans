@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -26,7 +26,7 @@ public class CommandLinkDiscord extends BaseSubCommand {
 
         client.profile(event::reply).send();
 
-        DiscordLogBuilder.modifyDiscord(client, UserActor.of(event.getUser()));
+        DiscordLog.modifyDiscord(client, UserActor.of(event.getUser()));
     }
 
     @Override

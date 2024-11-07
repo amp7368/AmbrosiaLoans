@@ -1,8 +1,8 @@
-package com.ambrosia.loans.database.system.log;
+package com.ambrosia.loans.database.message.log;
 
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.log.DiscordLogService;
 import io.ebean.Model;
 import io.ebean.annotation.DbJson;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class DLog extends Model {
     @Column
     protected String actorDiscordName;
 
-    public DLog(DiscordLog discordLog) {
+    public DLog(DiscordLogService discordLog) {
         this.logCategory = discordLog.getCategory();
         this.logType = discordLog.getLogType();
         this.message = discordLog.getMessage();

@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.message;
+package com.ambrosia.loans.database.message.comment;
 
 import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
@@ -22,15 +22,14 @@ import javax.persistence.Table;
 @Table(name = "comment")
 public class DComment extends Model {
 
-    @Id
-    private UUID id;
     @Column(nullable = false)
     private final Timestamp date = Timestamp.from(Instant.now());
     @Column(nullable = false)
     private final String comment;
     @ManyToOne
     private final DStaffConductor conductor;
-
+    @Id
+    private UUID id;
     @ManyToOne
     private DClient client;
     @ManyToOne

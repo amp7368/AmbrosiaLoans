@@ -16,7 +16,7 @@ public class ManagerSystemCommand extends BaseManagerCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new ManagerResimulateCommand());
+        return List.of(new ManagerResimulateCommand(), new ManagerStopMessagesCommand());
     }
 
     @Override

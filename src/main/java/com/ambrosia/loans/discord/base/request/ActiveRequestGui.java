@@ -3,12 +3,15 @@ package com.ambrosia.loans.discord.base.request;
 import apple.utilities.util.Pretty;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
+import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
@@ -71,7 +74,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     public boolean editOnInteraction() {
-        boolean shouldDefer = data.shouldDeferOnComplete() && data.stage.isComplete();
+        boolean shouldDefer = data.shouldDeferOnComplete() && data.stage == ActiveRequestStage.COMPLETED;
         return !shouldDefer;
     }
 
@@ -135,7 +138,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             defer -> {
                 Ambrosia.get().submit(() -> {
                         RunBankSimulation.complete();
-                        this.editMessage();
+                        this.editMessage(DCFEditMessage.ofHook(defer));
                         this.remove();
                         this.updateSender();
                     }
@@ -280,10 +283,16 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     }
 
     public void updateSender(@Nullable String msgOverride) {
-        data.sender.getClient().getDiscord().tryOpenDirectMessages(channel -> {
-            DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
-            guiClient(editMessage, msgOverride).send();
-        }, null);
+        DClient client = data.sender.getClient();
+        client.getDiscord().tryOpenDirectMessages().thenAccept((channel) -> {
+                DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
+                guiClient(editMessage, msgOverride).send(null, e -> {
+                    String username = client.getDiscord(ClientDiscordDetails::getUsername);
+                    String msg = "Failed to send message to @%s.".formatted(username);
+                    DiscordLog.errorSystem(msg);
+                });
+            }
+        );
     }
 
     public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {

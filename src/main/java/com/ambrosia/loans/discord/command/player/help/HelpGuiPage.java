@@ -1,6 +1,8 @@
 package com.ambrosia.loans.discord.command.player.help;
 
+import com.ambrosia.loans.config.AmbrosiaStaffConfig;
 import com.ambrosia.loans.discord.DiscordBot;
+import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
@@ -12,26 +14,25 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public abstract class HelpGuiPage extends DCFGuiPage<DCFGui> {
-
-    private static final String LINK_TOS = "https://drive.google.com/file/d/1vvterxdNJx7Uyww3xu_O3zvor9f1QCP-/view?usp=sharing";
+public abstract class HelpGuiPage extends DCFGuiPage<DCFGui> implements SendMessage {
 
     public HelpGuiPage(DCFGui dcfGui) {
         super(dcfGui);
     }
 
     private LayoutComponent quickLinks() {
-        Button tos = Button.link(LINK_TOS, "Terms of Service");
+        Button tos = AmbrosiaStaffConfig.get().getCurrentTOS().button();
         return ActionRow.of(tos);
     }
 
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setThumbnail(DiscordBot.SELF_USER_AVATAR);
+        embed.setThumbnail(DiscordBot.getSelfAvatar());
         embed.setColor(this.color());
-        String title = "# Page %d: %s".formatted(getPageNum() + 1, getTitle());
-        embed.appendDescription(title);
+
+        String title = title(getTitle(), getPageNum(), getPageSize());
+        embed.appendDescription("# %s\n".formatted(title));
 
         MessageCreateBuilder message = new MessageCreateBuilder()
             .setEmbeds(this.makeEmbed(embed));

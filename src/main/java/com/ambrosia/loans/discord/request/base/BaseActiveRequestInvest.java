@@ -11,7 +11,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +34,7 @@ public abstract class BaseActiveRequestInvest<Gui extends ActiveRequestGui<?>> e
     public DAlterCreate onComplete() throws Exception {
         AccountEvent event = AccountEventApi.createInvestLike(this);
         AlterCreateType type = event.getEventType().getAlterCreateType();
-        DiscordLogBuilder.createInvestLike(event, UserActor.of(getEndorserUser()));
+        DiscordLog.createInvestLike(event, UserActor.of(getEndorserUser()));
         return AlterQueryApi.findCreateByEntityId(event.getId(), type);
     }
 

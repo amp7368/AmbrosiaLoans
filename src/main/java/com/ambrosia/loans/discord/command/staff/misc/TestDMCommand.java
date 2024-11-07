@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.command.staff.misc;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
@@ -22,17 +23,32 @@ public class TestDMCommand extends BaseStaffCommand {
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
+
+        ClientDiscordDetails discord = client.getDiscord();
+        if (discord == null) {
+            sendNoDiscord(client, event);
+            return;
+        }
+
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setAuthor("Test Message", null, DiscordBot.SELF_USER_AVATAR);
+        embed.setAuthor("Test Message", null, DiscordBot.getSelfAvatar());
         embed.setDescription("This is a test message. You can safely ignore this message. Thank you!");
         event.deferReply()
             .queue(defer -> {
                 try (MessageCreateData testMsg = MessageCreateData.fromEmbeds(embed.build())) {
-                    client.getDiscord().sendDm(testMsg,
+                    discord.sendDm(testMsg,
                         s -> sendMessageSuccess(client, defer),
                         f -> sendMessageFailure(client, defer));
                 }
             });
+    }
+
+    private void sendNoDiscord(DClient client, SlashCommandInteractionEvent event) {
+        EmbedBuilder embed = new EmbedBuilder();
+        ClientMessage.of(client).clientAuthor(embed);
+        embed.setDescription("Client does not have a linked Discord!");
+        embed.setColor(AmbrosiaColor.RED);
+        event.replyEmbeds(embed.build()).queue();
     }
 
     private void sendMessageSuccess(DClient client, InteractionHook defer) {

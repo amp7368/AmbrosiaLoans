@@ -16,6 +16,7 @@ import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.system.help.HelpCommandListType;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -82,7 +83,9 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
     CommandOptionMulti<Double, Duration> LOAN_FREEZE_DURATION = multi("duration_days", "The number of days to freeze the loan for",
         OptionType.NUMBER, OptionMapping::getAsDouble, d -> Duration.ofMillis((long) (86400L * d) * 1000));
-    CommandOptionMulti<String, DCollateralStatus> LOAN_COLLATERAL_STATUS = new CommandOptionCollateralStatus();
+    CommandOptionMulti<String, DCollateralStatus> LOAN_COLLATERAL_STATUS = new CommandOptionMapEnum<>(
+        "status", "The status of the collateral",
+        DCollateralStatus.class, DCollateralStatus.values());
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
@@ -108,14 +111,11 @@ public interface CommandOption<R> {
         OptionMapping::getAsString);
     CommandOption<String> CONFIG_TOS_VERSION = basic("version", "The version (ie: 'v1.2') for this version of the TOS",
         OptionType.STRING, OptionMapping::getAsString);
+    CommandOptionMulti<String, HelpCommandListType> HELP_LIST_TYPE = new CommandOptionMapEnum<>("help_list", "The type of help list",
+        HelpCommandListType.class, HelpCommandListType.values());
+    CommandOptionMulti<String, StopStartAction> STOP_START = new CommandOptionMapEnum<>("action", "Stop or start the action",
+        StopStartAction.class, StopStartAction.values());
 
-    static @Nullable DCollateralStatus parseCollateral(String s) {
-        try {
-            return DCollateralStatus.valueOf(s.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
-    }
 
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
@@ -185,17 +185,24 @@ public interface CommandOption<R> {
 
     void addOption(SlashCommandData command, boolean required);
 
-    class CommandOptionCollateralStatus extends CommandOptionMulti<String, DCollateralStatus> {
+    class CommandOptionMapEnum<Enm extends Enum<Enm>> extends CommandOptionMulti<String, Enm> {
 
-        CommandOptionCollateralStatus() {
-            super("status", "The status of the collateral",
-                OptionType.STRING, OptionMapping::getAsString, CommandOption::parseCollateral);
-            addChoices(Stream.of(DCollateralStatus.values())
-                .map(Enum::name)
+        CommandOptionMapEnum(String name, String description, Class<Enm> type, Enm[] values) {
+            super(name, description, OptionType.STRING, OptionMapping::getAsString, s -> parseCollateral(type, s));
+            addChoices(Stream.of(values)
+                .map(Enm::name)
                 .map(Pretty::spaceEnumWords)
                 .map(c -> new Choice(c, c))
                 .toList()
             );
+        }
+
+        private static <E extends Enum<E>> E parseCollateral(Class<E> type, String s) {
+            try {
+                return Enum.valueOf(type, s.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
     }
 }

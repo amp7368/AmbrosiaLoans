@@ -9,7 +9,8 @@ public class AmbrosiaConfig {
     public boolean isProduction = true;
     public DiscordConfig discord = new DiscordConfig();
     public DiscordPermissions discordPermissions = new DiscordPermissions();
-    private boolean shouldResimulate = false;
+    protected boolean enableMessages = false;
+    protected boolean shouldResimulate = false;
 
     public AmbrosiaConfig() {
         instance = this;
@@ -29,5 +30,9 @@ public class AmbrosiaConfig {
 
     public boolean shouldResimulate() {
         return this.shouldResimulate;
+    }
+
+    public boolean isMessagesEnabled() {
+        return this.enableMessages;
     }
 }

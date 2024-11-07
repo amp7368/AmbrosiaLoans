@@ -16,7 +16,7 @@ import com.ambrosia.loans.database.system.exception.InvalidStaffConductorExcepti
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -73,7 +73,7 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     public DAlterCreate onComplete() throws CreateEntityException, InvalidStaffConductorException {
         DLoan loan = LoanCreateApi.createLoan(this);
         DAlterCreate alter = AlterQueryApi.findCreateByEntityId(loan.getId(), AlterCreateType.LOAN);
-        DiscordLogBuilder.createLoan(loan, UserActor.of(getEndorserUser()));
+        DiscordLog.createLoan(loan, UserActor.of(getEndorserUser()));
         return alter;
     }
 
@@ -123,11 +123,6 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     public void setDiscount(String discount) {
         this.discount = discount;
         this.save();
-    }
-
-    @Override
-    public Long getLoanId() {
-        return null;
     }
 
     @Override

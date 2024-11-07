@@ -1,5 +1,7 @@
 package com.ambrosia.loans.discord;
 
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+
 public class DiscordConfig {
 
     private static DiscordConfig instance;
@@ -7,6 +9,7 @@ public class DiscordConfig {
     public long mainServer = 923749890104885271L;
     public long logChannel = 0;
     public long requestChannel = 0;
+    public long messageChannel = 0;
 
     public DiscordConfig() {
         instance = this;
@@ -21,7 +24,23 @@ public class DiscordConfig {
     }
 
     public void generateWarnings() {
-        if (logChannel == 0) DiscordModule.get().logger().warn("Log channel is not set");
-        if (requestChannel == 0) DiscordModule.get().logger().warn("Request channel is not set");
+        if (logChannel == 0) DiscordModule.get().logger().error("Log dest is not set");
+        if (requestChannel == 0) DiscordModule.get().logger().error("Request dest is not set");
+        if (messageChannel == 0) DiscordModule.get().logger().error("Message dest is not set");
+    }
+
+    public TextChannel getLogChannel() {
+        return DiscordBot.jda().getTextChannelById(logChannel);
+    }
+
+    public TextChannel getMessageChannel() {
+        return DiscordBot.jda().getTextChannelById(messageChannel);
+    }
+
+    public void load() {
+        if (messageChannel != 0 && getMessageChannel() == null) {
+            String msg = "messageChannel{%d} is not valid".formatted(DiscordConfig.get().logChannel);
+            DiscordModule.get().logger().error(msg);
+        }
     }
 }
