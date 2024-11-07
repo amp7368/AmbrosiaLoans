@@ -16,7 +16,7 @@ public class StaffConfigCommand extends BaseManagerCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new StaffConfigTOSCommand());
+        return List.of(new StaffConfigTOSCommand(), new StaffConfigHelpCommand());
     }
 
     @Override

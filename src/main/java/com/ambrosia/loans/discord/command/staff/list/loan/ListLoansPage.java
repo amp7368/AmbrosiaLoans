@@ -9,7 +9,6 @@ import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import com.ambrosia.loans.util.emerald.Emeralds;
 import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.util.Collection;
@@ -126,19 +125,22 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         DLoan loan = entry.entry();
         String client = loan.getClient().getEffectiveName();
         double rate = loan.getCurrentRate();
+
+        String initialAmount = EmeraldsFormatter.STACKS.format(loan.getInitialAmount());
+        String interest = EmeraldsFormatter.STACKS.format(loan.getAccumulatedInterest());
         String paid = EmeraldsFormatter.STACKS.format(loan.getTotalPaid());
         String totalOwed = EmeraldsFormatter.STACKS.format(loan.getTotalOwed());
-        Emeralds totalLoanAmount = loan.getTotalOwed().add(loan.getTotalPaid().negative());
-        String totalLoan = EmeraldsFormatter.STACKS.format(totalLoanAmount);
+
         String startDate = DiscordModule.SIMPLE_DATE_FORMATTER.format(loan.getStartDate());
         String endDate;
         if (loan.getEndDate() == null) endDate = "now";
         else endDate = DiscordModule.SIMPLE_DATE_FORMATTER.format(loan.getEndDate());
+
         DLoanStatus status = loan.getStatus();
         AmbrosiaEmoji statusEmoji = loan.getStatus().getEmoji();
         String line1 = "%2d. **%s** %s `%s` %s %s".formatted(index, client, statusEmoji, status, AmbrosiaEmoji.KEY_ID, loan.getId());
-        String line2 = AmbrosiaEmoji.LOAN_RATE.spaced() + formatPercentage(rate);
-        String line3 = "%s %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, totalLoan, paid, totalOwed);
+        String line2 = "%s %s @ %s".formatted(AmbrosiaEmoji.LOAN_RATE, initialAmount, formatPercentage(rate));
+        String line3 = "%s %s + %s - %s = %s".formatted(AmbrosiaEmoji.LOAN_BALANCE, initialAmount, interest, paid, totalOwed);
         String line4 = "%s %s - %s".formatted(AmbrosiaEmoji.ANY_DATE, startDate, endDate);
         return String.join("\n", List.of(line1, line2, line3, line4));
     }

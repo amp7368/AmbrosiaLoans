@@ -10,7 +10,7 @@ import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public class ActiveRequestPayment extends ActiveClientRequest<ActiveRequestPayme
         if (loan.isEmpty())
             throw new IllegalStateException("Client %s does not have any active loans!".formatted(getClient().getEffectiveName()));
         DLoanPayment payment = loan.get().makePayment(this);
-        DiscordLogBuilder.createPayment(payment, UserActor.of(getEndorserUser()));
+        DiscordLog.createPayment(payment, UserActor.of(getEndorserUser()));
         return AlterQueryApi.findCreateByEntityId(payment.getId(), AlterCreateType.PAYMENT);
     }
 

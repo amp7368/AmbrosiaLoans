@@ -5,8 +5,8 @@ import com.ambrosia.loans.database.account.base.IAccountChange;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.Commentable;
-import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.message.comment.Commentable;
+import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;
@@ -82,7 +82,7 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
 
     @Override
     public void updateSimulation() {
-        this.loan.getClient().updateBalance(this.amount, this.getDate(), getEventType());
+        this.getClient().updateBalance(this.amount, this.getDate(), getEventType());
     }
 
     @Override

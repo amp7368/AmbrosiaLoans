@@ -13,6 +13,8 @@ public class Bank {
     public static final BigDecimal INVESTOR_SHARE = BigDecimal.valueOf(0.6);
     // 06/30/2024 00h:31m:03s GMT
     public static final Instant MIGRATION_DATE = Instant.ofEpochSecond(1719089272L);
+    // 11/05/2024 03h:43m:39s GMT
+    public static final Instant START_MESSAGING_DATE = Instant.ofEpochSecond(1730761306L);
 
     private static final int PRECISION = MathContext.DECIMAL128.getPrecision() * 2;
     public static final MathContext FLOOR_CONTEXT = new MathContext(PRECISION, RoundingMode.FLOOR);

@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.account.loan.LoanBuilder;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.CommentApi;
+import com.ambrosia.loans.database.message.comment.CommentApi;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;

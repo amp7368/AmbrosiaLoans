@@ -6,6 +6,7 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.DLoanMeta;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -58,13 +59,13 @@ public class LoanFreezeService {
         Instant unfreezeDate = meta.getUnfreezeDate();
         if (unfreezeToRate == null || unfreezeDate == null) {
             String msg = "Error trying to unfreeze loan{%d}. unfreezeToRate or unfreezeDate is null".formatted(loan.getId());
-            Ambrosia.get().logger().error(msg);
-            // todo more logs
+            DiscordLog.errorSystem(msg);
             return;
         }
         if (loan.isPaid()) {
             String msg = "Ignoring unfreeze action on loan{%d}. Loan is already paid!".formatted(loan.getId());
-            Ambrosia.get().logger().warn(msg);
+            DiscordLog.errorSystem(msg);
+            return;
         }
         loan.unfreezeLoan(unfreezeToRate, unfreezeDate);
     }

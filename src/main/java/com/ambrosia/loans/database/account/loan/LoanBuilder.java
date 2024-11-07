@@ -30,5 +30,7 @@ public interface LoanBuilder {
     @Nullable
     String getDiscount();
 
-    Long getLoanId();
+    default Long getLoanId() {
+        return null;
+    }
 }

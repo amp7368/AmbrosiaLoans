@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.system.log.modifier;
 
-import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.log.DiscordLogService;
 
 public record DiscordLogModifierImpl(int priority, DiscordLogModifier base) implements DiscordLogModifier {
 
@@ -10,7 +10,7 @@ public record DiscordLogModifierImpl(int priority, DiscordLogModifier base) impl
     }
 
     @Override
-    public void modify(DiscordLog log) {
+    public void modify(DiscordLogService log) {
         base.modify(log);
     }
 }

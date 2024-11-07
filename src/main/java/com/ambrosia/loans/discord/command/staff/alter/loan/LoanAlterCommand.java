@@ -3,6 +3,7 @@ package com.ambrosia.loans.discord.command.staff.alter.loan;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanAlterApi;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -23,14 +24,22 @@ public class LoanAlterCommand extends BaseAlterCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
+        AlterCommandField<DClient> client = field(CommandOption.CLIENT);
         AlterCommandField<DLoan> loan = field(CommandOption.LOAN_ID);
         AlterCommandField<Instant> startDate = field(CommandOption.LOAN_START_DATE, new CheckStart());
         AlterCommandField<Emeralds> initialAmount = field(CommandOption.LOAN_INITIAL_AMOUNT, new CheckLoanInitialAmount());
 
         CheckErrorList errors = getAndCheckErrors(event,
-            List.of(loan),
+            List.of(loan, client),
             List.of(initialAmount, startDate));
         if (errors.hasError()) return;
+        long loanId = loan.get().getId();
+        if (client.get().getId() != loanId) {
+            String msg = "Client %s, does not have a loan with id %d"
+                .formatted(client.get().getEffectiveName(), loanId);
+            replyError(event, msg);
+            return;
+        }
 
         ReplyAlterMessage message = new ReplyAlterMessage();
         if (startDate.exists()) {
@@ -50,7 +59,7 @@ public class LoanAlterCommand extends BaseAlterCommand {
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("alter", "Alter something about a loan.");
         CommandOptionList.of(
-            List.of(CommandOption.LOAN_ID),
+            List.of(CommandOption.CLIENT, CommandOption.LOAN_ID),
             List.of(CommandOption.LOAN_INITIAL_AMOUNT, CommandOption.LOAN_START_DATE)
         ).addToCommand(command);
         return command;

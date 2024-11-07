@@ -2,6 +2,7 @@ package com.ambrosia.loans.config;
 
 import apple.lib.modules.configs.data.config.init.AppleConfigInit;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.config.help.HelpCommandConfig;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class AmbrosiaStaffConfig extends AppleConfigInit {
     private static AmbrosiaStaffConfig instance;
 
     protected List<AmbrosiaTOS> termsOfServiceLinks = new ArrayList<>();
+    protected HelpCommandConfig helpCommand = new HelpCommandConfig();
 
     public AmbrosiaStaffConfig() {
         instance = this;
@@ -32,5 +34,9 @@ public class AmbrosiaStaffConfig extends AppleConfigInit {
             throw e;
         }
         return termsOfServiceLinks.get(index);
+    }
+
+    public HelpCommandConfig getHelp() {
+        return helpCommand;
     }
 }

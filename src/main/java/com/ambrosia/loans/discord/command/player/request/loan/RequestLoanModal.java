@@ -14,7 +14,7 @@ import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import com.ambrosia.loans.util.emerald.EmeraldsParser;
@@ -111,12 +111,12 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             openTOS(event, client);
             return;
         }
-        DiscordBot.getAmbrosiaServer().retrieveMemberById(event.getUser().getIdLong()).queue(member -> {
+        DiscordBot.getMainServer().retrieveMemberById(event.getUser().getIdLong()).queue(member -> {
             try {
                 DClient newClient = ClientCreateApi.createClient(minecraft, minecraft, member);
                 openTOS(event, newClient);
                 User actor = event.getUser();
-                DiscordLogBuilder.createAccount(newClient, UserActor.of(actor));
+                DiscordLog.createAccount(newClient, UserActor.of(actor));
             } catch (CreateEntityException e) {
                 MessageEmbed msg = error(e.getMessage());
                 event.replyEmbeds(msg).setEphemeral(true).queue();

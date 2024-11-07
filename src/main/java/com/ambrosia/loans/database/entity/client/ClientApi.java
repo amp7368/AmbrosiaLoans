@@ -12,6 +12,7 @@ import io.ebean.CacheMode;
 import io.ebean.DuplicateKeyException;
 import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
+import org.jetbrains.annotations.Nullable;
 
 public interface ClientApi {
 
@@ -81,20 +82,21 @@ public interface ClientApi {
 
     interface ClientCreateApi {
 
-        static DClient createClient(String clientName, String minecraft, Member discord) throws CreateEntityException {
-            if (ClientQueryApi.findByDiscord(discord.getIdLong()) != null) {
+        static DClient createClient(String clientName, String minecraftName, Member discordMember) throws CreateEntityException {
+            if (ClientQueryApi.findByDiscord(discordMember.getIdLong()) != null) {
                 throw new CreateEntityException("Your discord is already registered!");
             }
-            if (ClientQueryApi.findByName(minecraft) != null) {
+            if (ClientQueryApi.findByName(minecraftName) != null) {
                 throw new CreateEntityException(
                     "That account already exists! If this is your account, it may just need to be linked to your discord");
             }
 
-            DClient client = new DClient(clientName);
-            client.setMinecraft(ClientMinecraftDetails.fromUsername(minecraft));
-            if (client.getMinecraft() == null)
-                throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraft));
-            client.setDiscord(ClientDiscordDetails.fromMember(discord));
+            @Nullable ClientMinecraftDetails minecraft = ClientMinecraftDetails.fromUsername(minecraftName);
+            ClientDiscordDetails discord = ClientDiscordDetails.fromMember(discordMember);
+            if (minecraft == null)
+                throw new CreateEntityException("'%s' is not a valid minecraft username".formatted(minecraftName));
+
+            DClient client = new DClient(clientName, minecraft, discord);
             try {
                 client.save();
             } catch (DuplicateKeyException e) {

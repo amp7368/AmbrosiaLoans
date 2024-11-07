@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.system.log.modifier;
 
 import apple.utilities.util.Pretty;
-import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.log.DiscordLogService;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.DB;
 import java.util.Comparator;
@@ -29,6 +29,6 @@ public interface DiscordLogModifier {
         return new DiscordLogModifierImpl(priority, this);
     }
 
-    void modify(DiscordLog log);
+    void modify(DiscordLogService log);
 
 }

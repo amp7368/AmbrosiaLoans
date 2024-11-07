@@ -8,18 +8,14 @@ import com.ambrosia.loans.config.AmbrosiaStaffConfig;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.service.ServiceModule;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class Ambrosia extends ApplePlugin {
 
-    private static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(5);
     private static Ambrosia instance;
 
     public Ambrosia() {
@@ -42,8 +38,8 @@ public class Ambrosia extends ApplePlugin {
     @Override
     public List<AppleConfigLike> getConfigs() {
         return List.of(
-            configJson(AmbrosiaConfig.class, "AmbrosiaConfig"),
-            configJson(AmbrosiaStaffConfig.class, "AmbrosiaStaffConfig")
+            configJson(AmbrosiaConfig.class, "AmbrosiaConfig").setPretty(),
+            configJson(AmbrosiaStaffConfig.class, "AmbrosiaStaffConfig").setPretty()
         );
     }
 
@@ -52,23 +48,24 @@ public class Ambrosia extends ApplePlugin {
         return "AmbrosiaLoans";
     }
 
-    public void schedule(Runnable runnable, long delay) {
-        EXECUTOR.schedule(runnable, delay, TimeUnit.MILLISECONDS);
+    @Override
+    protected ScheduledExecutorService makeExecutor() {
+        return Executors.newScheduledThreadPool(5);
     }
 
-    public void schedule(Runnable runnable, Duration delay) {
-        EXECUTOR.schedule(runnable, delay.toMillis(), TimeUnit.MILLISECONDS);
+    public <T> void futureComplete(CompletableFuture<T> future, T value) {
+        execute(() -> future.complete(value));
     }
 
-    public ExecutorService executor() {
-        return EXECUTOR;
+    public <T> void futureException(CompletableFuture<T> future, Throwable e) {
+        execute(() -> future.completeExceptionally(e));
     }
 
-    public Future<?> submit(Runnable runnable) {
-        return EXECUTOR.submit(runnable);
+    public <T> Consumer<T> futureComplete(CompletableFuture<T> sent) {
+        return obj -> futureComplete(sent, obj);
     }
 
-    public <T> Future<T> submit(Callable<T> runnable) {
-        return EXECUTOR.submit(runnable);
+    public <E extends Throwable, T> Consumer<E> futureException(CompletableFuture<T> sent) {
+        return obj -> futureException(sent, obj);
     }
 }

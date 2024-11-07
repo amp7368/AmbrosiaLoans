@@ -2,8 +2,8 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.CommandCheckPermission;
 import com.ambrosia.loans.discord.command.manager.config.StaffConfigCommand;
 import com.ambrosia.loans.discord.command.manager.system.ManagerSystemCommand;
 import com.ambrosia.loans.discord.command.player.collateral.CommandCollateral;
@@ -34,14 +34,18 @@ import com.ambrosia.loans.discord.misc.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.misc.context.user.UserContextListener;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
-import com.ambrosia.loans.discord.system.log.LogService;
+import com.ambrosia.loans.discord.system.help.HelpCommandListManager;
+import com.ambrosia.loans.discord.system.log.DiscordLogService;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import discord.util.dcf.slash.DCFAbstractCommand;
+import discord.util.dcf.slash.DCFSlashCommand;
+import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.List;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -105,8 +109,8 @@ public class DiscordModule extends AppleModule {
         jda.getPresence().setPresence(Activity.customStatus("Calculating Loans"), false);
 
         DCF dcf = new DCF(jda);
-        DiscordBot.SELF_USER_AVATAR = jda.getSelfUser().getAvatarUrl();
-        DiscordBot.dcf = dcf;
+        DiscordBot.ready(dcf);
+
         jda.addEventListener(new AutoCompleteListener());
         jda.addEventListener(new UserContextListener());
 
@@ -141,7 +145,6 @@ public class DiscordModule extends AppleModule {
             new ProfileCommand(), new ShowCommand(),
             new CommandRequest(), new CommandModifyRequest(),
             new CommandCollateral());
-        // 35 count commands
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));
@@ -149,27 +152,47 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnablePost() {
-        LogService.load();
+        DiscordConfig.get().load();
+        DiscordLogService.load();
         CommandData viewProfileCommand = Commands.user("view_profile");
         DiscordBot.dcf.commands().updateCommands(
             action -> action.addCommands(viewProfileCommand),
-            commands -> {
-                for (Command command : commands) {
-                    DCFAbstractCommand abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
-
-                    boolean isStaffCommand;
-                    if (abstractCommand instanceof BaseCommand dcfCommand) {
-                        isStaffCommand = dcfCommand.isOnlyEmployee();
-                    } else if (abstractCommand instanceof BaseSubCommand dcfCommand) {
-                        isStaffCommand = dcfCommand.isOnlyEmployee();
-                    } else {
-                        isStaffCommand = false;
-                    }
-
-                    if (!isStaffCommand) continue;
-                }
-            }
+            this::updateCommandsCallback
         );
+    }
+
+    private void updateCommandsCallback(List<Command> commands) {
+        for (Command command : commands) {
+            DCFAbstractCommand abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
+            if (!(abstractCommand instanceof DCFSlashCommand baseCommand)) continue;
+
+            boolean isStaffCommand = isStaffCommand(baseCommand);
+            boolean isManagerCommand = isMangerCommand(baseCommand);
+            for (DCFSlashSubCommand dcfSub : baseCommand.getSubCommands()) {
+                if (!(dcfSub instanceof BaseSubCommand subCommand)) continue;
+
+                if (isStaffCommand)
+                    subCommand.setOnlyEmployee();
+                if (isManagerCommand)
+                    subCommand.setOnlyManager();
+            }
+            HelpCommandListManager.addCommand(baseCommand, isStaffCommand, isManagerCommand);
+        }
+        HelpCommandListManager.finishSetup();
+    }
+
+    private boolean isStaffCommand(DCFAbstractCommand abstractCommand) {
+        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
+            return dcfCommand.isOnlyEmployee();
+        }
+        return false;
+    }
+
+    private boolean isMangerCommand(DCFAbstractCommand abstractCommand) {
+        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
+            return dcfCommand.isOnlyManager();
+        }
+        return false;
     }
 
     @Override

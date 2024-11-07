@@ -5,11 +5,14 @@ import static com.ambrosia.loans.discord.request.ActiveRequestType.gson;
 import apple.utilities.database.concurrent.ConcurrentAJD;
 import apple.utilities.database.concurrent.inst.ConcurrentAJDInst;
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
+import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import discord.util.dcf.gui.stored.DCFStoredGuiFactory;
+import discord.util.dcf.gui.stored.model.DCFStoredModelManager;
 import java.io.File;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -18,13 +21,14 @@ import java.util.Map;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.jetbrains.annotations.Nullable;
 
 public class ActiveRequestDatabase {
 
     private static ConcurrentAJDInst<ActiveRequestDatabase> manager;
     private static TextChannel requestChannel;
 
-    protected DCFStoredGuiFactory<ActiveRequest<?>> requests = new DCFStoredGuiFactory<>(DiscordBot.dcf);
+    protected DCFStoredModelManager<ActiveRequest<?>> requests = DCFStoredGuiFactory.createDCFStoredModel(DiscordBot.dcf);
 
     protected Map<Long, Long> requestIdToMessageId = new HashMap<>();
     protected long incrementalId = 1000;
@@ -44,7 +48,7 @@ public class ActiveRequestDatabase {
             return;
         }
         get().requests.add(request);
-        get().requestIdToMessageId.put(request.getRequestId(), request.getId());
+        get().requestIdToMessageId.put(request.getRequestId(), request.getMessageId());
         manager.save();
     }
 
@@ -79,5 +83,18 @@ public class ActiveRequestDatabase {
         return requests.getAllMessagesCopy().stream()
             .sorted(Comparator.comparing(ActiveRequest::getRequestId))
             .toList();
+    }
+
+    @Nullable
+    public ActiveRequest<?> findLastPaymentActivity(DLoan loan) {
+        return requests.getAllMessagesCopy().stream()
+            .filter(request -> {
+                if (request instanceof ActiveRequestPayment paymentRequest) {
+                    return paymentRequest.getLoan().getId() == loan.getId();
+                }
+                return false;
+            })
+            .max(Comparator.comparing(ActiveRequest::getDateCreated))
+            .orElse(null);
     }
 }

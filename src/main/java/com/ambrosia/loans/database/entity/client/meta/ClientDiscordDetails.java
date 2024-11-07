@@ -5,12 +5,13 @@ import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -85,40 +86,48 @@ public class ClientDiscordDetails {
         return id;
     }
 
-    public void tryOpenDirectMessages(
-        @Nullable Consumer<PrivateChannel> onSuccess,
-        @Nullable Consumer<Throwable> onError) {
-        if (onError == null) onError = this::sendDmError;
+
+    public CompletableFuture<PrivateChannel> tryOpenDirectMessages() {
+        CompletableFuture<PrivateChannel> future = new CompletableFuture<>();
 
         if (getDiscordId() == null) {
             String msg = "Cannot open DMs with @%s. No discord id registered.".formatted(getUsername());
-            onError.accept(new IllegalStateException(msg));
-            return;
+            IllegalStateException err = new IllegalStateException(msg);
+            future.completeExceptionally(err);
+            return future;
         }
 
-        DiscordBot.jda().openPrivateChannelById(getDiscordId()).queue(onSuccess, onError);
+        DiscordBot.jda().openPrivateChannelById(getDiscordId()).queue(
+            (chan) -> Ambrosia.get().futureComplete(future, chan),
+            (e) -> Ambrosia.get().futureException(future, e)
+        );
+        return future;
     }
 
-    public void sendDm(MessageCreateData message) {
-        sendDm(message, null, null);
+    public CompletableFuture<Message> sendDm(MessageCreateData message) {
+        return sendDm(message, null, null);
     }
 
-    public void sendDm(MessageCreateData message,
+    public CompletableFuture<Message> sendDm(MessageCreateData message,
         @Nullable Consumer<Message> onSuccess,
         @Nullable Consumer<Throwable> onError) {
-        tryOpenDirectMessages(
-            dm -> dm.sendMessage(message).queue(onSuccess, f -> {
-                sendDmError(f);
-                if (onError != null) onError.accept(f);
-            }),
-            onError
-        );
+        CompletableFuture<Message> futureMsg = DiscordBot.jda().openPrivateChannelById(getDiscordId())
+            .flatMap(chan -> chan.sendMessage(message))
+            .submit();
+
+        futureMsg.whenCompleteAsync((msg, err) -> {
+            if (err != null) {
+                if (onError != null)
+                    onError.accept(err);
+            } else if (onSuccess != null) onSuccess.accept(msg);
+        }, Ambrosia.get().executor());
+        return futureMsg;
     }
 
     private void sendDmError(Throwable e) {
         ParameterizedMessage msg = new ParameterizedMessage("Failed to send message to @{}.", getUsername());
         Ambrosia.get().logger().error(msg, e);
-        DiscordLogBuilder.error(msg.getFormattedMessage(), UserActor.of(DStaffConductor.SYSTEM));
+        DiscordLog.error(msg.getFormattedMessage(), UserActor.of(DStaffConductor.SYSTEM));
     }
 
     public Instant getLastUpdated() {

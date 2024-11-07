@@ -20,11 +20,15 @@ import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.message.RecentActivity;
+import com.ambrosia.loans.database.message.RecentActivityType;
 import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
+import com.ambrosia.loans.discord.base.request.ActiveRequest;
+import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
@@ -34,8 +38,10 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 public interface LoanApi {
 
@@ -51,6 +57,12 @@ public interface LoanApi {
             return new QDLoan().findList();
         }
 
+        static List<DLoan> findAllLoansWithStatus(DLoanStatus status) {
+            return new QDLoan()
+                .where().status.eq(status)
+                .findList();
+        }
+
         static DLoanPayment findPaymentById(long id) {
             return new QDLoanPayment()
                 .where().id.eq(id)
@@ -61,6 +73,29 @@ public interface LoanApi {
             return new QDCollateral()
                 .where().id.eq(id)
                 .findOne();
+        }
+
+        static RecentActivity getLastLoanActivity(DLoan loan) {
+            Instant startDate = loan.getLastSection().getStartDate();
+            RecentActivity activity = RecentActivityType.OPEN_LOAN.toActivity(startDate, a ->
+                "Opened loan of %s on %s".formatted(loan.getInitialAmount(), a.getDateStr())
+            );
+
+            @Nullable DLoanPayment lastPayment = loan.getPayments().stream()
+                .max(Comparator.comparing(DLoanPayment::getDate))
+                .orElse(null);
+            if (activity.isBefore(lastPayment, DLoanPayment::getDate))
+                activity = RecentActivityType.LOAN_PAYMENT.toActivity(lastPayment.getDate(), a ->
+                    "Made payment of %s on %s".formatted(lastPayment.getLoan(), a.getDateStr())
+                );
+
+            @Nullable ActiveRequest<?> lastRequest = ActiveRequestDatabase.get().findLastPaymentActivity(loan);
+            if (activity.isBefore(lastRequest, ActiveRequest::getDateCreated))
+                activity = RecentActivityType.LOAN_REQUEST.toActivity(lastRequest.getDateCreated(), a ->
+                    "Made payment request on %s".formatted(a.getDateStr())
+                );
+
+            return activity;
         }
     }
 

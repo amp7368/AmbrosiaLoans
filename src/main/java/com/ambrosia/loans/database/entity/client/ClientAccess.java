@@ -102,6 +102,7 @@ public interface ClientAccess {
             newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
         }
         if (eventType.isLoanLike()) {
+            // todo idk why checkLoansPaid has to go before newLoanSnapshot, but it does
             checkLoansPaid(timestamp, transaction);
             newLoanSnapshot(timestamp, delta, eventType, transaction);
         } else {

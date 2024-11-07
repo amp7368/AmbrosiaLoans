@@ -4,7 +4,7 @@ import com.ambrosia.loans.database.account.base.AccountEvent;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.DComment;
+import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.request.base.BaseActiveRequestInvest;
 import com.ambrosia.loans.util.emerald.Emeralds;

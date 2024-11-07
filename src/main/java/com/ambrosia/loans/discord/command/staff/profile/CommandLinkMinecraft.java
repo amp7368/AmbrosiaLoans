@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -28,7 +28,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         client.setMinecraft(minecraft);
         client.save();
         client.profile(event::reply).send();
-        DiscordLogBuilder.modifyMinecraft(client, UserActor.of(event.getUser()));
+        DiscordLog.modifyMinecraft(client, UserActor.of(event.getUser()));
     }
 
     @Override

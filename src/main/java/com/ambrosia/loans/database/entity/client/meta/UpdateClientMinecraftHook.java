@@ -5,7 +5,7 @@ import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
-import com.ambrosia.loans.discord.system.log.DiscordLogBuilder;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.ebean.DB;
@@ -78,7 +78,7 @@ public class UpdateClientMinecraftHook {
             if (isNewName) {
                 DNameHistory lastName = client.getNameNow(NameHistoryType.MINECRAFT);
                 DNameHistory newName = NameHistoryType.MINECRAFT.updateName(client, lastName, transaction);
-                DiscordLogBuilder.updateName(lastName, newName);
+                DiscordLog.updateName(lastName, newName);
             }
             client.save(transaction);
             client.refresh();

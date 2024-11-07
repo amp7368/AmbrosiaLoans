@@ -22,10 +22,12 @@ import com.ambrosia.loans.database.bank.DBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.settings.DClientMessagingSettings;
+import com.ambrosia.loans.database.entity.client.settings.DClientSettings;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.database.message.DCheckInMessage;
-import com.ambrosia.loans.database.message.DComment;
-import com.ambrosia.loans.database.system.log.DLog;
+import com.ambrosia.loans.database.message.DClientMessage;
+import com.ambrosia.loans.database.message.comment.DComment;
+import com.ambrosia.loans.database.message.log.DLog;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import io.ebean.DB;
@@ -62,7 +64,8 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected void addEntities(List<Class<?>> entities) {
         // client
-        entities.addAll(List.of(ClientDiscordDetails.class, ClientMinecraftDetails.class));
+        entities.addAll(List.of(DClientSettings.class, DClientMessagingSettings.class,
+            ClientDiscordDetails.class, ClientMinecraftDetails.class));
         entities.add(DClient.class);
         // staff
         entities.add(DStaffConductor.class);
@@ -78,7 +81,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.addAll(List.of(DAlterCreate.class, DAlterCreateUndoHistory.class));
 
         // message
-        entities.add(DCheckInMessage.class);
+        entities.add(DClientMessage.class);
         entities.add(DComment.class);
         entities.add(DLog.class);
 
@@ -118,6 +121,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
     @Override
     protected void configureMigration(DbMigration migration, MigrationConfig config) {
+//        migration.setGeneratePendingDrop("1.7");
         DB.sqlUpdate(ACCOUNT_EVENT_ENUM).executeNow();
     }
 
