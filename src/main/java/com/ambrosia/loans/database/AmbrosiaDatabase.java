@@ -20,13 +20,14 @@ import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.alter.create.DAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.DBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.settings.DClientMessagingSettings;
 import com.ambrosia.loans.database.entity.client.settings.DClientSettings;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.DClientMessage;
 import com.ambrosia.loans.database.message.comment.DComment;
+import com.ambrosia.loans.database.message.log.DCommandLog;
 import com.ambrosia.loans.database.message.log.DLog;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
@@ -84,6 +85,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.add(DClientMessage.class);
         entities.add(DComment.class);
         entities.add(DLog.class);
+        entities.add(DCommandLog.class);
 
         // simulation
         entities.add(DClientSnapshot.class);

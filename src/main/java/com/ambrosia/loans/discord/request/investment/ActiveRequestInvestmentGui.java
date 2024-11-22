@@ -25,7 +25,7 @@ public class ActiveRequestInvestmentGui extends ActiveRequestGui<ActiveRequestIn
     }
 
     @Override
-    protected String staffCommandName() {
+    protected String staffCommand() {
         return "investment";
     }
 

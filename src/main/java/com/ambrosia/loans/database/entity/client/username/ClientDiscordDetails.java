@@ -1,9 +1,7 @@
-package com.ambrosia.loans.database.entity.client.meta;
+package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.annotation.Index;
@@ -20,8 +18,9 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
+import net.dv8tion.jda.api.requests.ErrorResponse;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import org.apache.logging.log4j.message.ParameterizedMessage;
 import org.jetbrains.annotations.Nullable;
 
 @Embeddable
@@ -30,12 +29,14 @@ public class ClientDiscordDetails {
     @Index
     @EmbeddedId
     @Column(unique = true)
-    public Long id;
+    protected Long id;
     @Column
-    public String avatarUrl;
+    protected String avatarUrl;
     @Index
     @Column
-    public String username;
+    protected String username;
+    @Column
+    protected boolean isBotBlocked = false;
     @Column
     private Timestamp lastUpdated;
     private transient DClient client;
@@ -93,6 +94,7 @@ public class ClientDiscordDetails {
         if (getDiscordId() == null) {
             String msg = "Cannot open DMs with @%s. No discord id registered.".formatted(getUsername());
             IllegalStateException err = new IllegalStateException(msg);
+            DiscordLog.errorSystem(null, err);
             future.completeExceptionally(err);
             return future;
         }
@@ -111,23 +113,22 @@ public class ClientDiscordDetails {
     public CompletableFuture<Message> sendDm(MessageCreateData message,
         @Nullable Consumer<Message> onSuccess,
         @Nullable Consumer<Throwable> onError) {
-        CompletableFuture<Message> futureMsg = DiscordBot.jda().openPrivateChannelById(getDiscordId())
+        CompletableFuture<Message> futureMsg = DiscordBot.jda()
+            .openPrivateChannelById(getDiscordId())
             .flatMap(chan -> chan.sendMessage(message))
             .submit();
 
         futureMsg.whenCompleteAsync((msg, err) -> {
-            if (err != null) {
-                if (onError != null)
-                    onError.accept(err);
-            } else if (onSuccess != null) onSuccess.accept(msg);
+            if (err == null) {
+                if (onSuccess != null) onSuccess.accept(msg);
+                client.getMeta().startMarkNotBlocked();
+            }
+            if (onError != null)
+                onError.accept(err);
+            if (err instanceof ErrorResponseException e && e.getErrorResponse() == ErrorResponse.CANNOT_SEND_TO_USER)
+                client.getMeta().startMarkBlocked();
         }, Ambrosia.get().executor());
         return futureMsg;
-    }
-
-    private void sendDmError(Throwable e) {
-        ParameterizedMessage msg = new ParameterizedMessage("Failed to send message to @{}.", getUsername());
-        Ambrosia.get().logger().error(msg, e);
-        DiscordLog.error(msg.getFormattedMessage(), UserActor.of(DStaffConductor.SYSTEM));
     }
 
     public Instant getLastUpdated() {
@@ -135,7 +136,8 @@ public class ClientDiscordDetails {
     }
 
     public ClientDiscordDetails updated() {
-        return new ClientDiscordDetails(this.id, this.avatarUrl, this.username);
+        this.lastUpdated = Timestamp.from(Instant.now());
+        return this;
     }
 
     public Object json() {

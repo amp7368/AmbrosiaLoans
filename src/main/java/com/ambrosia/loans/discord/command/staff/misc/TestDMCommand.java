@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.command.staff.misc;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
@@ -68,8 +68,8 @@ public class TestDMCommand extends BaseStaffCommand {
     }
 
     @Override
-    public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("test_dm", "Send a test dm to user");
+    public SlashCommandData getStaffData() {
+        SlashCommandData command = Commands.slash("test_dm", "[Staff] Send a test dm to user");
         return CommandOptionList.of(
             List.of(CommandOption.CLIENT)
         ).addToCommand(command);

@@ -1,19 +1,13 @@
 package com.ambrosia.loans.discord.command.staff.comment;
 
-import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.staff.BaseStaffCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 public class ACommentCommand extends BaseStaffCommand {
-
-    @Override
-    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
-    }
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
@@ -27,7 +21,7 @@ public class ACommentCommand extends BaseStaffCommand {
     }
 
     @Override
-    public SlashCommandData getData() {
-        return Commands.slash("acomment", "Comment on things");
+    public SlashCommandData getStaffData() {
+        return Commands.slash("acomment", "[Staff] Make comments on anything");
     }
 }

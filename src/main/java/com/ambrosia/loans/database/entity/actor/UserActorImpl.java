@@ -3,7 +3,7 @@ package com.ambrosia.loans.database.entity.actor;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
 import java.util.ArrayList;

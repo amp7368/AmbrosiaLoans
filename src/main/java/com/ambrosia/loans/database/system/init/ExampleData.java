@@ -30,7 +30,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.entity.staff.query.QDStaffConductor;
 import com.ambrosia.loans.database.message.comment.query.QDComment;
 import com.ambrosia.loans.database.message.query.QDClientMessage;
-import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;

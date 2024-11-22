@@ -42,7 +42,7 @@ public class AShowNameHistory extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("names", "View a client's past name history");
+        SubcommandData command = new SubcommandData("names", "[Staff] View a client's past name history");
         CommandOptionList.of(List.of(CommandOption.CLIENT))
             .addToCommand(command);
         return command;

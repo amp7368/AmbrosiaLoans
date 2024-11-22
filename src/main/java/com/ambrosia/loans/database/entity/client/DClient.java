@@ -11,19 +11,22 @@ import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.database.entity.client.balance.ClientBalance;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
-import com.ambrosia.loans.database.entity.client.meta.UpdateClientMetaHook;
+import com.ambrosia.loans.database.entity.client.meta.DClientMeta;
 import com.ambrosia.loans.database.entity.client.settings.DClientSettings;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
+import com.ambrosia.loans.database.entity.client.username.UpdateClientMetaHook;
 import com.ambrosia.loans.database.message.comment.Commentable;
 import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.migrate.client.ImportedClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import io.ebean.DB;
 import io.ebean.Model;
+import io.ebean.Transaction;
 import io.ebean.annotation.Cache;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
@@ -41,6 +44,7 @@ import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -90,7 +94,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private Timestamp dateCreated = Timestamp.from(Instant.now());
     @Column(nullable = false)
     private boolean blacklisted = false;
-
+    @JoinColumn
+    @OneToOne
+    private DClientMeta meta;
     @OneToOne(mappedBy = "client")
     private DClientSettings settings;
 
@@ -118,6 +124,18 @@ public class DClient extends Model implements ClientAccess, Commentable {
         settings.save();
         save();
         return settings;
+    }
+
+    public DClientMeta getMeta() {
+        if (this.meta != null) return meta;
+
+        this.meta = new DClientMeta(this);
+        try (Transaction transaction = DB.beginTransaction()) {
+            meta.save(transaction);
+            save(transaction);
+            transaction.commit();
+        }
+        return meta;
     }
 
     public DNameHistory getNameNow(NameHistoryType nameType) {
@@ -279,6 +297,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
     }
 
     public DClient setDiscord(ClientDiscordDetails discord) {
+        if (this.discord == null)
+            this.discord = discord;
         this.discord.setAll(discord);
         return this;
     }

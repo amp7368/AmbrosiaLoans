@@ -2,10 +2,10 @@ package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import java.math.BigDecimal;
@@ -55,7 +55,7 @@ public class ProfileInvestPage extends ProfilePage {
         Month month = null;
         Emeralds profitsDelta = Emeralds.zero();
         for (DClientSnapshot profit : profits) {
-            Month profitMonth = profit.getDate().atZone(DiscordModule.TIME_ZONE).getMonth();
+            Month profitMonth = profit.getDate().atZone(AmbrosiaTimeZone.getTimeZoneId()).getMonth();
             if (month == null) {
                 month = profitMonth;
             } else if (monthCount >= MAX_PROFITS_DISPLAY) {

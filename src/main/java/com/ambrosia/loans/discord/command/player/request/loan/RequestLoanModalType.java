@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class RequestLoanModalType extends DCFModalType<RequestLoanModal> {
 
-    private static final int MAX_LENGTH = 255;
     private static RequestLoanModalType withClient;
     private static RequestLoanModalType noClient;
     private final boolean requireClient;
@@ -50,21 +49,18 @@ public class RequestLoanModalType extends DCFModalType<RequestLoanModal> {
             .setPlaceholder("\"23 STX 12 LE 8 EB 56 E\" or \"12.75 STX\"")
             .build();
         TextInput reasonForLoan = TextInput.create("reason", "Reason for Loan", TextInputStyle.PARAGRAPH).setRequired(true)
-            .setMaxLength(MAX_LENGTH)
             .setPlaceholder("Why do you need a loan?")
             .build();
         TextInput repayment = TextInput.create("repayment", "Repayment Plan", TextInputStyle.PARAGRAPH).setRequired(true)
-            .setMaxLength(MAX_LENGTH)
             .setPlaceholder("What is the timeframe that you wish to pay off the loan?")
             .build();
 
-        String placeholder = "To add collateral, use following command AFTER this form `/collateral add [image] "
-            + "[description]`";
+        String placeholder = "Add description or leave this field blank. After this form, use: `/collateral add [image] "
+            + "[name]`";
         TextInput collateral = TextInput.create("collateral", "Command: /collateral add [image]", TextInputStyle.PARAGRAPH)
             .setRequired(false)
-            .setMaxLength(MAX_LENGTH)
-            .setPlaceholder(
-                placeholder)
+            .setMaxLength(100)
+            .setPlaceholder(placeholder)
             .build();
         List<TextInput> textInputs = new ArrayList<>(List.of(emeraldsInput, reasonForLoan, repayment, collateral));
         if (this.requireClient) textInputs.add(0, ign);

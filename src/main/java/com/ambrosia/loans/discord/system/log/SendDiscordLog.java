@@ -25,7 +25,7 @@ import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 import org.jetbrains.annotations.NotNull;
 
-public class DiscordLogService {
+public class SendDiscordLog {
 
     private static TextChannel channel;
     private final DClient client;
@@ -36,8 +36,9 @@ public class DiscordLogService {
     private final List<DiscordLogModifier> modifiers = new ArrayList<>();
     private Map<String, Object> json;
     private String finalizedMessage;
+    private int color = AmbrosiaColor.GREEN;
 
-    public DiscordLogService(DClient client, UserActor actor, String category, String logType, String message) {
+    public SendDiscordLog(DClient client, UserActor actor, String category, String logType, String message) {
         this.client = client;
         this.actor = actor;
         this.category = category;
@@ -74,7 +75,7 @@ public class DiscordLogService {
         return StrSubstitutor.replace(msg, stringMap);
     }
 
-    public final Future<DiscordLogService> submit() {
+    public final Future<SendDiscordLog> submit() {
         return Ambrosia.get().submit(this::_run);
     }
 
@@ -82,7 +83,7 @@ public class DiscordLogService {
         actor.fetch();
     }
 
-    private DiscordLogService _run() {
+    private SendDiscordLog _run() {
         this.gatherData();
         this.handleModifiers();
         this.finalizedMessage = this.finalizeMessage();
@@ -114,23 +115,31 @@ public class DiscordLogService {
         EmbedBuilder embed = new EmbedBuilder()
             .setTitle(getTitle())
             .appendDescription(this.getMessage())
-            .setColor(AmbrosiaColor.GREEN)
+            .setColor(getColor())
             .setFooter(getActor().getName(), getActor().getActorUrl())
             .setTimestamp(Instant.now());
         if (client != null) ClientMessage.of(client).clientAuthor(embed);
         return embed;
     }
 
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
+    }
+
     private @NotNull String getTitle() {
         return "[%s] %s".formatted(this.getCategory(), this.getLogType());
     }
 
-    public DiscordLogService modify(DiscordLogModifier modifier) {
+    public SendDiscordLog modify(DiscordLogModifier modifier) {
         this.modifiers.add(modifier);
         return this;
     }
 
-    public DiscordLogService addJson(String key, Object value) {
+    public SendDiscordLog addJson(String key, Object value) {
         if (this.json == null) this.json = new HashMap<>();
         this.json.put(key, value);
         return this;

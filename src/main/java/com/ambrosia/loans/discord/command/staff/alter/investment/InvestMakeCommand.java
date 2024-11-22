@@ -46,7 +46,7 @@ public class InvestMakeCommand extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("make", "Make an investment for a client");
+        SubcommandData command = new SubcommandData("make", "[Staff] Make an investment for a client");
         CommandOptionList.of(
             List.of(CommandOption.CLIENT, CommandOption.INVESTMENT_AMOUNT),
             List.of(CommandOption.DATE)

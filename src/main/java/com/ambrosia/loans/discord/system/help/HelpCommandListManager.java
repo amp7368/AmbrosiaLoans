@@ -12,10 +12,10 @@ import java.util.concurrent.Future;
 
 public class HelpCommandListManager {
 
-    private static final HelpOneCommandList manager = new HelpOneCommandList("Manager");
-    private static final HelpOneCommandList staff = new HelpOneCommandList("Staff");
-    private static final HelpOneCommandList client = new HelpOneCommandList("Client");
-    private static final HelpAllCommandList all = new HelpAllCommandList("All");
+    private static final HelpOneCommandList manager = new HelpOneCommandList(HelpCommandListType.MANAGER);
+    private static final HelpOneCommandList staff = new HelpOneCommandList(HelpCommandListType.STAFF);
+    private static final HelpOneCommandList client = new HelpOneCommandList(HelpCommandListType.CLIENT);
+    private static final HelpAllCommandList all = new HelpAllCommandList(HelpCommandListType.ALL);
 
     public static HelpOneCommandList getManager() {
         return manager;

@@ -1,9 +1,8 @@
 package com.ambrosia.loans.service;
 
 import apple.lib.modules.AppleModule;
-import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.service.loan.LoanFreezeService;
-import com.ambrosia.loans.service.message.MessageManager;
+import com.ambrosia.loans.service.message.MessageServiceManager;
 
 public class ServiceModule extends AppleModule {
 
@@ -19,10 +18,8 @@ public class ServiceModule extends AppleModule {
 
     @Override
     public void onEnable() {
-        if (AmbrosiaConfig.get().isProduction())
-            LoanFreezeService.load();
-
-        MessageManager.load();
+        LoanFreezeService.load();
+        MessageServiceManager.load();
     }
 
     @Override

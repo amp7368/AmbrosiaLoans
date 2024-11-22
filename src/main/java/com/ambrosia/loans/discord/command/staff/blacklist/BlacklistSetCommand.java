@@ -41,7 +41,7 @@ public class BlacklistSetCommand extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData(this.commandName, "Add a client to the blacklist");
+        SubcommandData command = new SubcommandData(this.commandName, "[Staff] Add a client to the blacklist");
         CommandOptionList.of(List.of(CommandOption.CLIENT))
             .addToCommand(command);
         return command;

@@ -10,12 +10,13 @@ public class ListLoansCommand extends BaseStaffSubCommand {
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         ListLoansGui gui = new ListLoansGui(dcf, event::reply);
-        gui.addPage(new ListLoansPage(gui));
-        gui.send();
+        new ListLoansPage(gui)
+            .addPageToGui()
+            .send();
     }
 
     @Override
     public SubcommandData getData() {
-        return new SubcommandData("loans", "List all loans");
+        return new SubcommandData("loans", "[Staff] List all loans");
     }
 }

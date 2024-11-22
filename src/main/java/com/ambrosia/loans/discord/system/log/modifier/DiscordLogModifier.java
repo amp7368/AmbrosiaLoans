@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.system.log.modifier;
 
 import apple.utilities.util.Pretty;
-import com.ambrosia.loans.discord.system.log.DiscordLogService;
+import com.ambrosia.loans.discord.system.log.SendDiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.DB;
 import java.util.Comparator;
@@ -20,6 +20,9 @@ public interface DiscordLogModifier {
         return addEntity(entityType, DB.beanId(entity).toString());
     }
 
+    static DiscordLogModifier setColor(int color) {
+        return log -> log.setColor(color);
+    }
 
     default int getPriority() {
         return 0;
@@ -29,6 +32,6 @@ public interface DiscordLogModifier {
         return new DiscordLogModifierImpl(priority, this);
     }
 
-    void modify(DiscordLogService log);
+    void modify(SendDiscordLog log);
 
 }

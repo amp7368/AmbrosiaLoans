@@ -1,4 +1,4 @@
-package com.ambrosia.loans.service.message;
+package com.ambrosia.loans.service.message.base.scheduled;
 
 import java.time.Instant;
 import java.util.Comparator;

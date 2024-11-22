@@ -1,23 +1,24 @@
 package com.ambrosia.loans.service.message.base;
 
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.meta.DClientMeta;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.message.DClientMessage;
 import com.ambrosia.loans.database.message.DMessageId;
 import com.ambrosia.loans.database.message.MessageAcknowledged;
 import com.ambrosia.loans.database.message.MessageReason;
 import com.ambrosia.loans.database.message.query.QDClientMessage;
+import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.service.ServiceModule;
-import com.ambrosia.loans.service.message.MessageDestination;
-import com.ambrosia.loans.util.BaseMessageId;
 import discord.util.dcf.gui.util.interaction.OnInteraction;
 import discord.util.dcf.gui.util.interaction.OnInteractionMap;
+import discord.util.dcf.util.message.DiscordMessageIdData;
 import io.ebean.DB;
 import io.ebean.Transaction;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -32,18 +33,18 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
-public abstract class SentClientMessage extends BaseMessageId {
+public abstract class SentClientMessage {
 
-    private final transient OnInteractionMap onInteractionMap = new OnInteractionMap();
-    private final String typeId;
-
-    protected String description;
-    protected transient List<DMessageId> staffMessageIds = new ArrayList<>();
-    protected long clientId;
-    protected transient DClient client;
-    protected UUID clientMessageId;
-    protected transient DClientMessage clientMessage;
-    protected MessageAcknowledged status = MessageAcknowledged.SENT;
+    protected final String typeId;
+    private final DiscordMessageIdData message = new DiscordMessageIdData();
+    private transient List<DMessageId> staffMessageIds = new ArrayList<>();
+    private transient DClient client;
+    private transient DClientMessage clientMessage;
+    private transient OnInteractionMap onInteractionMap;
+    private MessageAcknowledged status = MessageAcknowledged.SENT;
+    private long clientId;
+    private UUID clientMessageId;
+    private String description;
 
     public SentClientMessage(SentClientMessageType typeId) {
         this.typeId = typeId.getTypeId();
@@ -57,16 +58,20 @@ public abstract class SentClientMessage extends BaseMessageId {
         init();
     }
 
-    public SentClientMessage load(DClientMessage one) {
-        this.clientMessage = one;
-        this.status = one.getStatus();
-        this.client = one.getClient();
-        this.staffMessageIds = one.getStaffMessages();
+    public SentClientMessage load(DClientMessage db) {
+        this.clientMessageId = db.getId();
+        this.clientMessage = db;
+        this.status = db.getStatus();
+        this.client = db.getClient();
+        this.staffMessageIds = db.getStaffMessages();
         init();
         return this;
     }
 
     protected void init() {
+        if (!canInteract()) return;
+
+        onInteractionMap = new OnInteractionMap();
         registerButton(acknowledgeBtn().getId(), this::onAcknowledge);
     }
 
@@ -74,15 +79,17 @@ public abstract class SentClientMessage extends BaseMessageId {
         return status == MessageAcknowledged.ACKNOWLEDGED;
     }
 
-    private void registerButton(String id, OnInteraction<ButtonInteractionEvent> function) {
+    protected final void registerButton(String id, OnInteraction<ButtonInteractionEvent> function) {
+        if (!canInteract())
+            throw new IllegalStateException("SentClientMessage must have canInteract() == true");
         onInteractionMap.put(ButtonInteractionEvent.class, id, function);
     }
 
-    public String getDescription() {
+    public final String getDescription() {
         return this.description;
     }
 
-    public void setDescription(String description) {
+    public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -91,8 +98,9 @@ public abstract class SentClientMessage extends BaseMessageId {
         return ClientQueryApi.findById(clientId);
     }
 
-    public OnInteractionMap onInteractionMap() {
-        return onInteractionMap;
+    public <Event> void onInteraction(String componentId, Event event) {
+        if (onInteractionMap == null) return;
+        onInteractionMap.onInteraction(componentId, event);
     }
 
     public UUID getId() {
@@ -123,23 +131,34 @@ public abstract class SentClientMessage extends BaseMessageId {
     }
 
     protected void onAcknowledge(ButtonInteractionEvent event) {
-        getDB().acknowledge();
         this.status = MessageAcknowledged.ACKNOWLEDGED;
-        MessageEditData msg = MessageEditData.fromCreateData(makeClientMessage());
-        event.editMessage(msg).queue();
+        try {
+            updateDiscordMessages(event);
+        } finally {
+            getDB().setStatus(this.status)
+                .setSentMessage(this)
+                .save();
+        }
+    }
 
+    private void updateDiscordMessages(ButtonInteractionEvent event) {
+        MessageEditData msg = MessageEditData.fromCreateData(makeClientMessage());
+        DClientMeta meta = client.getMeta();
+        event.editMessage(msg).queue(meta::startMarkNotBlocked, meta::startMarkBlocked);
         for (DMessageId staffMessageId : staffMessageIds) {
             MessageEditData editData = MessageEditData.fromCreateData(makeStaffMessage());
-            RestAction<Message> send = staffMessageId.editMessage(editData);
-            if (send == null) continue;
-            send.queue();
+            RestAction<Message> send = staffMessageId.getMessage().editMessage(editData);
+            if (send == null) {
+                String error = "[%s] Could not find channel{%d} for %s message{%d}"
+                    .formatted(getReason().display(), staffMessageId.getChannelId(), "staff", staffMessageId.getMessageId());
+                DiscordLog.errorSystem(error, null);
+            } else
+                send.queue();
         }
-        getDB().setSentMessage(this).save();
     }
 
     public <T extends SentClientMessage> CompletableFuture<Void> sendFirst(T self, List<MessageDestination<T>> destinations) {
-        DClientMessage db = makeDB(this);
-        db.save();
+        createDB();
 
         if (self != this) {
             DiscordLog.errorSystem("self is not this in SentClientMessage");
@@ -149,7 +168,14 @@ public abstract class SentClientMessage extends BaseMessageId {
         if (discord == null)
             throw new IllegalStateException("Client discord is null");
 
-        CompletableFuture<Message> dmMsg = discord.sendDm(makeClientMessage());
+        CompletableFuture<Message> dmMsg;
+        if (AmbrosiaConfig.get().isProduction()) {
+            dmMsg = discord.sendDm(makeClientMessage());
+        } else {
+            dmMsg = DiscordConfig.get().getMessageChannel()
+                .sendMessage(makeClientMessage())
+                .submit();
+        }
 
         List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
             .map(dest -> dest.send(self))
@@ -157,8 +183,9 @@ public abstract class SentClientMessage extends BaseMessageId {
 
         CompletableFuture<Void> future = new CompletableFuture<>();
         dmMsg.whenComplete((msg, err) -> {
+            if (err != null) return;
             try {
-                finishSetup(db, msg, destinationMsgs);
+                finishSetup(msg, destinationMsgs);
             } finally {
                 future.complete(null);
             }
@@ -166,7 +193,7 @@ public abstract class SentClientMessage extends BaseMessageId {
         return future;
     }
 
-    private void finishSetup(DClientMessage db, Message msg, List<CompletableFuture<Message>> destinationMsgs) {
+    private void finishSetup(Message sent, List<CompletableFuture<Message>> destinationMsgs) {
         for (CompletableFuture<Message> dest : destinationMsgs) {
             try {
                 Message destMsg = dest.get();
@@ -178,31 +205,39 @@ public abstract class SentClientMessage extends BaseMessageId {
                 ServiceModule.get().logger().error(error, e);
             }
         }
+        message.setMessage(sent);
 
+        DClientMessage db = getDB();
         try (Transaction transaction = DB.beginTransaction()) {
             db.refresh();
-            db.setMessage(msg).save(transaction);
+            db.setSentMessage(this)
+                .setMessage(sent)
+                .save(transaction);
             for (DMessageId m : staffMessageIds)
                 m.setClient(db).save(transaction);
 
             transaction.commit();
         } catch (Exception e) {
             String error = "Cannot save %s's message".formatted(getClient().getEffectiveName());
-            DiscordLog.errorSystem(error);
-            ServiceModule.get().logger().error(error, e);
+            DiscordLog.errorSystem(error, e);
+            db.setStatus(MessageAcknowledged.ERROR).save();
+        } finally {
+            db.refresh();
         }
     }
 
     public abstract MessageReason getReason();
 
-    public DClientMessage makeDB(SentClientMessage sentClientMessage) {
-        return new DClientMessage(
+    public void createDB() {
+        DClientMessage db = new DClientMessage(
             getClient(),
             getReason(),
             getDescription(),
-            Instant.now(),
-            sentClientMessage
+            this
         );
+        db.save();
+        this.clientMessage = db;
+        this.clientMessageId = db.getId();
     }
 
     protected abstract MessageCreateData makeClientMessage();
@@ -225,6 +260,8 @@ public abstract class SentClientMessage extends BaseMessageId {
         actionRows.add(ActionRow.of(acknowledgeBtn()));
         return actionRows;
     }
+
+    protected abstract boolean canInteract();
 
     protected abstract EmbedBuilder modifyEmbed(EmbedBuilder embed);
 }

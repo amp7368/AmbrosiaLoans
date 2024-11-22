@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.message.loan;
 
-import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -14,8 +14,8 @@ public interface CollateralMessage {
 
     @CheckReturnValue
     default MessageCreateData collateralDescription(EmbedBuilder embed, String header, @NotNull String filename,
-        @Nullable String description, @Nullable FileUpload image, ActionRow... actionRow) {
-        embed.setColor(AmbrosiaColor.GREEN);
+        @Nullable String description, @Nullable FileUpload image, DCollateralStatus status, ActionRow... actionRow) {
+        embed.setColor(status.getColor());
         embed.appendDescription(header);
 
         embed.appendDescription("**Name:** %s\n".formatted(filename));

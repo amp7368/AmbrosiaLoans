@@ -57,4 +57,8 @@ public class LoadingClient {
     public Instant joinDate() {
         return client.getDateCreated();
     }
+
+    public boolean isZero() {
+        return !isInvestor() && !hasActiveLoan();
+    }
 }

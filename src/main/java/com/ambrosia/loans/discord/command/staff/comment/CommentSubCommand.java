@@ -33,7 +33,7 @@ public class CommentSubCommand extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData(subCommand, "Comment on a loan");
+        SubcommandData command = new SubcommandData(subCommand, "[Staff] Comment on a %s".formatted(subCommand));
         CommandOptionList.of(
             List.of(entityOption, CommandOption.COMMENT)
         ).addToCommand(command);

@@ -4,22 +4,23 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.settings.frequency.NextMessageTime;
+import com.ambrosia.loans.database.message.MessageReason;
 import com.ambrosia.loans.database.message.RecentActivity;
-import com.ambrosia.loans.service.message.MessageDestination;
-import com.ambrosia.loans.service.message.base.ScheduledClientMessage;
+import com.ambrosia.loans.service.message.base.MessageDestination;
+import com.ambrosia.loans.service.message.base.scheduled.ScheduledClientMessage;
 
-public class ScheduledLoanMessage extends ScheduledClientMessage<SentLoanMessage> {
+public class ScheduledLoanMessage extends ScheduledClientMessage<LoanReminderMessage> {
 
-    private final NextMessageTime frequency;
+    private final NextMessageTime nextMessageTime;
     private final DLoan loan;
     private final RecentActivity lastActivity;
 
-    public ScheduledLoanMessage(NextMessageTime frequency, DLoan loan, RecentActivity lastActivity) {
-        super(loan.getClient(), frequency.first());
-        this.frequency = frequency;
+    public ScheduledLoanMessage(NextMessageTime nextMessageTime, DLoan loan, RecentActivity lastActivity) {
+        super(loan.getClient(), nextMessageTime.first());
+        this.nextMessageTime = nextMessageTime;
         this.loan = loan;
         this.lastActivity = lastActivity;
-        addDestination(MessageDestination.ofMessageChannel(SentLoanMessage::makeStaffMessage));
+        addDestination(MessageDestination.ofMessagesChannel());
     }
 
     @Override
@@ -29,12 +30,17 @@ public class ScheduledLoanMessage extends ScheduledClientMessage<SentLoanMessage
             **Recent activity:**
             - %s
                         
-            The next reminder will be in **%s** on *%s*
-            """.trim().formatted(formatDate(loan.getStartDate()), lastActivity, frequency.display(), formatDate(frequency.next()));
+            %s
+            """.trim().formatted(formatDate(loan.getStartDate()), lastActivity, nextMessageTime.message());
     }
 
     @Override
-    protected SentLoanMessage makeSentMessage() {
-        return new SentLoanMessage(loan);
+    public MessageReason getReason() {
+        return MessageReason.LOAN_REMINDER;
+    }
+
+    @Override
+    protected LoanReminderMessage makeSentMessage() {
+        return new LoanReminderMessage(loan);
     }
 }

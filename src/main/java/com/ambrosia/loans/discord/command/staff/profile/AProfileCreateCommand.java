@@ -3,7 +3,7 @@ package com.ambrosia.loans.discord.command.staff.profile;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -39,7 +39,7 @@ public class AProfileCreateCommand extends BaseCommand {
 
 
     public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("aprofile_create", "Create a profile for a client");
+        SlashCommandData command = Commands.slash("aprofile_create", "[Staff] Create a profile for a client");
         CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command)
             .setDefaultPermissions(DefaultMemberPermissions.DISABLED)

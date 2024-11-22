@@ -4,9 +4,9 @@ import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientCreateApi;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
+import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
@@ -134,6 +134,8 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
         );
 
         AcceptTOSGui gui = new AcceptTOSGui(DiscordBot.dcf, event::reply);
-        new AcceptTOSRequest(gui, client, this::onAccept, this::onReject).send();
+        new AcceptTOSRequest(gui, client, this::onAccept, this::onReject)
+            .addPageToGui()
+            .send();
     }
 }

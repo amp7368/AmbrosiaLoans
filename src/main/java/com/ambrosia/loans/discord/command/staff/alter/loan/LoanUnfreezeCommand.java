@@ -63,7 +63,7 @@ public class LoanUnfreezeCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("unfreeze", "Unfreeze a frozen loan");
+        SubcommandData command = new SubcommandData("unfreeze", "[Staff] Unfreeze a frozen loan");
         CommandOptionList.of(
             List.of(CommandOption.LOAN_ID)
         ).addToCommand(command);

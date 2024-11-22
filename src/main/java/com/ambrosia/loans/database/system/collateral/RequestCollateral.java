@@ -39,15 +39,19 @@ public class RequestCollateral {
 
     @Nullable
     public File getImageFile() {
-        if (!hasImage) return null;
+        if (!hasImage()) return null;
         return CollateralManager.getRequestImageFile(id);
     }
 
     @NotNull
     public String getName() {
         if (this.name != null) return this.name;
-        else if (hasImage) return "collateral.png";
+        else if (hasImage()) return "collateral.png";
         else return "text description";
+    }
+
+    public boolean hasImage() {
+        return hasImage;
     }
 
     @Nullable

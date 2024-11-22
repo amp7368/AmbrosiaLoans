@@ -11,7 +11,7 @@ public class ActiveRequestAccountGui extends ActiveRequestGui<ActiveRequestAccou
     }
 
     @Override
-    protected String staffCommandName() {
+    protected String staffCommand() {
         return null;
     }
 

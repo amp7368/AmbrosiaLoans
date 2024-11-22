@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.base.command;
 
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordPermissions;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import net.dv8tion.jda.api.entities.Member;
@@ -9,7 +10,7 @@ public interface CommandCheckPermission extends SendMessage {
 
     default boolean isBadPermission(SlashCommandInteractionEvent event) {
         Member sender = event.getMember();
-        if (requiresMember() && sender == null) {
+        if (requiresMember() && !DiscordBot.isMainServer(event.getGuild())) {
             ErrorMessages.onlyInAmbrosia().replyError(event);
             return true;
         }

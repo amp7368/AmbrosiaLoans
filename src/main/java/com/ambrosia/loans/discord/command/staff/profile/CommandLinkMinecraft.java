@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.staff.profile;
 
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -38,7 +38,7 @@ public class CommandLinkMinecraft extends BaseSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("minecraft", "Link a client's profile with their minecraft account");
+        SubcommandData command = new SubcommandData("minecraft", "[Staff] Link a client's profile with their minecraft account");
         CommandOptionList.of(List.of(CommandOption.MINECRAFT, CommandOption.CLIENT))
             .addToCommand(command);
         return command;

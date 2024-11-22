@@ -47,7 +47,7 @@ public class LoanDefaultCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("default", "Default a loan");
+        SubcommandData command = new SubcommandData("default", "[Staff] Default a loan");
         CommandOptionList.of(
             List.of(CommandOption.LOAN_ID),
             List.of(CommandOption.DATE)

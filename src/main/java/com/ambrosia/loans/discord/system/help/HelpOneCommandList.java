@@ -8,8 +8,8 @@ public class HelpOneCommandList extends BaseHelpCommandList {
 
     private final List<String> commands = new ArrayList<>();
 
-    public HelpOneCommandList(String title) {
-        super(title);
+    public HelpOneCommandList(HelpCommandListType type) {
+        super(type);
     }
 
     @Override
@@ -24,6 +24,6 @@ public class HelpOneCommandList extends BaseHelpCommandList {
     @Override
     public void addCommand(HelpCommandListType type, DCFSlashCommand base) {
         super.addCommand(type, base);
-        commands.add(commandToString(base));
+        commands.add(commandToString(type, base));
     }
 }

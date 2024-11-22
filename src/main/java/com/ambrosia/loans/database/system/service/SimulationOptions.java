@@ -13,7 +13,7 @@ public class SimulationOptions {
     }
 
     public Instant getEndDate() {
-        return Objects.requireNonNullElseGet(endDate, Instant::now);
+        return Objects.requireNonNullElseGet(endDate, () -> Instant.now().plusSeconds(1));
     }
 
     /**

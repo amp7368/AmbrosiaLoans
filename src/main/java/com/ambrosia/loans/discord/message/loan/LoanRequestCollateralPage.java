@@ -2,19 +2,17 @@ package com.ambrosia.loans.discord.message.loan;
 
 import static com.ambrosia.loans.discord.message.loan.LoanCollateralPage.btnBackToMain;
 
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
-import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
-import discord.util.dcf.util.message.DiscordMessageIdData;
 import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -78,7 +76,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
             **Status:** Not Collected
             """
             .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        return collateralDescription(embed, header, filename, description, image, actionRow);
+        return collateralDescription(embed, header, filename, description, image, DCollateralStatus.NOT_COLLECTED, actionRow);
     }
 
     @Override
@@ -90,12 +88,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
     }
 
     private void removeMessage() {
-        DCF dcf = getParent().getDCF();
-        DiscordMessageIdData msg = getParent().getMessage();
-        long messageId = msg.getMessageId();
-        TextChannel channel = msg.getChannel(dcf);
-        if (channel != null)
-            channel.deleteMessageById(messageId).queue();
+        getParent().getMessage().tryDeleteMessage();
     }
 
     public void toLast() {

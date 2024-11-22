@@ -6,7 +6,6 @@ import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.annotation.DbEnumValue;
 import java.util.Comparator;
 import java.util.Set;
-import java.util.function.Function;
 
 public enum AccountEventType {
     // in order of transaction
@@ -23,7 +22,7 @@ public enum AccountEventType {
     TRADE_GET(10, AmbrosiaEmoji.TRADE);
 
     public static final String DEFINITION = "event_type";
-    public static final Comparator<? super AccountEventType> ORDER = Comparator.comparing(Function.identity());
+    public static final Comparator<? super AccountEventType> ORDER = Comparator.comparingInt(Enum::ordinal);
     private static final Set<AccountEventType> LOAN_LIKE = Set.of(LOAN, INTEREST, PAYMENT, ADJUST_LOAN);
     private final int id;
     private final AmbrosiaEmoji emoji;

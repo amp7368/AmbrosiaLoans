@@ -20,7 +20,6 @@ import com.ambrosia.loans.database.account.query.QDClientInvestSnapshot;
 import com.ambrosia.loans.database.account.query.QDClientLoanSnapshot;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.withdrawal.query.QDWithdrawal;
-import com.ambrosia.loans.database.bank.BankApi;
 import com.ambrosia.loans.database.bank.query.QDBankSnapshot;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
@@ -35,10 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jetbrains.annotations.NotNull;
 
 public class RunBankSimulation {
 
+    public static final Object SYNC = new Object();
     private static final CallableSql UPDATE_BALANCE_WITH_SNAPSHOT_QUERY = DB.createCallableSql("""
         UPDATE client c
         SET balance_loan_amount        = COALESCE(loan_balance, 0),              -- account_balance might be null
@@ -75,7 +76,6 @@ public class RunBankSimulation {
           AND end_date >= :from_date;""".formatted(
         DLoanStatus.ACTIVE,
         DLoanStatus.PAID));
-
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     private static final List<Runnable> simulations = new ArrayList<>();
     private static final Object ON_COMPLETE = new Object();
@@ -114,7 +114,9 @@ public class RunBankSimulation {
     }
 
     public static void simulate(Instant simulateStartDate) {
-        simulate(simulateStartDate, SimulationOptions.DEFAULT);
+        synchronized (RunBankSimulation.SYNC) {
+            simulate(simulateStartDate, SimulationOptions.DEFAULT);
+        }
     }
 
     public static void simulate(Instant simulateStartDate, SimulationOptions options) {
@@ -122,10 +124,23 @@ public class RunBankSimulation {
         DatabaseModule.get().logger().info("Starting simulation...");
         List<DLoanPayment> loanPayments = findLoanPayments(simulateStartDate, options);
         List<IAccountChange> accountChanges = findAccountChanges(simulateStartDate, options);
-        int index = 0;
+        List<GiveToInvestors> giveAfterPayments = new ArrayList<>();
+        // use as mutable index
+        AtomicInteger index = new AtomicInteger(0);
+
+        Instant lastDate = null;
         for (DLoanPayment loanPayment : loanPayments) {
-            index = simulatePayment(loanPayment, index, accountChanges);
+            if (lastDate != null && !loanPayment.getDate().equals(lastDate)) {
+                for (GiveToInvestors give : giveAfterPayments)
+                    give.giveToInvestors();
+                giveAfterPayments.clear();
+            }
+            lastDate = loanPayment.getDate();
+            GiveToInvestors giveAfter = simulatePayment(loanPayment, index, accountChanges);
+            giveAfterPayments.add(giveAfter);
         }
+        for (GiveToInvestors give : giveAfterPayments)
+            give.giveToInvestors();
         doRelevantAccountChange(accountChanges, index, options.getEndDate(), false);
 
         for (DLoan loan : LoanQueryApi.findAllLoans()) {
@@ -135,9 +150,10 @@ public class RunBankSimulation {
         checkSimulationQueue();
     }
 
-    private static int simulatePayment(DLoanPayment loanPayment, int index, List<IAccountChange> accountChanges) {
+    private static GiveToInvestors simulatePayment(DLoanPayment loanPayment, AtomicInteger index,
+        List<IAccountChange> accountChanges) {
         Instant currentDate = loanPayment.getDate();
-        index = doRelevantAccountChange(accountChanges, index, currentDate, true);
+        doRelevantAccountChange(accountChanges, index, currentDate, true);
         loanPayment.updateSimulation();
 
         // investors
@@ -146,11 +162,7 @@ public class RunBankSimulation {
         // divide payment to investors
         BigDecimal profits = calcProfits(loanPayment).toBigDecimal();
         BigDecimal amountToInvestors = profits.multiply(Bank.INVESTOR_SHARE, Bank.FLOOR_CONTEXT);
-        long amountGiven = GiveToInvestors.giveToInvestors(investors, amountToInvestors, currentDate);
-        // difference is leftover from rounding errors
-        BigDecimal bankProfits = profits.subtract(BigDecimal.valueOf(amountGiven));
-        BankApi.updateBankBalance(bankProfits.longValue(), currentDate, AccountEventType.PROFIT);
-        return index;
+        return GiveToInvestors.giveToInvestors(investors, profits, amountToInvestors, currentDate);
     }
 
     @NotNull
@@ -170,8 +182,9 @@ public class RunBankSimulation {
     }
 
 
-    private static int doRelevantAccountChange(List<IAccountChange> accountChanges, int index, Instant currentDate,
+    private static void doRelevantAccountChange(List<IAccountChange> accountChanges, AtomicInteger mutableIndex, Instant currentDate,
         boolean isPayment) {
+        int index = mutableIndex.get();
         for (int size = accountChanges.size(); index < size; index++) {
             IAccountChange accountChange = accountChanges.get(index);
             if (accountChange.getDate().isAfter(currentDate))
@@ -183,7 +196,7 @@ public class RunBankSimulation {
             accountChange.getClient().refresh();
             accountChange.updateSimulation();
         }
-        return index;
+        mutableIndex.set(index);
     }
 
     private static List<DClient> findAllInvestors(long notClient) {

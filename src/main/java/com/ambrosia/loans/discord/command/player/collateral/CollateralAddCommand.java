@@ -50,7 +50,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
         int id = request.getData().assignCollateralId();
         RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
 
-        String msgOverride = "Added collateral!";
+        String msgOverride = "**Added collateral!**";
         if (attachment == null) {
             request.getData().addCollateral(collateral);
             DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);

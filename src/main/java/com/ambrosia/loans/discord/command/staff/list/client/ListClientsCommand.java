@@ -20,7 +20,7 @@ public class ListClientsCommand extends BaseSubCommand {
 
     @Override
     public SubcommandData getData() {
-        return new SubcommandData("clients", "List all clients");
+        return new SubcommandData("clients", "[Staff] List all clients");
     }
 
 }

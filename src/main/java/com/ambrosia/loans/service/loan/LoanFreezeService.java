@@ -3,6 +3,7 @@ package com.ambrosia.loans.service.loan;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.DLoanMeta;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
@@ -30,6 +31,7 @@ public class LoanFreezeService {
     public synchronized static void refresh() {
         if (scheduled != null) scheduled.cancel(false);
 
+        // isProduction() in findNextLoan()
         DLoan nextLoan = findNextLoan();
         if (nextLoan == null) {
             Ambrosia.get().logger().info("No future loans to unfreeze. Skipping unfreeze schedule.");
@@ -93,10 +95,19 @@ public class LoanFreezeService {
     }
 
     private static QDLoan queryNextLoan() {
-        return new QDLoan().where()
-            .or()
-            .meta.unfreezeDate.isNotNull()
-            .meta.unfreezeToRate.isNotNull()
-            .orderBy().meta.unfreezeDate.asc();
+        if (AmbrosiaConfig.get().isProduction()) {
+            return new QDLoan().where()
+                .or()
+                .meta.unfreezeDate.isNotNull()
+                .meta.unfreezeToRate.isNotNull()
+                .orderBy().meta.unfreezeDate.asc();
+        } else {
+            return new QDLoan().where()
+                .client.id.in(100L, 101L)
+                .or()
+                .meta.unfreezeDate.isNotNull()
+                .meta.unfreezeToRate.isNotNull()
+                .orderBy().meta.unfreezeDate.asc();
+        }
     }
 }

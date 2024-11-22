@@ -83,7 +83,7 @@ public class PaymentMakeCommand extends BaseStaffSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("make", "Make a loan payment for a client");
+        SubcommandData command = new SubcommandData("make", "[Staff] Make a loan payment for a client");
         CommandOptionList.of(
             List.of(CommandOption.CLIENT, CommandOption.LOAN_ID),
             List.of(CommandOption.PAYMENT_AMOUNT, CommandOption.PAYMENT_FULL, CommandOption.DATE)

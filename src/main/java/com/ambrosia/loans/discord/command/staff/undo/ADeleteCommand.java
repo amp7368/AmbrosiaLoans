@@ -58,8 +58,8 @@ public class ADeleteCommand extends BaseStaffCommand {
     }
 
     @Override
-    public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("adelete", "Delete a database entity");
+    public SlashCommandData getStaffData() {
+        SlashCommandData command = Commands.slash("adelete", "[Staff] Delete a database entity. DANGER!");
         CommandOptionList.of(
             List.of(CommandOption.DELETE_ENTITY_TYPE, CommandOption.DELETE_ENTITY_ID)
         ).addToCommand(command);

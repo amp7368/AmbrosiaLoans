@@ -1,10 +1,8 @@
-package com.ambrosia.loans.service.message;
+package com.ambrosia.loans.service.message.base;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
-import com.ambrosia.loans.service.ServiceModule;
-import com.ambrosia.loans.service.message.base.SentClientMessage;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import net.dv8tion.jda.api.entities.Message;
@@ -18,7 +16,7 @@ public record MessageDestination<T extends SentClientMessage>(Function<T, Comple
         return new MessageDestination<>(dest);
     }
 
-    public static <T extends SentClientMessage> MessageDestination<T> of(TextChannel channel,
+    public static <T extends SentClientMessage> MessageDestination<T> ofChannel(TextChannel channel,
         Function<T, MessageCreateData> createMsg) {
         return of((m) -> {
             CompletableFuture<Message> sent = new CompletableFuture<>();
@@ -30,16 +28,20 @@ public record MessageDestination<T extends SentClientMessage>(Function<T, Comple
         });
     }
 
-    public static <T extends SentClientMessage> MessageDestination<T> ofMessageChannel(Function<T, MessageCreateData> msg) {
-        return of(DiscordConfig.get().getMessageChannel(), msg);
+    public static <T extends SentClientMessage> MessageDestination<T> ofMessagesChannel(Function<T, MessageCreateData> msg) {
+        return ofChannel(DiscordConfig.get().getMessageChannel(), msg);
+    }
+
+    public static <T extends SentClientMessage> MessageDestination<T> ofMessagesChannel() {
+        return ofChannel(DiscordConfig.get().getMessageChannel(), SentClientMessage::makeStaffMessage);
     }
 
     public CompletableFuture<Message> send(T msg) {
         try {
             return dest.apply(msg);
         } catch (Exception e) {
-            ServiceModule.get().logger().error("", e);
-            DiscordLog.errorSystem(e.getMessage());
+            String msg1 = e.getMessage();
+            DiscordLog.errorSystem(msg1, null);
             return CompletableFuture.completedFuture(null);
         }
     }

@@ -52,7 +52,7 @@ public class LoanSetRateCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("set_rate", "Set the rate of a loan");
+        SubcommandData command = new SubcommandData("set_rate", "[Staff] Set the rate of a loan");
         CommandOptionList.of(
             List.of(CommandOption.LOAN_ID, CommandOption.RATE),
             List.of(CommandOption.DATE)

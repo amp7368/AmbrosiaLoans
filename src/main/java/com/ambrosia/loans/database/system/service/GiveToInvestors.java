@@ -2,6 +2,7 @@ package com.ambrosia.loans.database.system.service;
 
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.database.bank.BankApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import io.ebean.DB;
@@ -27,13 +28,15 @@ public class GiveToInvestors {
         HAVING SUM(delta) != 0;
         """);
     private final BigDecimal totalInvested;
+    private final BigDecimal totalProfits;
     private final BigDecimal amountToInvestors;
     private final Instant currentTime;
 
     private final List<GiveInvestor> investors;
     private final BigDecimal maxInvestorBalance;
 
-    private GiveToInvestors(List<DClient> clients, BigDecimal amountToInvestors, Instant currentTime) {
+    private GiveToInvestors(List<DClient> clients, BigDecimal totalProfits, BigDecimal amountToInvestors, Instant currentTime) {
+        this.totalProfits = totalProfits;
         this.amountToInvestors = amountToInvestors;
         this.currentTime = currentTime;
         this.maxInvestorBalance = DVersionInvestorCap.getEffectiveVersion(currentTime).getInvestorCap();
@@ -44,8 +47,9 @@ public class GiveToInvestors {
         this.totalInvested = calcTotalInvested();
     }
 
-    public static long giveToInvestors(List<DClient> investors, BigDecimal amountToInvestors, Instant currentDate) {
-        return new GiveToInvestors(investors, amountToInvestors, currentDate).giveToInvestors();
+    public static GiveToInvestors giveToInvestors(List<DClient> investors, BigDecimal totalProfits, BigDecimal amountToInvestors,
+        Instant currentDate) {
+        return new GiveToInvestors(investors, totalProfits, amountToInvestors, currentDate);
     }
 
     @NotNull
@@ -56,13 +60,17 @@ public class GiveToInvestors {
     }
 
 
-    private long giveToInvestors() {
+    public void giveToInvestors() {
         payProfitsEqually();
         if (currentTime.isAfter(Bank.MIGRATION_DATE)) {
             setPastAdjustments();
             calcAdjustments();
         }
-        return distributeProfits();
+        long amountGiven = distributeProfits();
+
+        // difference is leftover from rounding errors
+        BigDecimal bankProfits = totalProfits.subtract(BigDecimal.valueOf(amountGiven));
+        BankApi.updateBankBalance(bankProfits.longValue(), currentTime, AccountEventType.PROFIT);
     }
 
     private void payProfitsEqually() {
@@ -102,12 +110,12 @@ public class GiveToInvestors {
             long amountToInvestor = investor.amountToInvestor.longValue();
             amountGiven += amountToInvestor;
             long adjustment = investor.newlyAdjusted.longValue();
-            if (amountToInvestor != 0)
-                investor.client.updateBalance(amountToInvestor, currentTime, AccountEventType.PROFIT);
             if (adjustment != 0) {
                 AccountEventType eventType = adjustment > 0 ? AccountEventType.ADJUST_UP : AccountEventType.ADJUST_DOWN;
                 investor.client.updateBalance(adjustment, currentTime, eventType);
             }
+            if (amountToInvestor != 0)
+                investor.client.updateBalance(amountToInvestor, currentTime, AccountEventType.PROFIT);
         }
         return amountGiven;
     }

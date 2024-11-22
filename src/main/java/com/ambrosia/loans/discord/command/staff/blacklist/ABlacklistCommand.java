@@ -29,6 +29,6 @@ public class ABlacklistCommand extends BaseCommand {
 
     @Override
     public SlashCommandData getData() {
-        return Commands.slash("ablacklist", "Blacklist related commands");
+        return Commands.slash("ablacklist", "[Staff] Blacklist related commands");
     }
 }

@@ -85,7 +85,7 @@ public interface CommandOption<R> {
         OptionType.NUMBER, OptionMapping::getAsDouble, d -> Duration.ofMillis((long) (86400L * d) * 1000));
     CommandOptionMulti<String, DCollateralStatus> LOAN_COLLATERAL_STATUS = new CommandOptionMapEnum<>(
         "status", "The status of the collateral",
-        DCollateralStatus.class, DCollateralStatus.values());
+        DCollateralStatus.class, DCollateralStatus.commandChoices());
     // staff query
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);

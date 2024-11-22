@@ -86,13 +86,15 @@ public class LoanFreezeCommand extends BaseAlterCommand {
         ReplyAlterMessage message = ReplyAlterMessage.of(change, successMsg);
 
         replyChange(event, errors, message);
+
+//        loan.getClient().getDiscord().sendDm()
     }
 
 
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("freeze",
-            "Freeze a loan for the specified days, or set the new duration for a currently frozen loan");
+            "[Staff] Freeze a loan for the specified days, or set the new duration for a currently frozen loan");
         CommandOptionList.of(
             List.of(CommandOption.LOAN_ID, CommandOption.LOAN_FREEZE_DURATION)
         ).addToCommand(command);

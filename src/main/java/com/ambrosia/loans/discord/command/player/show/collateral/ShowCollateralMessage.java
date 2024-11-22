@@ -35,7 +35,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
     private static final Comparator<DCollateral> BY_LOAN = Comparator.comparing(c -> c.getLoan().getStartDate());
 
     private final Collection<DCollateral> allCollateral;
-    private Comparator<DCollateral> comparator = BY_LOAN.thenComparing(BY_NAME);
+    private Comparator<DCollateral> comparator = BY_LOAN.reversed().thenComparing(BY_NAME);
 
     public ShowCollateralMessage(ClientGui gui, Collection<DCollateral> collateral) {
         super(gui);
@@ -131,7 +131,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
             """.formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getMaxPage() + 1, status);
 
         return collateralDescription(embed, header, collateral.getName(), collateral.getDescription(), collateral.getImage(),
-            components());
+            collateral.getStatus(), components());
     }
 
     public ActionRow @NotNull [] components() {

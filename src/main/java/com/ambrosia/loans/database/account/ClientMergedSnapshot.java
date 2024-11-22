@@ -1,7 +1,7 @@
 package com.ambrosia.loans.database.account;
 
 import com.ambrosia.loans.database.account.base.AccountEventType;
-import com.ambrosia.loans.discord.DiscordModule;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.Month;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class ClientMergedSnapshot implements Comparable<ClientMergedSnapshot> {
 
     private static final Comparator<ClientMergedSnapshot> COMPARATOR = Comparator.comparing(ClientMergedSnapshot::getDate)
-        .thenComparing(ClientMergedSnapshot::getEventType, AccountEventType.ORDER);
+        .thenComparing(ClientMergedSnapshot::getEventType, AccountEventType.ORDER).reversed();
     private Emeralds investBalance;
     private Emeralds loanBalance;
     private AccountEventType event;
@@ -50,8 +50,8 @@ public class ClientMergedSnapshot implements Comparable<ClientMergedSnapshot> {
 
         if (!this.event.isProfit() || !other.getEventType().isProfit()) return false;
 
-        Month thisMonth = this.date.atZone(DiscordModule.TIME_ZONE).getMonth();
-        Month otherMonth = other.getDate().atZone(DiscordModule.TIME_ZONE).getMonth();
+        Month thisMonth = this.date.atZone(AmbrosiaTimeZone.getTimeZoneId()).getMonth();
+        Month otherMonth = other.getDate().atZone(AmbrosiaTimeZone.getTimeZoneId()).getMonth();
         if (!thisMonth.equals(otherMonth)) return false;
         doMerge(other);
         return true;

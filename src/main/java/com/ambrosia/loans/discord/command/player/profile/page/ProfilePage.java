@@ -7,6 +7,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -54,12 +55,16 @@ public abstract class ProfilePage extends DCFGuiPage<ClientGui> implements Clien
         if (investBalance.gt(investorCap)) {
             Emeralds overCap = investBalance.minus(investorCap);
             msg.append("*Passive asset: %s*\n".formatted(Emeralds.of(investorCap)));
-            msg.append("*Liquid asset: %s*\n".formatted(overCap));
+            msg.append("*Liquid asset: %s*\n".formatted(EmeraldsFormatter.EXACT.format(overCap)));
         }
-        if (!loanBalance.isZero())
-            msg.append("## Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalance.negative()));
-        if (investBalance.isZero() && loanBalance.isZero())
-            msg.append("## Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalance));
+        if (!loanBalance.isZero()) {
+            String loanBalanceStr = EmeraldsFormatter.EXACT.format(loanBalance.negative());
+            msg.append("## Loan balance\n%s %s\n".formatted(AmbrosiaEmoji.LOAN_BALANCE, loanBalanceStr));
+        }
+        if (investBalance.isZero() && loanBalance.isZero()) {
+            String investBalanceStr = EmeraldsFormatter.EXACT.format(investBalance);
+            msg.append("## Balance\n%s %s\n".formatted(AmbrosiaEmoji.INVESTMENT_BALANCE, investBalanceStr));
+        }
         embed.appendDescription(msg);
     }
 

@@ -10,8 +10,8 @@ import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.system.CreateEntityException;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
+import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -41,7 +41,6 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
     protected transient DClient vouchClient;
     private Instant acceptedTOSDate;
     private int collateralId = 1;
-    private String overrideUpdateMessage = "";
 
     public ActiveRequestLoan() {
         super(ActiveRequestType.LOAN);
@@ -94,6 +93,12 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
         return this.collateral;
     }
 
+    public boolean hasImageCollateral() {
+        if (this.collateral.isEmpty()) return false;
+        if (this.collateral.size() > 1) return true;
+        return this.collateral.get(0).hasImage();
+    }
+
     @Override
     public String getReason() {
         return this.reason;
@@ -106,7 +111,6 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
 
     public void setRate(double rate) {
         this.rate = rate;
-        this.overrideUpdateMessage = "";
         this.save();
     }
 

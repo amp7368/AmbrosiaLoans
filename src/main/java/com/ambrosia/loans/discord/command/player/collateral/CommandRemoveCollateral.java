@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.command.player.collateral;
 
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
@@ -35,7 +36,7 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
         String title = "## Removed Collateral %s %d \n"
             .formatted(AmbrosiaEmoji.KEY_ID, collateral.getIndex());
         MessageCreateData msg = collateralDescription(embed, title, collateral.getName(), collateral.getDescription(),
-            collateral.getImage());
+            collateral.getImage(), DCollateralStatus.DELETED);
         event.reply(msg).queue();
     }
 

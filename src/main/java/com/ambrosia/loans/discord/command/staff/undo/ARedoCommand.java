@@ -48,8 +48,8 @@ public class ARedoCommand extends BaseStaffCommand {
     }
 
     @Override
-    public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("redo", "redo an action");
+    public SlashCommandData getStaffData() {
+        SlashCommandData command = Commands.slash("redo", "[Staff] Redo an action");
         CommandOptionList.of(List.of(CommandOption.MODIFICATION_ID))
             .addToCommand(command);
         return command;

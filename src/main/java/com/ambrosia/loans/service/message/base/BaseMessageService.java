@@ -1,22 +1,26 @@
-package com.ambrosia.loans.service.message;
+package com.ambrosia.loans.service.message.base;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.config.AmbrosiaConfig;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.service.ServiceModule;
+import com.ambrosia.loans.service.message.base.scheduled.ScheduledClientMessage;
+import com.ambrosia.loans.service.message.base.scheduled.ScheduledMessage;
+import discord.util.dcf.util.TimeMillis;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
-public abstract class MessageService<M extends ScheduledMessage> {
+public abstract class BaseMessageService<M extends ScheduledClientMessage<?>> {
 
     private static final Object SCHEDULED_SYNC = new Object();
     private final List<M> messages = new ArrayList<>();
@@ -25,7 +29,7 @@ public abstract class MessageService<M extends ScheduledMessage> {
     private boolean isRunning = false;
     private boolean queueAgain = false;
 
-    public MessageService() {
+    public BaseMessageService() {
     }
 
     protected void addMessage(M message) {
@@ -37,15 +41,21 @@ public abstract class MessageService<M extends ScheduledMessage> {
         }
     }
 
-    public List<M> getSortedMessages(boolean ascending) {
-        Comparator<ScheduledMessage> comparator;
-        if (ascending) comparator = ScheduledMessage.COMPARATOR_BY_TIME;
-        else comparator = ScheduledMessage.COMPARATOR_BY_TIME.reversed();
 
+    @NotNull
+    private List<M> getMessagesToDispatch() {
+        Instant now = Instant.now();
         synchronized (messages) {
             return messages.stream()
-                .sorted(comparator)
+                .filter(message -> !message.getNotificationTime().isAfter(now))
+                .sorted(ScheduledMessage.COMPARATOR_BY_TIME)
                 .toList();
+        }
+    }
+
+    public List<M> getMessages() {
+        synchronized (messages) {
+            return List.copyOf(messages);
         }
     }
 
@@ -56,6 +66,7 @@ public abstract class MessageService<M extends ScheduledMessage> {
     public void start() {
         synchronized (SCHEDULED_SYNC) {
             if (!this.STOP) return;
+            if (this.scheduled != null) scheduled.cancel(true);
             this.STOP = false;
         }
         DiscordLog.infoSystem("%s %s Service was STARTED".formatted(AmbrosiaEmoji.CHECK_ERROR, getName()));
@@ -70,7 +81,7 @@ public abstract class MessageService<M extends ScheduledMessage> {
         }
     }
 
-    public synchronized void refresh() {
+    private synchronized void refresh() {
         synchronized (SCHEDULED_SYNC) {
             if (STOP) return;
             if (isRunning) {
@@ -81,11 +92,16 @@ public abstract class MessageService<M extends ScheduledMessage> {
             scheduled = null;
             isRunning = true;
         }
-        ServiceModule.get().logger().debug("[{} Service] Refreshing messages...", getName());
         synchronized (messages) {
             messages.clear();
-            refreshMessages();
+            RunBankSimulation.complete();
+            synchronized (RunBankSimulation.SYNC) {
+                refreshMessages();
+            }
             messages.sort(ScheduledMessage.COMPARATOR_BY_TIME);
+            int dispatchCount = getMessagesToDispatch().size();
+            ServiceModule.get().logger().debug("[{} Service] Refreshed ({}/{}) messages to dispatch...",
+                getName(), dispatchCount, messages.size());
         }
         dispatchMessages();
 
@@ -99,7 +115,7 @@ public abstract class MessageService<M extends ScheduledMessage> {
         }
     }
 
-    @Nullable
+    @NotNull
     private Duration getTimeToNextMessage() {
         synchronized (messages) {
             Duration defaultSleep = getDefaultSleep();
@@ -110,9 +126,8 @@ public abstract class MessageService<M extends ScheduledMessage> {
                 .map(M::getNotificationTime)
                 .map(notification -> Duration.between(now, notification))
                 .orElse(defaultSleep);
-            Duration minSleep = Duration.ofSeconds(1);
+            Duration minSleep = Duration.ofSeconds(5);
 
-            if (messageDur == null) return null;
             if (messageDur.compareTo(minSleep) > 0)
                 return minSleep;
             if (messageDur.compareTo(defaultSleep) < 0)
@@ -121,6 +136,7 @@ public abstract class MessageService<M extends ScheduledMessage> {
         }
     }
 
+    @NotNull
     protected abstract Duration getDefaultSleep();
 
     protected abstract String getName();
@@ -128,18 +144,15 @@ public abstract class MessageService<M extends ScheduledMessage> {
     protected abstract void refreshMessages();
 
     private void dispatchMessages() {
-        Instant now = Instant.now();
         synchronized (messages) {
-            List<M> dispatch = messages.stream()
-                .filter(message -> now.isAfter(message.getNotificationTime()))
-                .toList();
+            List<M> dispatch = getMessagesToDispatch();
             messages.removeAll(dispatch);
             try {
                 // use a different thread to verify nothing messes with messages while this thread uses it.
                 Ambrosia.get().submit(() -> runDispatch(dispatch)).get();
             } catch (InterruptedException | ExecutionException e) {
-                DiscordLog.errorSystem("Failed to dispatch message" + e.getMessage());
-                ServiceModule.get().logger().fatal("Failed to dispatch somehow", e);
+                DiscordLog.errorSystem("[%s] Failed to dispatch messages".formatted(getName()), e);
+                stop();
             }
         }
     }
@@ -156,9 +169,14 @@ public abstract class MessageService<M extends ScheduledMessage> {
                     .map(Object::toString)
                     .collect(Collectors.joining(", "));
                 ServiceModule.get().logger().error("Failed to dispatch message. Queue is {}", messagesStr, e);
+                try {
+                    Thread.sleep(TimeMillis.DAY);
+                } catch (InterruptedException e1) {
+                    throw new RuntimeException(e1);
+                }
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(TimeMillis.MIN);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
