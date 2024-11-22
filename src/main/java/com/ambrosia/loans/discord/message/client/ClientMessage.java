@@ -1,8 +1,8 @@
 package com.ambrosia.loans.discord.message.client;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.util.Objects;

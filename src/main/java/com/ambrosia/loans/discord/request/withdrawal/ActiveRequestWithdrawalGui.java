@@ -25,7 +25,7 @@ public class ActiveRequestWithdrawalGui extends ActiveRequestGui<ActiveRequestWi
     }
 
     @Override
-    protected String staffCommandName() {
+    protected String staffCommand() {
         return "withdrawal";
     }
 

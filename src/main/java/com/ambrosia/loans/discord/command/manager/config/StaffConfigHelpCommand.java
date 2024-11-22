@@ -29,7 +29,7 @@ public class StaffConfigHelpCommand extends BaseManagerSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("help_reset", "Resend the help message with a new location");
+        SubcommandData command = new SubcommandData("help_list", "[Manager] Resend the help message with a new location");
         return CommandOptionList.of(
             List.of(CommandOption.HELP_LIST_TYPE)
         ).addToCommand(command);

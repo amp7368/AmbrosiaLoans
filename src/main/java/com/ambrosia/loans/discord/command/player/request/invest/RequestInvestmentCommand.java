@@ -66,7 +66,7 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         new AcceptTOSRequest(gui, client,
             e -> onAccept(e, request),
             e -> onReject(e, request)
-        ).send();
+        ).addPageToGui().send();
     }
 
     @Override

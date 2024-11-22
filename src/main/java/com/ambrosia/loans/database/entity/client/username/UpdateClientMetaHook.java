@@ -1,8 +1,7 @@
-package com.ambrosia.loans.database.entity.client.meta;
+package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;

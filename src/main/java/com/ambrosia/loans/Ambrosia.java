@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.service.ServiceModule;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,6 +24,8 @@ public class Ambrosia extends ApplePlugin {
     }
 
     public static void main(String[] args) {
+        TimeZone loggingTimeZone = TimeZone.getTimeZone("America/New_York");
+        TimeZone.setDefault(loggingTimeZone);
         new Ambrosia().start();
     }
 

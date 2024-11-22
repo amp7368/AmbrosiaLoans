@@ -1,8 +1,8 @@
 package com.ambrosia.loans.migrate;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 
 public class MinecraftImport {
 

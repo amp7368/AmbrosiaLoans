@@ -6,14 +6,11 @@ import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
-import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
-import discord.util.dcf.util.message.DiscordMessageIdData;
 import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -67,12 +64,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
     }
 
     private void removeMessage() {
-        DCF dcf = getParent().getDCF();
-        DiscordMessageIdData msg = getParent().getMessage();
-        long messageId = msg.getMessageId();
-        TextChannel channel = msg.getChannel(dcf);
-        if (channel != null)
-            channel.deleteMessageById(messageId).queue();
+        getParent().getMessage().tryDeleteMessage();
     }
 
     @Override
@@ -106,6 +98,6 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
             ## Collateral %s %d (%d/%d)
             **Status:** %s
             """.formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1, status);
-        return collateralDescription(embed, collateralMsg, filename, description, image, actionRow);
+        return collateralDescription(embed, collateralMsg, filename, description, image, collateral.getStatus(), actionRow);
     }
 }

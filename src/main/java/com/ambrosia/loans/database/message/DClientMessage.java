@@ -30,7 +30,7 @@ public class DClientMessage extends Model {
     protected DClient client;
     @Column
     protected MessageReason reason;
-    @Column
+    @Column(columnDefinition = "text")
     protected String message;
     @Column
     protected long messageId;
@@ -46,12 +46,11 @@ public class DClientMessage extends Model {
     @DbJson
     protected String sentMessageObj;
 
-    public DClientMessage(DClient client, MessageReason reason, String message,
-        Instant dateCreated, SentClientMessage sentClientMessage) {
+    public DClientMessage(DClient client, MessageReason reason, String message, SentClientMessage sentClientMessage) {
         this.client = client;
         this.reason = reason;
         this.message = message;
-        this.dateCreated = Timestamp.from(dateCreated);
+        this.dateCreated = Timestamp.from(Instant.now());
         this.acknowledged = MessageAcknowledged.SENDING;
         setSentMessage(sentClientMessage);
     }
@@ -79,13 +78,13 @@ public class DClientMessage extends Model {
         return this;
     }
 
-    public DClientMessage acknowledge() {
-        this.acknowledged = MessageAcknowledged.ACKNOWLEDGED;
-        return this;
-    }
-
     public MessageAcknowledged getStatus() {
         return acknowledged;
+    }
+
+    public DClientMessage setStatus(MessageAcknowledged status) {
+        this.acknowledged = status;
+        return this;
     }
 
     public DClient getClient() {
@@ -97,7 +96,7 @@ public class DClientMessage extends Model {
     }
 
     public DClientMessage setMessage(Message msg) {
-        this.acknowledged = MessageAcknowledged.SENDING;
+        this.acknowledged = MessageAcknowledged.SENT;
         this.messageId = msg.getIdLong();
         return this;
     }

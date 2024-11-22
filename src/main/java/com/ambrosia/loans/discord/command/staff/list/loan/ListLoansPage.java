@@ -5,10 +5,10 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPer
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.loan.LoanAccess;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.util.Collection;
@@ -131,10 +131,10 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         String paid = EmeraldsFormatter.STACKS.format(loan.getTotalPaid());
         String totalOwed = EmeraldsFormatter.STACKS.format(loan.getTotalOwed());
 
-        String startDate = DiscordModule.SIMPLE_DATE_FORMATTER.format(loan.getStartDate());
+        String startDate = AmbrosiaTimeZone.formatSimple(loan.getStartDate());
         String endDate;
         if (loan.getEndDate() == null) endDate = "now";
-        else endDate = DiscordModule.SIMPLE_DATE_FORMATTER.format(loan.getEndDate());
+        else endDate = AmbrosiaTimeZone.formatSimple(loan.getEndDate());
 
         DLoanStatus status = loan.getStatus();
         AmbrosiaEmoji statusEmoji = loan.getStatus().getEmoji();

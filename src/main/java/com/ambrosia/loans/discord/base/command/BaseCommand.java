@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.base.command;
 
 import discord.util.dcf.slash.DCFSlashCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 public abstract class BaseCommand extends DCFSlashCommand implements CommandCheckPermission, SendMessage {
 
@@ -25,6 +26,13 @@ public abstract class BaseCommand extends DCFSlashCommand implements CommandChec
     @Override
     public boolean isOnlyEmployee() {
         return isOnlyEmployee;
+    }
+
+    @Override
+    protected SlashCommandData finalizeCommandData(SlashCommandData data) {
+        boolean staff = isOnlyEmployee() || isOnlyManager();
+        if (staff) data.setGuildOnly(true);
+        return data;
     }
 
     @Override

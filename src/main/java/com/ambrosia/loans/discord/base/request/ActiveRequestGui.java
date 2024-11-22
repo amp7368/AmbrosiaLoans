@@ -4,7 +4,7 @@ import apple.utilities.util.Pretty;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
@@ -15,7 +15,7 @@ import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
-import discord.util.dcf.util.TimeMillis;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -196,25 +196,30 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     protected void finalizeEmbed(EmbedBuilder embed) {
     }
 
-    protected abstract String staffCommandName();
+    protected abstract String staffCommand();
 
     protected abstract String clientCommandName();
 
     private String staffModifyMessage() {
-        if (staffCommandName() == null) return null;
+        if (staffCommand() == null) return null;
         if (data.stage.isComplete()) return null;
+        String mention = DiscordBot.dcf.commands()
+            .getCommandAsMention("/amodify_request " + staffCommand());
         return """
-            `/amodify_request %s request_id:%d`
-            """.formatted(staffCommandName(), data.getRequestId());
+            %s **request_id:%d**
+            """.formatted(mention, data.getRequestId());
     }
 
+    @Nullable
     protected String clientModifyMessage() {
         if (clientCommandName() == null) return null;
-        if (data.stage.isComplete()) return null;
+        if (!data.stage.isBeforeClaimed()) return null;
+        String mention = DiscordBot.dcf.commands()
+            .getCommandAsMention("/modify_request " + staffCommand());
         return """
-            `/modify_request %s request_id:%d`
+            %s **request_id:%d**
             Use the above command to modify your request.
-            """.formatted(staffCommandName(), data.getRequestId());
+            """.formatted(mention, data.getRequestId());
     }
 
 
@@ -234,7 +239,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         if (this.error != null) description.append(error);
         for (String next : extra) {
             if (next == null || next.isBlank()) continue;
-            if (!description.toString().isBlank()) description.append("\n\n");
+            if (!description.toString().isBlank()) description.append("\n");
             description.append(next);
         }
         return description.toString();
@@ -284,24 +289,24 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     public void updateSender(@Nullable String msgOverride) {
         DClient client = data.sender.getClient();
-        client.getDiscord().tryOpenDirectMessages().thenAccept((channel) -> {
+        ClientDiscordDetails discord = client.getDiscord();
+        if (discord == null) {
+            String msg = "%s's discord is null!".formatted(client.getEffectiveName());
+            DiscordLog.errorSystem(msg, null);
+            return;
+        }
+        discord.tryOpenDirectMessages().thenAccept((channel) -> {
                 DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
-                guiClient(editMessage, msgOverride).send(null, e -> {
-                    String username = client.getDiscord(ClientDiscordDetails::getUsername);
-                    String msg = "Failed to send message to @%s.".formatted(username);
-                    DiscordLog.errorSystem(msg);
-                });
+                guiClient(editMessage, msgOverride).send(
+                    s -> client.getMeta().startMarkNotBlocked(),
+                    e -> client.getMeta().startMarkBlocked()
+                );
             }
         );
     }
 
     public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {
-        ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage) {
-            @Override
-            public long getMillisToOld() {
-                return TimeMillis.DAY * 7;
-            }
-        };
+        ClientGui gui = new ClientGui(data.sender.getClient(), DiscordBot.dcf, editMessage).setTimeToOld(Duration.ofDays(7));
         gui.addPage(guiClientPage(gui, msgOverride));
         return gui;
     }
@@ -330,7 +335,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     public void save() {
-        ActiveRequestDatabase.save(this.serialize());
+        ActiveRequestDatabase.save(this.getData());
     }
 
     @Override

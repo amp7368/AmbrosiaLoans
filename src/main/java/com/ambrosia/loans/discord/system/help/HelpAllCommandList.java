@@ -15,8 +15,8 @@ public class HelpAllCommandList extends BaseHelpCommandList {
     );
     private final Map<HelpCommandListType, List<String>> commandsByType = new HashMap<>();
 
-    public HelpAllCommandList(String title) {
-        super(title);
+    public HelpAllCommandList(HelpCommandListType type) {
+        super(type);
     }
 
     @Override
@@ -28,8 +28,13 @@ public class HelpAllCommandList extends BaseHelpCommandList {
         for (HelpCommandListType type : order) {
             List<String> commands = commandsByType.get(type);
             if (commands == null || commands.isEmpty()) continue;
-            orderedMessages.add(makeTitle(type.display(), getCommandCount(type)));
-            orderedMessages.addAll(commands);
+
+            String title = makeTitle(type.display(), getCommandCount(type));
+            String firstMessage = "%s\n%s".formatted(title, commands.get(0));
+            orderedMessages.add(firstMessage);
+
+            if (commands.size() != 1)
+                orderedMessages.addAll(commands.subList(1, commands.size()));
             orderedMessages.add("");
         }
 
@@ -40,6 +45,6 @@ public class HelpAllCommandList extends BaseHelpCommandList {
     public void addCommand(HelpCommandListType type, DCFSlashCommand baseCommand) {
         super.addCommand(type, baseCommand);
         List<String> commands = commandsByType.computeIfAbsent(type, t -> new ArrayList<>());
-        commands.add(commandToString(baseCommand));
+        commands.add(commandToString(type, baseCommand));
     }
 }

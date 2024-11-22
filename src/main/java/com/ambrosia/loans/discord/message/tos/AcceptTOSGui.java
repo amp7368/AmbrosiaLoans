@@ -4,6 +4,8 @@ import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.util.TimeMillis;
+import java.time.Duration;
+import org.jetbrains.annotations.NotNull;
 
 public class AcceptTOSGui extends DCFGui {
 
@@ -13,9 +15,10 @@ public class AcceptTOSGui extends DCFGui {
         super(dcf, oo);
     }
 
+    @NotNull
     @Override
-    public long getMillisToOld() {
-        return millisToOld;
+    public Duration getTimeToOld() {
+        return Duration.ofDays(1);
     }
 
     @Override

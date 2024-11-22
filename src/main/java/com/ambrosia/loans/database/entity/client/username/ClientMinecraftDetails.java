@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.entity.client.meta;
+package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import io.ebean.annotation.Index;

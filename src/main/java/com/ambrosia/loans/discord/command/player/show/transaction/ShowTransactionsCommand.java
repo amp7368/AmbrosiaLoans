@@ -17,6 +17,6 @@ public class ShowTransactionsCommand extends BaseClientSubCommand {
 
     @Override
     public SubcommandData getData() {
-        return new SubcommandData("transaction", "View all your past Transactions");
+        return new SubcommandData("transactions", "View all your past Transactions");
     }
 }

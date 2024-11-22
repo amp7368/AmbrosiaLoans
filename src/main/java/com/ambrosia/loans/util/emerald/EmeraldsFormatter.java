@@ -13,6 +13,7 @@ public class EmeraldsFormatter {
 
     public static final EmeraldsFormatter STACKS = EmeraldsFormatter.of().setStacksOnly().setNoNegative();
     public static final EmeraldsFormatter PLUS_MINUS = EmeraldsFormatter.of().setPlusMinus();
+    public static final EmeraldsFormatter EXACT = EmeraldsFormatter.of().setTruncateFields(1000);
     private boolean sign = false;
     private boolean isBold = false;
     private int truncate = 2;
@@ -69,6 +70,10 @@ public class EmeraldsFormatter {
         return this;
     }
 
+    public String format(long emeralds) {
+        return format(Emeralds.of(emeralds));
+    }
+
     public String format(Emeralds emeralds) {
         if (this.stacksOnly) {
             boolean removeNegative = emeralds.isNegative() && this.noNegativeSign;
@@ -121,8 +126,10 @@ public class EmeraldsFormatter {
             if (totalInUnits == (int) totalInUnits)
                 amountPretty = String.valueOf((int) totalInUnits);
             else {
+                int places = unit == EmeraldsUnit.BLOCKS ? 10 : 100;
+                double val = Math.floor(totalInUnits * places) / places;
                 String format = unit == EmeraldsUnit.BLOCKS ? "%.1f" : "%.2f";
-                amountPretty = format.formatted(totalInUnits);
+                amountPretty = format.formatted(val);
             }
         } else amountPretty = Pretty.commas(amount);
 

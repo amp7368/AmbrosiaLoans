@@ -49,8 +49,8 @@ public class AUndoCommand extends BaseStaffCommand {
     }
 
     @Override
-    public SlashCommandData getData() {
-        SlashCommandData command = Commands.slash("undo", "undo an action");
+    public SlashCommandData getStaffData() {
+        SlashCommandData command = Commands.slash("undo", "[Staff] Undo an action");
         CommandOptionList.of(List.of(CommandOption.MODIFICATION_ID))
             .addToCommand(command);
         return command;

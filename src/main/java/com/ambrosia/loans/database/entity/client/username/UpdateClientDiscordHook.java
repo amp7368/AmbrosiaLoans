@@ -1,10 +1,8 @@
-package com.ambrosia.loans.database.entity.client.meta;
+package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.username.DNameHistory;
-import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
@@ -66,8 +64,7 @@ public class UpdateClientDiscordHook {
             client.setDiscord(discord.updated());
             client.save();
         } catch (Exception e) {
-            Ambrosia.get().logger().error("", e);
-            DiscordLog.errorSystem("Cannot save Discord");
+            DiscordLog.errorSystem("Cannot save Discord", e);
         } finally {
             task.complete(null);
         }
@@ -95,8 +92,7 @@ public class UpdateClientDiscordHook {
             transaction.commit();
             client.refresh();
         } catch (Exception e) {
-            Ambrosia.get().logger().error("", e);
-            DiscordLog.errorSystem("Cannot save Discord");
+            DiscordLog.errorSystem("Cannot save Discord", e);
         } finally {
             task.complete(null);
         }

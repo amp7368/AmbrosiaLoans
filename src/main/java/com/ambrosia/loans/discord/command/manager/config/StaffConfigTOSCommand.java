@@ -43,7 +43,7 @@ public class StaffConfigTOSCommand extends BaseManagerSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("set_tos", "Set the TOS link & version");
+        SubcommandData command = new SubcommandData("set_tos", "[Manager] Set the TOS link & version");
         CommandOptionList.of(
             List.of(CommandOption.CONFIG_TOS_LINK, CommandOption.CONFIG_TOS_VERSION)
         ).addToCommand(command);

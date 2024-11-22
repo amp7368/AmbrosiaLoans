@@ -52,8 +52,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
 
     // logging
-    implementation 'org.apache.logging.log4j:log4j-core:2.19.0'
-    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.24.1'
+    implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.1'
 
     // for BigDecimal exponents
     implementation 'ch.obermuhlner:big-math:2.3.2'
@@ -79,7 +79,6 @@ shadowJar {
         attributes 'Multi-Release': true
     }
     doLast {
-        println botsBuildDir
         copy {
             from getArchiveFile()
             into file(botsBuildDir + "/AmbrosiaLoans")

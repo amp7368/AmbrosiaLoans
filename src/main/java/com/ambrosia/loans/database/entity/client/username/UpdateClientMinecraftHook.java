@@ -1,10 +1,8 @@
-package com.ambrosia.loans.database.entity.client.meta;
+package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.username.DNameHistory;
-import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -14,8 +12,10 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.local.LocalBucket;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HexFormat;
@@ -103,14 +103,14 @@ public class UpdateClientMinecraftHook {
 
     private static @Nullable ClientMinecraftDetails readMinecraftDetails(Object minecraftInput, String url) {
         throttleSelf();
-        try {
-            BufferedReader urlInput = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
+        try (InputStream stream = new URI(url).toURL().openStream()) {
+            BufferedReader urlInput = new BufferedReader(new InputStreamReader(stream));
             JsonObject obj = new Gson().fromJson(urlInput, JsonObject.class);
             String uuidRaw = obj.get("id").getAsString();
             String username = obj.get("name").getAsString();
             return ClientMinecraftDetails.fromRaw(toUUID(uuidRaw), username);
-        } catch (IOException e) {
-            DatabaseModule.get().logger().warn("Could not load minecraft {}", minecraftInput);
+        } catch (IOException | URISyntaxException e) {
+            DatabaseModule.get().logger().warn("Could not load minecraft %s".formatted(minecraftInput), e);
             return null;
         }
     }

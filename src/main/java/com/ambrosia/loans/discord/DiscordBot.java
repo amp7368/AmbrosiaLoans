@@ -54,4 +54,8 @@ public class DiscordBot {
         return SELF_USER;
     }
 
+    public static boolean isMainServer(Guild guild) {
+        if (guild == null) return false;
+        return guild.getIdLong() == getMainServer().getIdLong();
+    }
 }

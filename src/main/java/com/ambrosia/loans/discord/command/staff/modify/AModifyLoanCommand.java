@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.staff.modify;
 
-import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
@@ -42,7 +42,7 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
                 return ModifyRequestMsg.error("Cannot set the start date in the future");
 
             loan.getData().setStartDate(startDate);
-            return ModifyRequestMsg.info("Set the start date to %s".formatted(SIMPLE_DATE_FORMATTER.format(startDate)));
+            return ModifyRequestMsg.info("Set the start date to %s".formatted(formatDate(startDate)));
         } catch (DateTimeParseException e) {
             String startDateString = CommandOption.LOAN_START_DATE.getMap1(event);
             String msg = ErrorMessages.dateParseError(startDateString, "MM/DD/YY").toString();

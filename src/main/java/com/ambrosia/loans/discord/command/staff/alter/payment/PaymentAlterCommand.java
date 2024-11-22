@@ -43,7 +43,8 @@ public class PaymentAlterCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("alter", "Alter something about a payment. Be careful when editing old payments!");
+        SubcommandData command = new SubcommandData("alter",
+            "[Staff] Alter something about a payment. Be careful when editing old payments!");
         CommandOptionList.of(
             List.of(CommandOption.PAYMENT_ID, CommandOption.PAYMENT_AMOUNT)
         ).addToCommand(command);

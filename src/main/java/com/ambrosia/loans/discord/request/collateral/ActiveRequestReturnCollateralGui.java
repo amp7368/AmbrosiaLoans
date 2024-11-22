@@ -11,7 +11,7 @@ public class ActiveRequestReturnCollateralGui extends ActiveRequestGui<ActiveReq
     }
 
     @Override
-    protected String staffCommandName() {
+    protected String staffCommand() {
         return "";
     }
 

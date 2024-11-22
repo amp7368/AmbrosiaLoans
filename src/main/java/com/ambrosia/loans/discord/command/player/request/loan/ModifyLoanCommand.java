@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.player.request.loan;
 
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;

@@ -1,6 +1,12 @@
 package com.ambrosia.loans.database.account.loan;
 
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
+
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.adjust.AdjustApi;
+import com.ambrosia.loans.database.account.loan.LoanApi.LoanAlterApi;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
@@ -107,28 +113,32 @@ public interface LoanAccess {
         return makePayment(request.getPayment(), request.getTimestamp(), request.getConductor());
     }
 
-    default DLoanPayment makePayment(Emeralds emeralds, Instant timestamp, DStaffConductor conductor) throws OverpaymentException {
+    default DLoanPayment makePayment(Emeralds emeralds, Instant timestamp, DStaffConductor staff) throws OverpaymentException {
         if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
 
         DLoan loan = getEntity();
         Emeralds totalOwed = loan.getTotalOwed(null, timestamp);
         if (emeralds.gt(totalOwed.amount())) throw new OverpaymentException(emeralds, totalOwed);
 
-        DLoanPayment payment = new DLoanPayment(loan, timestamp, emeralds.amount(), conductor);
+        DLoanPayment payment = new DLoanPayment(loan, timestamp, emeralds.amount(), staff);
         try (Transaction transaction = DB.beginTransaction()) {
             loan.makePayment(payment, transaction);
             transaction.commit();
         }
         payment.refresh();
         loan.refresh();
-        AlterCreateApi.create(conductor, AlterCreateType.PAYMENT, payment.getId());
+        AlterCreateApi.create(staff, AlterCreateType.PAYMENT, payment.getId());
         loan.getClient().refresh();
 
         if (loan.isPaid()) {
             Instant adjustmentDate = payment.getDate().plusMillis(1);
             Emeralds adjustment = loan.getTotalOwed(null, adjustmentDate);
+            Ambrosia.get().logger().info("Loan is paid on {}. Adjustment is {}.", formatDate(adjustmentDate), adjustment);
             if (!adjustment.isZero()) {
-                AdjustApi.createAdjustment(conductor, loan, adjustment, adjustmentDate);
+                AdjustApi.createAdjustment(staff, loan, adjustment, adjustmentDate);
+            }
+            for (DCollateral collateral : loan.getCollateral()) {
+                LoanAlterApi.markCollateral(staff, collateral, loan.getEndDate(), DCollateralStatus.RETURNED);
             }
         }
 

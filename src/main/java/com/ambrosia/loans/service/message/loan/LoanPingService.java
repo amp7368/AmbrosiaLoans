@@ -10,12 +10,13 @@ import com.ambrosia.loans.database.entity.client.settings.frequency.NextMessageT
 import com.ambrosia.loans.database.message.DClientMessage;
 import com.ambrosia.loans.database.message.MessageApi.MessageQueryApi;
 import com.ambrosia.loans.database.message.RecentActivity;
-import com.ambrosia.loans.service.message.MessageService;
+import com.ambrosia.loans.service.message.base.BaseMessageService;
 import java.time.Duration;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class LoanPingService extends MessageService<ScheduledLoanMessage> {
+public class LoanPingService extends BaseMessageService<ScheduledLoanMessage> {
 
     private static final MessageFrequency LOAN_NOTIFICATION = MessageFrequency.createDefault(MessageFrequencyUnit.WEEKLY, 2);
 
@@ -25,6 +26,7 @@ public class LoanPingService extends MessageService<ScheduledLoanMessage> {
     }
 
     @Override
+    @NotNull
     protected Duration getDefaultSleep() {
         if (AmbrosiaConfig.get().isProduction())
             return Duration.ofMinutes(5);
@@ -39,9 +41,9 @@ public class LoanPingService extends MessageService<ScheduledLoanMessage> {
         for (DLoan loan : active) {
             RecentActivity lastLoanActivity = LoanQueryApi.getLastLoanActivity(loan);
             @Nullable DClientMessage lastMessage = MessageQueryApi.findLastLoanMessage(loan.getClient().getId());
-            if (lastLoanActivity.isBefore(lastMessage, DClientMessage::getDateCreated))
+            if (lastLoanActivity.isBefore(lastMessage, DClientMessage::getDateCreated)) {
                 lastLoanActivity.addReminded(lastMessage);
-
+            }
             MessageFrequency frequency = loan.getClient()
                 .getSettings()
                 .getMessaging()
@@ -49,6 +51,7 @@ public class LoanPingService extends MessageService<ScheduledLoanMessage> {
             @Nullable NextMessageTime notificationTime = frequency.calculate(
                 null, lastLoanActivity.getDateOrSystem(), LOAN_NOTIFICATION);
             if (notificationTime == null) continue;
+
             addMessage(new ScheduledLoanMessage(notificationTime, loan, lastLoanActivity));
         }
     }

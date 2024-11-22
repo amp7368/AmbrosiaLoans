@@ -34,14 +34,9 @@ public final class RecentActivity {
     }
 
     @NotNull
-    public Instant getDate() {
-        return date;
-    }
-
     public Instant getDateOrSystem() {
         if (dateOrSystem != null) return dateOrSystem;
-
-        boolean isSystem = this.lastReminded != null && date.isBefore(lastReminded.getDateCreated());
+        boolean isSystem = this.lastReminded != null && lastReminded.getDateCreated().isAfter(date);
         return this.dateOrSystem = isSystem ? lastReminded.getDateCreated() : date;
     }
 

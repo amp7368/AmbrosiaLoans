@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.system;
+package com.ambrosia.loans.database.system.exception;
 
 public class CreateEntityException extends Exception {
 

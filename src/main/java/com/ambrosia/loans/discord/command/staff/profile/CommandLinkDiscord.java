@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.staff.profile;
 
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
@@ -36,7 +36,7 @@ public class CommandLinkDiscord extends BaseSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("discord", "Link a client's profile with their discord account");
+        SubcommandData command = new SubcommandData("discord", "[Staff] Link a client's profile with their discord account");
         CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command);
     }

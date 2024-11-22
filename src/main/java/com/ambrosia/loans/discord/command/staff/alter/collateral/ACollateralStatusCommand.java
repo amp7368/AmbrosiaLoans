@@ -55,7 +55,7 @@ public class ACollateralStatusCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("status", "Set the status of collateral");
+        SubcommandData command = new SubcommandData("status", "[Staff] Set the status of collateral");
         CommandOptionList.of(
             List.of(CommandOption.COLLATERAL_ID, CommandOption.LOAN_COLLATERAL_STATUS),
             List.of(CommandOption.DATE)

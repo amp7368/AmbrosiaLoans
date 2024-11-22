@@ -35,17 +35,17 @@ import com.ambrosia.loans.discord.misc.context.user.UserContextListener;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import com.ambrosia.loans.discord.system.help.HelpCommandListManager;
-import com.ambrosia.loans.discord.system.log.DiscordLogService;
+import com.ambrosia.loans.discord.system.log.LogCommandListener;
+import com.ambrosia.loans.discord.system.log.SendDiscordLog;
 import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import discord.util.dcf.slash.DCFAbstractCommand;
 import discord.util.dcf.slash.DCFSlashCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -60,14 +60,7 @@ import org.jetbrains.annotations.NotNull;
 public class DiscordModule extends AppleModule {
 
     public static final int MAX_CHOICES = 25;
-    public static final ZoneId TIME_ZONE = ZoneId.of("America/Los_Angeles");
-    public static final DateTimeFormatter SIMPLE_DATE_FORMATTER = new DateTimeFormatterBuilder()
-        .appendPattern("MM/dd/yy")
-        .parseDefaulting(ChronoField.SECOND_OF_DAY, 0)
-        .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
-        .toFormatter()
-        .withZone(DiscordModule.TIME_ZONE);
-    public static final String DISCORD_INVITE_LINK = "https://discord.gg/tEAy2dGXWF";
+    public static final String DISCORD_INVITE_LINK = "https://discord.gg/XEg6FeApDV";
 
     private static DiscordModule instance;
 
@@ -97,22 +90,15 @@ public class DiscordModule extends AppleModule {
 
     @Override
     public void onEnable() {
-        JDABuilder builder = JDABuilder.createDefault(DiscordConfig.get().token, GatewayIntent.GUILD_MEMBERS,
-                GatewayIntent.GUILD_EMOJIS_AND_STICKERS)
-            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS);
-        JDA jda = builder.build();
-        try {
-            jda.awaitReady();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        jda.getPresence().setPresence(Activity.customStatus("Calculating Loans"), false);
+        JDA jda = createJDA();
 
         DCF dcf = new DCF(jda);
         DiscordBot.ready(dcf);
 
         jda.addEventListener(new AutoCompleteListener());
         jda.addEventListener(new UserContextListener());
+
+        jda.addEventListener(new LogCommandListener());
 
         ActiveRequestDatabase.load();
         ArchivedRequestDatabase.load();
@@ -150,10 +136,31 @@ public class DiscordModule extends AppleModule {
         dcf.modals().add(new RequestLoanModalType(false));
     }
 
+    public @NotNull JDA createJDA() {
+        ThreadPoolExecutor eventPool = new ThreadPoolExecutor(1, 3,
+            60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        String token = DiscordConfig.get().token;
+        List<GatewayIntent> intents = List.of(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS);
+
+        JDABuilder builder = JDABuilder.createDefault(token, intents)
+            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS)
+            .setEventPool(eventPool);
+        JDA jda = builder.build();
+        try {
+            jda.awaitReady();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        jda.getPresence().setPresence(Activity.customStatus("Calculating Loans"), false);
+
+        return jda;
+    }
+
     @Override
     public void onEnablePost() {
         DiscordConfig.get().load();
-        DiscordLogService.load();
+        SendDiscordLog.load();
         CommandData viewProfileCommand = Commands.user("view_profile");
         DiscordBot.dcf.commands().updateCommands(
             action -> action.addCommands(viewProfileCommand),
@@ -163,7 +170,7 @@ public class DiscordModule extends AppleModule {
 
     private void updateCommandsCallback(List<Command> commands) {
         for (Command command : commands) {
-            DCFAbstractCommand abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
+            DCFAbstractCommand<?> abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
             if (!(abstractCommand instanceof DCFSlashCommand baseCommand)) continue;
 
             boolean isStaffCommand = isStaffCommand(baseCommand);
@@ -181,14 +188,14 @@ public class DiscordModule extends AppleModule {
         HelpCommandListManager.finishSetup();
     }
 
-    private boolean isStaffCommand(DCFAbstractCommand abstractCommand) {
+    private boolean isStaffCommand(DCFAbstractCommand<?> abstractCommand) {
         if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
             return dcfCommand.isOnlyEmployee();
         }
         return false;
     }
 
-    private boolean isMangerCommand(DCFAbstractCommand abstractCommand) {
+    private boolean isMangerCommand(DCFAbstractCommand<?> abstractCommand) {
         if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
             return dcfCommand.isOnlyManager();
         }

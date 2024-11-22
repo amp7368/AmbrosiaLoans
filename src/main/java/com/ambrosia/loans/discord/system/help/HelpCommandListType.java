@@ -14,6 +14,23 @@ public enum HelpCommandListType {
         return CLIENT;
     }
 
+    public String getCommandPrefix() {
+        return switch (this) {
+            case MANAGER -> "[Manager]";
+            case STAFF -> "[Staff]";
+            case CLIENT, ALL -> "";
+        };
+    }
+
+    public String getTitle() {
+        return switch (this) {
+            case MANAGER -> "Manager";
+            case STAFF -> "Staff";
+            case CLIENT -> "Client";
+            case ALL -> "All";
+        };
+    }
+
     public HelpCommandList getList() {
         return switch (this) {
             case MANAGER -> HelpCommandListManager.getManager();

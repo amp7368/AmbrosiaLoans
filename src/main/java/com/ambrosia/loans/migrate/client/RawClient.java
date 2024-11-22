@@ -1,7 +1,7 @@
 package com.ambrosia.loans.migrate.client;
 
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.migrate.ImportModule;
 import java.util.UUID;

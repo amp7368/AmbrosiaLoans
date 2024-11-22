@@ -11,9 +11,9 @@ import org.jetbrains.annotations.Nullable;
 @Embeddable
 public class DLoanMeta {
 
-    @Column
+    @Column(columnDefinition = "text")
     private String reason;
-    @Column
+    @Column(columnDefinition = "text")
     private String repayment;
     @OneToOne
     private DClient vouch;

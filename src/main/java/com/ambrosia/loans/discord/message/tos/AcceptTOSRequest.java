@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.message.tos;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
@@ -22,7 +22,6 @@ public class AcceptTOSRequest extends DCFGuiPage<AcceptTOSGui> {
         Consumer<ButtonInteractionEvent> onReject) {
         super(parent);
         this.client = client;
-        parent.addPage(this);
         registerButton(TOSMessage.btnAccept().getId(), e -> {
             if (this.isDenied(e)) return;
             this.accepted = true;

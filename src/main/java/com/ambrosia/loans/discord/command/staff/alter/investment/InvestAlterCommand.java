@@ -50,7 +50,7 @@ public class InvestAlterCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("alter", "Change something about an investment");
+        SubcommandData command = new SubcommandData("alter", "[Staff] Change something about an investment");
         CommandOptionList.of(
             List.of(CommandOption.INVESTMENT_ID),
             List.of(CommandOption.INVESTMENT_AMOUNT, CommandOption.DATE)

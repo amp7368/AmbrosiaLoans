@@ -1,8 +1,8 @@
 package com.ambrosia.loans.migrate.client;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.jetbrains.annotations.NotNull;

@@ -16,6 +16,7 @@ import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.WhenCreated;
+import io.ebean.config.dbplatform.DbDefaultValue;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class DAlterCreate extends Model {
     private String entityType;
     @Column(nullable = false)
     private long entityId;
-    @DbDefault("true")
+    @DbDefault(DbDefaultValue.TRUE)
     @Column(nullable = false)
     private boolean isCreated;
     @WhenCreated

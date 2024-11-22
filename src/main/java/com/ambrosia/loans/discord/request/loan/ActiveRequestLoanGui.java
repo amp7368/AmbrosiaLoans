@@ -96,28 +96,30 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     }
 
     @Override
-    protected String clientDescription() {
-        if (!this.hasClaimButton()) return null;
-        return "You can optionally add %s **Discount Codes** and a %s **Reputable Vouch** to verify your trustworthiness."
-            .formatted(AmbrosiaEmoji.LOAN_DISCOUNT, AmbrosiaEmoji.CLIENT_ACCOUNT);
-    }
-
-    @Override
     protected String clientCommandName() {
         return "loan";
     }
 
     @Override
     protected String clientModifyMessage() {
-        String additional = "To add collateral use `/collateral add request_id:%d`"
+        if (!getData().stage.isBeforeClaimed()) return super.clientModifyMessage();
+
+        String addCollat = "\n**To add collateral use** `/collateral add request_id:%d`\n"
             .formatted(data.getRequestId());
-        String msg = super.clientModifyMessage();
-        if (msg == null) return additional;
-        return "%s\n%s".formatted(msg, additional);
+        if (!getData().hasImageCollateral()) {
+            addCollat = AmbrosiaEmoji.CHECK_ERROR.spaced(addCollat);
+        }
+        String modify = super.clientModifyMessage();
+        if (modify == null) return addCollat;
+
+        String discount = "You can optionally add %s *Discount Codes* and a %s *Reputable Vouch* to verify your trustworthiness.\n"
+            .formatted(AmbrosiaEmoji.LOAN_DISCOUNT, AmbrosiaEmoji.CLIENT_ACCOUNT);
+
+        return "%s\n%s\n%s".formatted(addCollat, modify, discount);
     }
 
     @Override
-    protected String staffCommandName() {
+    protected String staffCommand() {
         return "loan";
     }
 

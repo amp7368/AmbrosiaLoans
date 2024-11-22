@@ -28,7 +28,7 @@ public class AShowTransactionCommand extends BaseSubCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("transaction", "[Staff] View a client's past Transactions");
+        SubcommandData command = new SubcommandData("transactions", "[Staff] View a client's past Transactions");
         CommandOptionList.of(List.of(CommandOption.CLIENT))
             .addToCommand(command);
         return command;

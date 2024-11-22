@@ -1,4 +1,4 @@
-SELECT SUM(delta) AS delta, client_id, minecraft_username, balance_invest_amount
+SELECT round(SUM(delta) / 4096) AS delta, client_id, minecraft_username, balance_invest_amount
 FROM client_invest_snapshot
          left join client on client_invest_snapshot.client_id = client.id
 WHERE event IN ('ADJUST_DOWN', 'ADJUST_UP')

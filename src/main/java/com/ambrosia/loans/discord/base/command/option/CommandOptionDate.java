@@ -1,13 +1,11 @@
 package com.ambrosia.loans.discord.base.command.option;
 
-import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
-
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAccessor;
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -26,8 +24,7 @@ public class CommandOptionDate extends CommandOptionMulti<String, Instant> {
 
     private static Instant parseDate(String dateString) {
         try {
-            TemporalAccessor parsed = SIMPLE_DATE_FORMATTER.parse(dateString);
-            Instant date = Instant.from(parsed);
+            Instant date = AmbrosiaTimeZone.parse(dateString);
             if (ChronoUnit.DAYS.between(date, Instant.now()) == 0)
                 return Instant.now();
             return date;

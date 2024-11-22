@@ -1,10 +1,11 @@
-package com.ambrosia.loans.service.message.base;
+package com.ambrosia.loans.service.message.base.scheduled;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.message.MessageReason;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
-import com.ambrosia.loans.service.message.MessageDestination;
-import com.ambrosia.loans.service.message.ScheduledMessage;
+import com.ambrosia.loans.service.message.base.MessageDestination;
+import com.ambrosia.loans.service.message.base.SentClientMessage;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +58,8 @@ public abstract class ScheduledClientMessage<T extends SentClientMessage> implem
     }
 
     public abstract String getDescription();
+
+    public abstract MessageReason getReason();
 
     protected abstract T makeSentMessage();
 }

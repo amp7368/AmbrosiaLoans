@@ -57,7 +57,7 @@ public class LoanAlterCommand extends BaseAlterCommand {
 
     @Override
     public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("alter", "Alter something about a loan.");
+        SubcommandData command = new SubcommandData("alter", "[Staff] Alter something about a loan.");
         CommandOptionList.of(
             List.of(CommandOption.CLIENT, CommandOption.LOAN_ID),
             List.of(CommandOption.LOAN_INITIAL_AMOUNT, CommandOption.LOAN_START_DATE)

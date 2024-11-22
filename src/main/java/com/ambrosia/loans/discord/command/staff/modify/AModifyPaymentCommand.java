@@ -1,13 +1,13 @@
 package com.ambrosia.loans.discord.command.staff.modify;
 
-import static com.ambrosia.loans.discord.DiscordModule.SIMPLE_DATE_FORMATTER;
+import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
-import com.ambrosia.loans.discord.request.payment.BaseModifyPaymentRequest;
-import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPaymentGui;
+import com.ambrosia.loans.discord.request.payment.BaseModifyPaymentRequest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -48,8 +48,7 @@ public class AModifyPaymentCommand extends BaseSubCommand implements BaseModifyP
         if (date == null) return null;
         try {
             request.getData().setTimestamp(date);
-            String dateString = SIMPLE_DATE_FORMATTER.format(date);
-            String msg = "Set the date to %s".formatted(dateString);
+            String msg = "Set the date to %s".formatted(formatDate(date));
             return ModifyRequestMsg.info(msg);
         } catch (DateTimeParseException e) {
             String dateString = CommandOption.DATE.getMap1(event);

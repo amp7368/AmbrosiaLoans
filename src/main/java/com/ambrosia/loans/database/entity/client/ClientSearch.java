@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.entity.client;
 
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
-import com.ambrosia.loans.database.entity.client.meta.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;

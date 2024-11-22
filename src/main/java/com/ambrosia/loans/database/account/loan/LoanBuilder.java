@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 public interface LoanBuilder {
@@ -32,5 +33,9 @@ public interface LoanBuilder {
 
     default Long getLoanId() {
         return null;
+    }
+
+    default Instant getStartDateOrNow() {
+        return Objects.requireNonNullElseGet(getStartDate(), Instant::now);
     }
 }

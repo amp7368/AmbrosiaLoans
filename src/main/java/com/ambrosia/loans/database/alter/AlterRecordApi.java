@@ -11,6 +11,7 @@ import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.util.List;
@@ -128,6 +129,7 @@ public interface AlterRecordApi {
             if (create == null) {
                 String msg = "Create{%s,%s} should already exist".formatted(change.getEntityId(),
                     change.getEntityType().displayName());
+                DiscordLog.errorSystem(msg);
                 throw new IllegalStateException(msg);
             }
             DAlterChange record = new DAlterChange(change, create);

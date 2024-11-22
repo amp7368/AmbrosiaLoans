@@ -26,47 +26,57 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
 
     private static final Comparator<? super LoadingClient> CLIENT_ALPHABETICAL_COMPARE =
         Comparator.comparing(e -> e.client().getEffectiveName());
-
-    private Comparator<? super LoadingClient> comparator = CLIENT_ALPHABETICAL_COMPARE;
-
     private final StringSelectMenu FILTER_MENU = StringSelectMenu.create("filter")
         .setPlaceholder("Filter")
         .setRequiredRange(1, 1)
         .addOption("All", "all", "Show all clients", AmbrosiaEmoji.STATUS_OFFLINE.getEmoji())
         .addOption("Investor", "investor", "Show only clients with active investments", AmbrosiaEmoji.INVESTMENT_BALANCE.getEmoji())
         .addOption("Customer", "customer", "Show only clients with active loans", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
-        .addOption("Inactive", "zero", "Show only past clients", AmbrosiaEmoji.STATUS_PENDING.getEmoji())
         .addOption("Blacklisted", "blacklisted", "Show only blacklisted clients", AmbrosiaEmoji.STATUS_ERROR.getEmoji())
+        .addOption("Current", "current", "Show only current clients", AmbrosiaEmoji.STATUS_ACTIVE.getEmoji())
         .build();
     private final StringSelectMenu SORT_BY_MENU = StringSelectMenu.create("sort")
         .setPlaceholder("Sort by")
         .setRequiredRange(1, 1)
-        .addOption("Name", "alphabetical", "Sort alphabetically by client name", AmbrosiaEmoji.UNUSED_SORT.getEmoji())
+        .addOption("Loan Balance", "loan_balance", "Sort by active loan balance", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
         .addOption("Investment Balance", "investment_balance", "Sort by active investment",
             AmbrosiaEmoji.INVESTMENT_BALANCE.getEmoji())
-        .addOption("Loan Balance", "loan_balance", "Sort by active loan balance", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
+        .addOption("Name", "alphabetical", "Sort alphabetically by client name", AmbrosiaEmoji.UNUSED_SORT.getEmoji())
         .addOption("Join Date", "date", "Sort by the account creation date", AmbrosiaEmoji.ANY_DATE.getEmoji())
         .build();
+    private Predicate<? super LoadingClient> filter = client -> !client.isZero();
+    private Comparator<? super LoadingClient> comparator = CLIENT_ALPHABETICAL_COMPARE;
 
     public ListClientsPage(ListClientsGui parent) {
         super(parent);
         registerSelectString("filter", this::onSelectFilter);
         registerSelectString("sort", this::onSelectSort);
 
-        setEntries(parent.getClients());
-        sort();
+        filterMessages();
 
-        EditOnTimer editOnTimer = new EditOnTimer(this::editMessage, 1000);
+        EditOnTimer editOnTimer = new EditOnTimer(() -> {
+            filterMessages();
+            editMessage();
+        }, 1000);
         parent.addListener(editOnTimer::tryRun);
+    }
+
+    private void filterMessages() {
+        List<LoadingClient> filteredClients = parent.getClients().stream()
+            .filter(filter)
+            .toList();
+        entryPage = 0;
+        setEntries(filteredClients);
+        sort();
     }
 
     private void onSelectSort(StringSelectInteractionEvent event) {
         String sortType = event.getValues().get(0);
         this.comparator = switch (sortType) {
             case "investment_balance" -> Comparator.comparing(LoadingClient::getInvestBalance).reversed();
-            case "loan_balance" -> Comparator.comparing(LoadingClient::getLoanAmount).reversed();
             case "date" -> Comparator.comparing(LoadingClient::joinDate).reversed();
-            default -> CLIENT_ALPHABETICAL_COMPARE;
+            case "alphabetical" -> CLIENT_ALPHABETICAL_COMPARE;
+            default -> Comparator.comparing(LoadingClient::getLoanAmount).reversed();
         };
         this.entryPage = 0;
         this.sort();
@@ -74,19 +84,15 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
 
     private void onSelectFilter(StringSelectInteractionEvent event) {
         String filterType = event.getValues().get(0);
-        Predicate<LoadingClient> filter = switch (filterType) {
+        filter = switch (filterType) {
             case "investor" -> LoadingClient::isInvestor;
             case "customer" -> LoadingClient::hasActiveLoan;
-            case "zero" -> l -> !l.isInvestor() && !l.hasActiveLoan();
+            case "zero" -> LoadingClient::isZero;
             case "blacklisted" -> LoadingClient::isBlacklisted;
-            default -> client -> true;
+            case "all" -> client -> true;
+            default -> client -> !client.isZero();
         };
-        List<LoadingClient> filteredClients = parent.getClients().stream()
-            .filter(filter)
-            .toList();
-        setEntries(filteredClients);
-        this.entryPage = 0;
-        this.sort();
+        filterMessages();
     }
 
     @Override

@@ -10,16 +10,16 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class SentLoanMessage extends SentClientMessage {
+public class LoanReminderMessage extends SentClientMessage {
 
     private long loanId;
     private transient DLoan loan;
 
-    public SentLoanMessage() {
+    public LoanReminderMessage() {
         super(SentClientMessageType.LOAN_REMINDER);
     }
 
-    public SentLoanMessage(DLoan loan) {
+    public LoanReminderMessage(DLoan loan) {
         super(SentClientMessageType.LOAN_REMINDER, loan.getClient());
         this.loan = loan;
         this.loanId = loan.getId();
@@ -45,13 +45,18 @@ public class SentLoanMessage extends SentClientMessage {
         EmbedBuilder embed = makeBaseEmbed();
         String reason = getReason().display();
         MessageAcknowledged status = getStatus();
-        embed.setDescription("# %s %s\n".formatted(reason, status.display()));
+        embed.setDescription("# %s %s\n".formatted(reason, status.display(true)));
         embed.appendDescription(quoteText(getDescription()));
         embed.appendDescription("\n");
 
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())
             .build();
+    }
+
+    @Override
+    protected boolean canInteract() {
+        return true;
     }
 
     private String quoteText(String text) {

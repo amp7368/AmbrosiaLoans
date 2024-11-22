@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.entity.client.settings.frequency;
 
-import com.ambrosia.loans.discord.DiscordModule;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -57,7 +57,11 @@ public class MessageFrequency {
 
         Instant first = addTo(startDate, current, defaultDuration);
         if (first == null) return null;
-        Instant second = addTo(startDate, first, defaultDuration);
+
+        Instant now = Instant.now();
+        if (first.isBefore(now)) first = now;
+
+        Instant second = addTo(first, first, defaultDuration);
         if (second == null) return null;
         String display = display(defaultDuration);
         return new NextMessageTime(first, second, display);
@@ -72,11 +76,11 @@ public class MessageFrequency {
         }
         if (timeUnit == ChronoUnit.FOREVER) return null;
 
-        ZonedDateTime startDateLocal = ZonedDateTime.ofInstant(startDate, DiscordModule.TIME_ZONE);
-        ZonedDateTime currentLocal = ZonedDateTime.ofInstant(current, DiscordModule.TIME_ZONE);
+        ZonedDateTime startDateLocal = ZonedDateTime.ofInstant(startDate, AmbrosiaTimeZone.getTimeZoneId());
+        ZonedDateTime currentLocal = ZonedDateTime.ofInstant(current, AmbrosiaTimeZone.getTimeZoneId());
 
         long between = timeUnit.between(startDateLocal, currentLocal) / frequencyAmount;
-        long nextDateAmount = between * frequencyAmount + frequencyAmount;
+        long nextDateAmount = (between + 1) * frequencyAmount;
 
         return startDateLocal.plus(nextDateAmount, timeUnit).toInstant();
     }

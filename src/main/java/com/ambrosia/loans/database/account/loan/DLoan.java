@@ -13,11 +13,11 @@ import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.message.comment.Commentable;
 import com.ambrosia.loans.database.message.comment.DComment;
-import com.ambrosia.loans.database.system.CreateEntityException;
+import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
@@ -110,10 +110,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();
         this.meta = new DLoanMeta(request);
-        if (request.getStartDate() == null)
-            this.startDate = Timestamp.from(Instant.now());
-        else
-            this.startDate = Timestamp.from(request.getStartDate());
+        this.startDate = Timestamp.from(request.getStartDateOrNow());
         Double rate = request.getRate();
         if (rate == null) throw new CreateEntityException("Rate has not been set!");
         DLoanSection firstSection = new DLoanSection(this, rate, this.startDate.toInstant());
@@ -287,7 +284,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
             principal = principal.min(runningBalance);
             if (isPaymentEarlierOrEq) {
-                if (!payment.getDate().isBefore(end)) break;
+                boolean isPaymentAfterOrEq = payment.getDate().isBefore(end);
+                if (!isPaymentAfterOrEq) break;
                 // make payment
                 BigDecimal sectionInterest = section.getInterest(checkpoint, payment.getDate(), principal);
                 BigDecimal paymentAmount = payment.getAmount().toBigDecimal();

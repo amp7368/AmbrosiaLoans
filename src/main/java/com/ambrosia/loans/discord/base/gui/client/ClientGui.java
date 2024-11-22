@@ -6,10 +6,13 @@ import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.base.gui.DCFGui;
+import java.time.Duration;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.EntitySelectInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ComponentInteraction;
+import org.jetbrains.annotations.Nullable;
 
 public class ClientGui extends DCFGui {
 
@@ -25,13 +28,21 @@ public class ClientGui extends DCFGui {
         this.client = client;
     }
 
+    @Override
+    public ClientGui setTimeToOld(@Nullable Duration timeToOld) {
+        super.setTimeToOld(timeToOld);
+        return this;
+    }
+
     public DClient getClient() {
         return client;
     }
 
     public boolean isAllowed(ComponentInteraction event) {
         if (client.isUser(event.getUser())) return true;
-        return DiscordPermissions.get().isEmployee(event.getMember());
+        Member member = event.getMember();
+        if (DiscordPermissions.get().isEmployee(member)) return true;
+        return DiscordPermissions.get().isManager(member);
     }
 
     @Override

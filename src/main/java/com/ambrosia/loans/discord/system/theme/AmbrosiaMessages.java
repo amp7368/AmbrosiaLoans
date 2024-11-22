@@ -2,11 +2,13 @@ package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.request.ActiveRequestStage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import com.ambrosia.loans.util.AmbrosiaTimeZone;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -21,7 +23,7 @@ public class AmbrosiaMessages {
 
     public static final String NULL_MSG = "N/A";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLL dd yyyy")
-        .withZone(DiscordModule.TIME_ZONE);
+        .withZone(AmbrosiaTimeZone.getTimeZoneId());
 
     public static String formatDate(Instant date) {
         return formatDate(date, false);
@@ -67,8 +69,10 @@ public class AmbrosiaMessages {
 
         @CheckReturnValue
         public static AmbrosiaMessage registerWithStaff() {
-            return error("To register your account use **/request account** and fill in your Minecraft "
-                         + "username.");
+            String command = DiscordBot.dcf.commands().getCommandAsMention("/request account");
+            String msg = "To register your account use %s and fill in your Minecraft username."
+                .formatted(command);
+            return error(msg);
         }
 
         @CheckReturnValue
@@ -91,7 +95,7 @@ public class AmbrosiaMessages {
         public static AmbrosiaMessage rejectedTOSRequest(String type) {
             String desc =
                 ("Since TOS was rejected, your %s request cannot be accepted"
-                 + " and was deleted. Staff have not been notified of your request.")
+                    + " and was deleted. Staff have not been notified of your request.")
                     .formatted(type);
             MessageEmbed embed = new EmbedBuilder()
                 .setColor(AmbrosiaColor.RED)
@@ -218,6 +222,7 @@ public class AmbrosiaMessages {
             String msg = "Use the format \"23 STX 12 LE 8 EB 56 E\" or \"12.75 STX\".";
             return error(msg);
         }
+
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {
