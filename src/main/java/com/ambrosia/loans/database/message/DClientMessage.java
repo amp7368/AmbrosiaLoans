@@ -95,6 +95,10 @@ public class DClientMessage extends Model {
         return this.staffMessages;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     public DClientMessage setMessage(Message msg) {
         this.acknowledged = MessageAcknowledged.SENT;
         this.messageId = msg.getIdLong();

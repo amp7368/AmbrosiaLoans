@@ -48,6 +48,12 @@ public class CommandOptionMulti<V, R> extends CommandOptionBasic<R> {
         return this;
     }
 
+    @Override
+    public CommandOptionBasic<R> addChoices(String... choices) {
+        super.addChoices(choices);
+        return this;
+    }
+
     public V getMap1(CommandInteraction event) {
         return event.getOption(this.name, this.mapping1);
     }

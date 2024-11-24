@@ -13,6 +13,7 @@ import com.ambrosia.loans.database.message.query.QDClientMessage;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.service.ServiceModule;
 import discord.util.dcf.gui.util.interaction.OnInteraction;
 import discord.util.dcf.gui.util.interaction.OnInteractionMap;
@@ -37,14 +38,14 @@ public abstract class SentClientMessage {
 
     protected final String typeId;
     private final DiscordMessageIdData message = new DiscordMessageIdData();
+    private MessageAcknowledged status = MessageAcknowledged.SENDING;
+    private long clientId;
+    private UUID clientMessageId;
     private transient List<DMessageId> staffMessageIds = new ArrayList<>();
     private transient DClient client;
     private transient DClientMessage clientMessage;
     private transient OnInteractionMap onInteractionMap;
-    private MessageAcknowledged status = MessageAcknowledged.SENT;
-    private long clientId;
-    private UUID clientMessageId;
-    private String description;
+    private transient String description;
 
     public SentClientMessage(SentClientMessageType typeId) {
         this.typeId = typeId.getTypeId();
@@ -56,6 +57,21 @@ public abstract class SentClientMessage {
         this.clientId = client.getId();
         this.client = client;
         init();
+    }
+
+    protected static String quoteText(String text) {
+        StringBuilder str = new StringBuilder("> ");
+        char[] chars = text.toCharArray();
+        boolean wasLastNewLine = false;
+        for (char ch : chars) {
+            str.append(ch);
+            wasLastNewLine = ch == '\n';
+            if (wasLastNewLine)
+                str.append("> ");
+        }
+        if (wasLastNewLine)
+            str.deleteCharAt(str.length() - 1);
+        return str.toString();
     }
 
     public SentClientMessage load(DClientMessage db) {
@@ -86,7 +102,9 @@ public abstract class SentClientMessage {
     }
 
     public final String getDescription() {
-        return this.description;
+        if (this.description != null)
+            return this.description;
+        return this.description = getDB().getMessage();
     }
 
     public final void setDescription(String description) {
@@ -157,6 +175,10 @@ public abstract class SentClientMessage {
         }
     }
 
+    public <T extends SentClientMessage> CompletableFuture<Void> sendFirst(T self, MessageDestination<T> destination) {
+        return sendFirst(self, List.of(destination));
+    }
+
     public <T extends SentClientMessage> CompletableFuture<Void> sendFirst(T self, List<MessageDestination<T>> destinations) {
         createDB();
 
@@ -206,6 +228,7 @@ public abstract class SentClientMessage {
             }
         }
         message.setMessage(sent);
+        this.status = canInteract() ? MessageAcknowledged.SENT : MessageAcknowledged.SENT_NONINTERACTIVE;
 
         DClientMessage db = getDB();
         try (Transaction transaction = DB.beginTransaction()) {
@@ -246,6 +269,7 @@ public abstract class SentClientMessage {
 
     protected EmbedBuilder makeBaseEmbed() {
         EmbedBuilder embed = new EmbedBuilder();
+        embed.setColor(AmbrosiaColor.BLUE_SPECIAL);
         ClientMessage.of(getClient()).clientAuthor(embed);
         if (isAcknowledged())
             embed.setTitle("Thank you for acknowledging!");
@@ -263,5 +287,7 @@ public abstract class SentClientMessage {
 
     protected abstract boolean canInteract();
 
-    protected abstract EmbedBuilder modifyEmbed(EmbedBuilder embed);
+    protected EmbedBuilder modifyEmbed(EmbedBuilder embed) {
+        return embed;
+    }
 }

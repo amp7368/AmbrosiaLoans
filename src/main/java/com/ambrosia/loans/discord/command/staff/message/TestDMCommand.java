@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.staff.misc;
+package com.ambrosia.loans.discord.command.staff.message;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
@@ -6,18 +6,17 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.base.command.staff.BaseStaffCommand;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class TestDMCommand extends BaseStaffCommand {
+public class TestDMCommand extends BaseStaffSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
@@ -67,9 +66,10 @@ public class TestDMCommand extends BaseStaffCommand {
         defer.editOriginalEmbeds(embed.build()).queue();
     }
 
+
     @Override
-    public SlashCommandData getStaffData() {
-        SlashCommandData command = Commands.slash("test_dm", "[Staff] Send a test dm to user");
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("test", "[Staff] Send a test dm to user");
         return CommandOptionList.of(
             List.of(CommandOption.CLIENT)
         ).addToCommand(command);

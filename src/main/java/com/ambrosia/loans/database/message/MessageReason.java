@@ -7,7 +7,8 @@ import io.ebean.annotation.DbEnumValue;
 public enum MessageReason {
     LOAN_REMINDER,
     INVESTMENT_UPDATE,
-    LOAN_FREEZE;
+    LOAN_FREEZE,
+    MANUAL;
 
     @DbEnumValue
     public String getDBValue() {

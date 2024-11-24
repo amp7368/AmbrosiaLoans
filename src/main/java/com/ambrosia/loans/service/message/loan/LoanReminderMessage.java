@@ -58,22 +58,7 @@ public class LoanReminderMessage extends SentClientMessage {
     protected boolean canInteract() {
         return true;
     }
-
-    private String quoteText(String text) {
-        StringBuilder str = new StringBuilder("> ");
-        char[] chars = text.toCharArray();
-        boolean wasLastNewLine = false;
-        for (char ch : chars) {
-            str.append(ch);
-            wasLastNewLine = ch == '\n';
-            if (wasLastNewLine)
-                str.append("> ");
-        }
-        if (wasLastNewLine)
-            str.deleteCharAt(str.length() - 1);
-        return str.toString();
-    }
-
+    
     @Override
     public MessageReason getReason() {
         return MessageReason.LOAN_REMINDER;

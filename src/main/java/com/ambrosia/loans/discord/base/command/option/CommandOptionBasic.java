@@ -1,6 +1,7 @@
 package com.ambrosia.loans.discord.base.command.option;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
@@ -54,6 +55,14 @@ public class CommandOptionBasic<R> implements CommandOption<R> {
         OptionData optionData = new OptionData(type, name, description, required, autoComplete);
         if (choices != null) optionData.addChoices(this.choices);
         return optionData;
+    }
+
+    public CommandOptionBasic<R> addChoices(String... choices) {
+        List<Choice> toAdd = Arrays.stream(choices)
+            .map(s -> new Choice(s, s))
+            .toList();
+        this.addChoices(toAdd);
+        return this;
     }
 
     public CommandOptionBasic<R> addChoices(List<Choice> choices) {
