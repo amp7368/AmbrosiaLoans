@@ -8,6 +8,7 @@ import io.ebean.annotation.DbEnumValue;
 public enum MessageAcknowledged {
     SENDING,
     SENT,
+    SENT_NONINTERACTIVE,
     ACKNOWLEDGED,
     ERROR;
 
@@ -20,7 +21,7 @@ public enum MessageAcknowledged {
         return switch (this) {
             case SENDING -> AmbrosiaEmoji.STATUS_OFFLINE;
             case SENT -> AmbrosiaEmoji.STATUS_PENDING;
-            case ACKNOWLEDGED -> AmbrosiaEmoji.STATUS_COMPLETE;
+            case SENT_NONINTERACTIVE, ACKNOWLEDGED -> AmbrosiaEmoji.STATUS_COMPLETE;
             case ERROR -> AmbrosiaEmoji.STATUS_ERROR;
         };
     }
@@ -36,7 +37,7 @@ public enum MessageAcknowledged {
         return switch (this) {
             case SENDING -> AmbrosiaColor.BLACK;
             case SENT -> AmbrosiaColor.YELLOW;
-            case ACKNOWLEDGED -> AmbrosiaColor.GREEN;
+            case SENT_NONINTERACTIVE, ACKNOWLEDGED -> AmbrosiaColor.GREEN;
             case ERROR -> AmbrosiaColor.RED;
         };
     }

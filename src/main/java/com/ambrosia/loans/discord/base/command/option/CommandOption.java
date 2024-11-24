@@ -116,6 +116,12 @@ public interface CommandOption<R> {
     CommandOptionMulti<String, StopStartAction> STOP_START = new CommandOptionMapEnum<>("action", "Stop or start the action",
         StopStartAction.class, StopStartAction.values());
 
+    // misc
+    CommandOption<String> SEND_CLIENT_MESSAGE = basic("message", "The message to send to the client",
+        OptionType.STRING, OptionMapping::getAsString);
+    CommandOption<String> SEND_CLIENT_TITLE = basic("title", "The title of the embed message to send",
+        OptionType.STRING, OptionMapping::getAsString)
+        .addChoices("Payment", "Loan", "Investment", "Withdrawal", "General");
 
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",
