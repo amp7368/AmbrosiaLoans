@@ -14,7 +14,6 @@ import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import com.ambrosia.loans.service.ServiceModule;
 import discord.util.dcf.gui.util.interaction.OnInteraction;
 import discord.util.dcf.gui.util.interaction.OnInteractionMap;
 import discord.util.dcf.util.message.DiscordMessageIdData;
@@ -199,15 +198,19 @@ public abstract class SentClientMessage {
                 .submit();
         }
 
-        List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
-            .map(dest -> dest.send(self))
-            .toList();
-
         CompletableFuture<Void> future = new CompletableFuture<>();
-        dmMsg.whenComplete((msg, err) -> {
-            if (err != null) return;
+        dmMsg.whenComplete((sent, err) -> {
+            if (err == null) {
+                this.status = canInteract() ? MessageAcknowledged.SENT : MessageAcknowledged.SENT_NONINTERACTIVE;
+                this.message.setMessage(sent);
+            } else {
+                this.status = MessageAcknowledged.ERROR;
+            }
             try {
-                finishSetup(msg, destinationMsgs);
+                List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
+                    .map(dest -> dest.send(self))
+                    .toList();
+                finishSetup(sent, destinationMsgs);
             } finally {
                 future.complete(null);
             }
@@ -223,18 +226,14 @@ public abstract class SentClientMessage {
                 staffMessageIds.add(new DMessageId(destMsg));
             } catch (ExecutionException | InterruptedException e) {
                 String error = "Cannot send %s's staff message".formatted(getClient().getEffectiveName());
-                DiscordLog.errorSystem(error);
-                ServiceModule.get().logger().error(error, e);
+                DiscordLog.errorSystem(error, e);
             }
         }
-        message.setMessage(sent);
-        this.status = canInteract() ? MessageAcknowledged.SENT : MessageAcknowledged.SENT_NONINTERACTIVE;
-
         DClientMessage db = getDB();
         try (Transaction transaction = DB.beginTransaction()) {
             db.refresh();
-            db.setSentMessage(this)
-                .setMessage(sent)
+            db.setMessage(sent)
+                .setSentMessage(this)
                 .save(transaction);
             for (DMessageId m : staffMessageIds)
                 m.setClient(db).save(transaction);

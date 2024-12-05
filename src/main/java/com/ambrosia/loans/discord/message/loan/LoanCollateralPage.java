@@ -1,6 +1,5 @@
 package com.ambrosia.loans.discord.message.loan;
 
-import apple.utilities.util.Pretty;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
@@ -93,11 +92,15 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
         @Nullable FileUpload image = collateral.getImage();
 
         int index = entry.indexInAll() + 1;
-        String status = Pretty.spaceEnumWords(collateral.getStatus().toString());
-        String collateralMsg = """
-            ## Collateral %s %d (%d/%d)
-            **Status:** %s
-            """.formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1, status);
-        return collateralDescription(embed, collateralMsg, filename, description, image, collateral.getStatus(), actionRow);
+        String collateralMsg = "## Collateral %s %d (%d/%d)\n".formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1);
+        return collateralDescription(
+            embed,
+            collateralMsg,
+            filename,
+            description,
+            image,
+            collateral.getStatus(),
+            collateral.getLastActionDate(),
+            actionRow);
     }
 }

@@ -59,7 +59,8 @@ public class AmbrosiaAssets {
         TRADE(LOAN_REPAYMENT_PLAN.emojiId),
         UNUSED_PAYMENT_REMINDER(1208248436105678928L),
         UNUSED_SORT(1208248437037076502L),
-        TOS("\uD83D\uDCDC");
+        TOS("\uD83D\uDCDC"),
+        COLLATERAL_TEXT(CLIENT_MINECRAFT.emojiId);
 
         private final long emojiId;
         private RichCustomEmoji emoji;

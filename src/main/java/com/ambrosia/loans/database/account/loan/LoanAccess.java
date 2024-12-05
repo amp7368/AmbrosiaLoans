@@ -138,6 +138,7 @@ public interface LoanAccess {
                 AdjustApi.createAdjustment(staff, loan, adjustment, adjustmentDate);
             }
             for (DCollateral collateral : loan.getCollateral()) {
+                if (collateral.getStatus() != DCollateralStatus.COLLECTED) continue;
                 LoanAlterApi.markCollateral(staff, collateral, loan.getEndDate(), DCollateralStatus.RETURNED);
             }
         }

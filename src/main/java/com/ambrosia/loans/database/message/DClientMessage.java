@@ -84,6 +84,7 @@ public class DClientMessage extends Model {
 
     public DClientMessage setStatus(MessageAcknowledged status) {
         this.acknowledged = status;
+        this.dateAcknowledged = new Timestamp(System.currentTimeMillis());
         return this;
     }
 
