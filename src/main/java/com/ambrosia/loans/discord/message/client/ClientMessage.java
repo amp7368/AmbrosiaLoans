@@ -29,7 +29,7 @@ public interface ClientMessage {
 
         String author;
         if (minecraft.isPresent() && discord.isPresent()) {
-            if (display == null)
+            if (display == null || display.equalsIgnoreCase(minecraft.get()))
                 author = minecraft.get() + "\n@" + discord.get();
             else
                 author = "%s (%s)\n@%s"
@@ -39,7 +39,7 @@ public interface ClientMessage {
         } else {
             author = discord.map(s -> "@" + s)
                 .orElseGet(minecraft::get);
-            if (display != null)
+            if (display != null && !display.equalsIgnoreCase(author))
                 author += " (%s)".formatted(display);
         }
 

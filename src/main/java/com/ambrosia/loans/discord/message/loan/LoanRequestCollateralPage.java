@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -30,6 +31,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         registerButton(btnBackToMain().getId(), e -> parent.popSubPage());
         setEntries(this.loanData.getCollateral());
         sort();
+        parent.setTimeToOld(Duration.ofHours(2));
     }
 
     public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData) {
@@ -71,12 +73,9 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         @Nullable String description = collateral.getDescription();
         @Nullable FileUpload image = collateral.getImage();
 
-        String header = """
-            ## Collateral (%d/%d) %s %d
-            **Status:** Not Collected
-            """
+        String header = "## Collateral (%d/%d) %s %d\n"
             .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        return collateralDescription(embed, header, filename, description, image, DCollateralStatus.NOT_COLLECTED, actionRow);
+        return collateralDescription(embed, header, filename, description, image, DCollateralStatus.NOT_COLLECTED, null, actionRow);
     }
 
     @Override

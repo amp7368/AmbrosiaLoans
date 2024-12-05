@@ -1,6 +1,5 @@
 package com.ambrosia.loans.discord.command.player.show.collateral;
 
-import apple.utilities.util.Pretty;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
@@ -124,14 +123,18 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         }
         DCFEntry<DCollateral> entry = page.get(0);
         DCollateral collateral = entry.entry();
-        String status = Pretty.spaceEnumWords(collateral.getStatus().name());
-        String header = """
-            ## Collateral %s %d (%d/%d)
-            **Status:** %s
-            """.formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getMaxPage() + 1, status);
+        String header = "## Collateral %s %d (%d/%d)\n"
+            .formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getMaxPage() + 1);
 
-        return collateralDescription(embed, header, collateral.getName(), collateral.getDescription(), collateral.getImage(),
-            collateral.getStatus(), components());
+        return collateralDescription(
+            embed,
+            header,
+            collateral.getName(),
+            collateral.getDescription(),
+            collateral.getImage(),
+            collateral.getStatus(),
+            collateral.getLastActionDate(),
+            components());
     }
 
     public ActionRow @NotNull [] components() {

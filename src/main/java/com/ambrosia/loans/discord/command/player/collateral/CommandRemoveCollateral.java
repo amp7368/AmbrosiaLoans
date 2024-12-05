@@ -33,10 +33,17 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
             return;
         }
         EmbedBuilder embed = new EmbedBuilder();
-        String title = "## Removed Collateral %s %d \n"
+        String header = "## Removed Collateral %s %d \n"
             .formatted(AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        MessageCreateData msg = collateralDescription(embed, title, collateral.getName(), collateral.getDescription(),
-            collateral.getImage(), DCollateralStatus.DELETED);
+        MessageCreateData msg = collateralDescription(
+            embed,
+            header,
+            collateral.getName(),
+            collateral.getDescription(),
+            collateral.getImage(),
+            DCollateralStatus.DELETED,
+            null
+        );
         event.reply(msg).queue();
     }
 

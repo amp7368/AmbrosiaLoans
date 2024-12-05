@@ -58,9 +58,8 @@ public class DCollateral extends Model {
         return loan;
     }
 
-    @Nullable
+    @NotNull
     public Instant getCollectionDate() {
-        if (collectionDate == null) return null;
         return collectionDate.toInstant();
     }
 
@@ -118,4 +117,10 @@ public class DCollateral extends Model {
         return this;
     }
 
+    @NotNull
+    public Instant getLastActionDate() {
+        Instant returnedDate = this.getReturnedDate();
+        if (returnedDate == null) return this.getCollectionDate();
+        return returnedDate;
+    }
 }
