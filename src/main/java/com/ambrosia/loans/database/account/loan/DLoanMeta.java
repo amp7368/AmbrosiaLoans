@@ -53,6 +53,22 @@ public class DLoanMeta {
         return unfreezeDate.toInstant();
     }
 
+    public String getReason() {
+        return reason;
+    }
+
+    public String getRepayment() {
+        return repayment;
+    }
+
+    public DClient getVouch() {
+        return vouch;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+
     public Double getUnfreezeToRate() {
         return this.unfreezeToRate;
     }

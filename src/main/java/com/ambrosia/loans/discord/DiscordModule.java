@@ -20,6 +20,7 @@ import com.ambrosia.loans.discord.command.staff.alter.payment.APaymentCommand;
 import com.ambrosia.loans.discord.command.staff.alter.withdrawal.AWithdrawalSetCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
+import com.ambrosia.loans.discord.command.staff.find.AFindCommand;
 import com.ambrosia.loans.discord.command.staff.history.AShowCommand;
 import com.ambrosia.loans.discord.command.staff.list.AListCommand;
 import com.ambrosia.loans.discord.command.staff.message.AMessageCommand;
@@ -123,6 +124,7 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new ACommentCommand());
         commands.addCommand(new AModifyRequestCommand());
         commands.addCommand(new AListCommand());
+        commands.addCommand(new AFindCommand());
         // employee message commands
         commands.addCommand(new AMessageCommand());
 

@@ -127,6 +127,12 @@ public class AmbrosiaMessages {
         }
 
         @CheckReturnValue
+        public static AmbrosiaMessage noEntityWithId(String entityType) {
+            String msg = "There is no %s with that id!".formatted(entityType);
+            return error(msg);
+        }
+
+        @CheckReturnValue
         public static AmbrosiaMessage badRequestType(String type, Long requestId) {
             String msg = "Request #%d is not a %s request".formatted(requestId, type);
             return error(msg);
