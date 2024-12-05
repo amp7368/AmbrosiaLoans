@@ -4,6 +4,7 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.DLoanMeta;
 import com.ambrosia.loans.database.account.loan.DLoanStatus;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
@@ -27,7 +28,7 @@ public interface LoanMessage {
         return true;
     }
 
-    default boolean includeCollateral() {
+    default boolean includeRequestDetails() {
         return false;
     }
 
@@ -53,8 +54,30 @@ public interface LoanMessage {
         }
         embed.appendDescription("**%s Total Paid:** %s\n".formatted(AmbrosiaEmoji.LOAN_PAYMENT, loan.getTotalPaid()));
 
-        if (includeCollateral()) addCollateralMsg(embed, loan);
+        DLoanMeta meta = loan.getMeta();
+        Instant unfreezeDate = meta.getUnfreezeDate();
+        Double unfreezeToRate = meta.getUnfreezeToRate();
+        if (unfreezeDate != null && unfreezeToRate != null) {
+            String unfreeze = "Setting rate to %s %s on %s %s".formatted(
+                AmbrosiaEmoji.LOAN_RATE, formatPercentage(unfreezeToRate),
+                AmbrosiaEmoji.ANY_DATE, formatDate(unfreezeDate)
+            );
+            embed.appendDescription(unfreeze);
+        }
+
+        if (includeRequestDetails()) addRequestDetails(embed, loan);
         if (includeHistory()) addHistoryMsg(embed, loan);
+    }
+
+    private void addRequestDetails(EmbedBuilder embed, DLoan loan) {
+        embed.appendDescription("## Request Details\n");
+        DLoanMeta meta = loan.getMeta();
+        embed.appendDescription("%s **Reason:** %s\n".formatted(AmbrosiaEmoji.LOAN_REASON, meta.getReason()));
+        embed.appendDescription("%s **Repayment:** %s\n".formatted(AmbrosiaEmoji.LOAN_REPAYMENT_PLAN, meta.getRepayment()));
+        if (meta.getVouch() != null)
+            embed.appendDescription("%s **Vouch:** %s\n".formatted(AmbrosiaEmoji.CLIENT_MINECRAFT, meta.getVouch()));
+        if (meta.getDiscount() != null)
+            embed.appendDescription("%s **Discount:** %s\n".formatted(AmbrosiaEmoji.LOAN_DISCOUNT, meta.getVouch()));
     }
 
     private void addHistoryMsg(EmbedBuilder embed, DLoan loan) {
@@ -68,9 +91,6 @@ public interface LoanMessage {
             .map(LoanEventMsg::toString)
             .collect(Collectors.joining("\n"));
         embed.appendDescription(historyMsg);
-    }
-
-    private void addCollateralMsg(EmbedBuilder embed, DLoan loan) {
     }
 
     private void findChangeRateEvents(DLoan loan, List<LoanEventMsg> history) {
