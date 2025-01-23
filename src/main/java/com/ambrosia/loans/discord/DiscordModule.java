@@ -4,6 +4,7 @@ import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.CommandCheckPermission;
+import com.ambrosia.loans.discord.command.manager.bank.BankCommand;
 import com.ambrosia.loans.discord.command.manager.config.StaffConfigCommand;
 import com.ambrosia.loans.discord.command.manager.system.ManagerSystemCommand;
 import com.ambrosia.loans.discord.command.player.collateral.CommandCollateral;
@@ -33,6 +34,7 @@ import com.ambrosia.loans.discord.command.staff.undo.ARedoCommand;
 import com.ambrosia.loans.discord.command.staff.undo.AUndoCommand;
 import com.ambrosia.loans.discord.misc.autocomplete.AutoCompleteListener;
 import com.ambrosia.loans.discord.misc.context.user.UserContextListener;
+import com.ambrosia.loans.discord.misc.name.UserNameChangeListener;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ArchivedRequestDatabase;
 import com.ambrosia.loans.discord.system.help.HelpCommandListManager;
@@ -98,7 +100,7 @@ public class DiscordModule extends AppleModule {
 
         jda.addEventListener(new AutoCompleteListener());
         jda.addEventListener(new UserContextListener());
-
+        jda.addEventListener(new UserNameChangeListener());
         jda.addEventListener(new LogCommandListener());
 
         ActiveRequestDatabase.load();
@@ -108,6 +110,7 @@ public class DiscordModule extends AppleModule {
         // manager config commands
         commands.addCommand(new StaffConfigCommand());
         commands.addCommand(new ManagerSystemCommand());
+        commands.addCommand(new BankCommand());
 
         // employee client commands
         commands.addCommand(

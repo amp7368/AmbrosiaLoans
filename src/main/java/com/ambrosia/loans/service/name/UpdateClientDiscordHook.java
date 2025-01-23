@@ -1,8 +1,11 @@
-package com.ambrosia.loans.database.entity.client.username;
+package com.ambrosia.loans.service.name;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
+import com.ambrosia.loans.database.entity.client.username.DNameHistory;
+import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
@@ -86,8 +89,8 @@ public class UpdateClientDiscordHook {
                 client.setDiscord(disc);
                 DNameHistory newName = NameHistoryType.DISCORD_USER.updateName(client, lastName, transaction);
                 DiscordLog.updateName(lastName, newName);
-            }
-            client.setDiscord(disc);
+            } else
+                client.setDiscord(disc);
             client.save(transaction);
             transaction.commit();
             client.refresh();

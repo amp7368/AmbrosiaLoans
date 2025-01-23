@@ -122,6 +122,8 @@ public interface CommandOption<R> {
     CommandOption<String> SEND_CLIENT_TITLE = basic("title", "The title of the embed message to send",
         OptionType.STRING, OptionMapping::getAsString)
         .addChoices("Payment", "Loan", "Investment", "Withdrawal", "General");
+    CommandOption<Boolean> FORCE = basic("force", "Caution! Whether to force the action.",
+        OptionType.BOOLEAN, OptionMapping::getAsBoolean);
 
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",

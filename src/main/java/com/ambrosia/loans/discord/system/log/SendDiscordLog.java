@@ -8,6 +8,7 @@ import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.modifier.DiscordLogModifier;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -114,11 +115,15 @@ public class SendDiscordLog {
     public EmbedBuilder embed() {
         EmbedBuilder embed = new EmbedBuilder()
             .setTitle(getTitle())
-            .appendDescription(this.getMessage())
             .setColor(getColor())
             .setFooter(getActor().getName(), getActor().getActorUrl())
             .setTimestamp(Instant.now());
-        if (client != null) ClientMessage.of(client).clientAuthor(embed);
+        if (client != null) {
+            ClientMessage.of(client).clientAuthor(embed);
+            String clientId = AmbrosiaEmoji.KEY_ID.spaced(client.getId());
+            embed.appendDescription("## Client Id %s\n".formatted(clientId));
+        }
+        embed.appendDescription(this.getMessage());
         return embed;
     }
 

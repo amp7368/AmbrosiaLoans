@@ -34,21 +34,20 @@ public class PaymentMakeCommand extends BaseStaffSubCommand {
         if (client == null) return;
         DLoan loan = CommandOption.LOAN_ID.getRequired(event);
         if (loan == null) return;
+        loan.refresh();
         if (!loan.getClient().equals(client)) {
             String msg = "Loan %s %d does not belong to %s"
                 .formatted(AmbrosiaEmoji.KEY_ID, loan.getId(), client.getEffectiveName());
             replyError(event, msg);
             return;
         }
+
         Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
         if (date == null) return;
-
         Emeralds maxPayment = loan.getTotalOwed(null, date);
 
-        Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
-        Emeralds amount;
-        if (isFull != null && isFull) amount = maxPayment;
-        else amount = CommandOption.PAYMENT_AMOUNT.getOptional(event);
+        boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event, false);
+        Emeralds amount = isFull ? maxPayment : CommandOption.PAYMENT_AMOUNT.getOptional(event);
         if (amount == null) {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the payment amount");
             return;

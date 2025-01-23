@@ -1,5 +1,7 @@
 package com.ambrosia.loans.discord;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 public class DiscordConfig {
@@ -10,6 +12,7 @@ public class DiscordConfig {
     public long logChannel = 0;
     public long requestChannel = 0;
     public long messageChannel = 0;
+    public List<Long> staffChannels = new ArrayList<>();
 
     public DiscordConfig() {
         instance = this;
@@ -42,5 +45,11 @@ public class DiscordConfig {
             String msg = "messageChannel{%d} is not valid".formatted(DiscordConfig.get().logChannel);
             DiscordModule.get().logger().error(msg);
         }
+    }
+
+    public boolean isStaffChannel(long channelId) {
+        if (this.requestChannel == channelId) return true;
+        if (this.logChannel == channelId) return true;
+        return this.staffChannels.contains(channelId);
     }
 }

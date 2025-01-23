@@ -1,33 +1,55 @@
 package com.ambrosia.loans.database.entity.client;
 
-import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
+import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 
 public class ClientSearch {
 
+    private final String match;
+
+    public ClientSearch(String match) {
+        this.match = match;
+    }
+
     public static List<DClient> autoComplete(String match) {
-        List<ClientName> byName = new ArrayList<>();
+        return new ClientSearch(match).matchAll1();
+    }
 
-        List<DClient> clients = ClientQueryApi.findAllReadOnly();
-        for (DClient client : clients) {
-            String displayName = client.getDisplayName();
-            String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
-            ClientDiscordDetails discordDetails = client.getDiscord(false);
-            String discord = discordDetails == null ? null : discordDetails.getUsername();
-            byName.add(new ClientName(client, displayName, discord, minecraft));
-        }
+    public List<DClient> matchAll1() {
+        Stream<DClient> clients = new QDClient()
+            .fetch("nameHistory")
+            .setUseQueryCache(true)
+            .setReadOnly(true)
+            .findStream();
 
-        byName.forEach(c -> c.match(match));
+        return clients.parallel()
+            .map(this::matchClient)
+            .sorted(Comparator.comparing(ClientName::score).reversed())
+            .map(ClientName::getClient)
+            .toList();
+    }
 
-        byName.sort(Comparator.comparing(ClientName::score).reversed());
-        return byName.stream().map(ClientName::getClient).toList();
+    private ClientName matchClient(DClient client) {
+        String displayName = client.getDisplayName();
+        String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
+        ClientDiscordDetails discordDetails = client.getDiscord(false);
+        String discord = discordDetails == null ? null : discordDetails.getUsername();
+
+        List<String> names = Stream.concat(
+                client.getNameHistory().stream()
+                    .map(DNameHistory::getName),
+                Stream.of(displayName, discord, minecraft)
+            ).filter(Objects::nonNull)
+            .toList();
+
+        return new ClientName(client, names).match(match);
     }
 
     private static class ClientName {
@@ -36,18 +58,19 @@ public class ClientSearch {
         private final DClient client;
         private int score;
 
-        private ClientName(DClient client, String... names) {
+        private ClientName(DClient client, List<String> names) {
             this.client = client;
-            this.names = Arrays.stream(names).filter(Objects::nonNull).toList();
+            this.names = names;
         }
 
-        protected void match(String match) {
+        protected ClientName match(String match) {
             String matchLower = match.toLowerCase();
             for (String name : names) {
                 int score = FuzzySearch.partialRatio(matchLower, name.toLowerCase());
                 if (score > this.score)
                     this.score = score;
             }
+            return this;
         }
 
         protected int score() {

@@ -17,12 +17,12 @@ import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
-import com.ambrosia.loans.database.entity.client.username.UpdateClientMetaHook;
 import com.ambrosia.loans.database.message.comment.Commentable;
 import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.migrate.client.ImportedClient;
+import com.ambrosia.loans.service.name.UpdateClientMetaHook;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Model;
@@ -164,6 +164,10 @@ public class DClient extends Model implements ClientAccess, Commentable {
         firstName.save();
         this.refresh();
         return firstName;
+    }
+
+    public List<DNameHistory> getNameHistory() {
+        return this.nameHistory;
     }
 
     public List<DNameHistory> getNameHistory(@Nullable NameHistoryType nameType) {

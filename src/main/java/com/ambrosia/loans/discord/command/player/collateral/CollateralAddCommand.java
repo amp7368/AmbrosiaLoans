@@ -55,7 +55,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
             request.getData().addCollateral(collateral);
             DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);
             ClientGui gui = request.guiClient(editMessage, msgOverride);
-            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData());
+            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData(), false);
             page.toLast();
             gui.addSubPage(page);
             gui.send();
@@ -78,7 +78,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
                     downloadError(gui, downloadAction, collateral);
                 } else {
                     request.addCollateral(collateral);
-                    LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request);
+                    LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request, false);
                     page.toLast();
                     gui.addSubPage(page);
                     gui.editMessage();

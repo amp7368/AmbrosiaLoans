@@ -280,7 +280,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
             if (sectionIndex >= sections.size()) break; // payments in future means running simulation
             DLoanSection section = sections.get(sectionIndex);
             DLoanPayment payment = payments.get(paymentIndex);
-            Instant sectionEndDate = section.getEndDateOrNow();
+            Instant sectionEndDate = section.getEndDate(end);
             boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
             principal = principal.min(runningBalance);
             if (isPaymentEarlierOrEq) {

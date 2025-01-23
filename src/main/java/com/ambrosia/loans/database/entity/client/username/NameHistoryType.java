@@ -18,16 +18,19 @@ public enum NameHistoryType {
                 ClientDiscordDetails discord = client.getDiscord();
                 if (discord == null) break;
                 jsonObj = discord.json();
+                if (jsonObj == null) break;
                 name = discord.getUsername();
             }
             case MINECRAFT -> {
                 ClientMinecraftDetails minecraft = client.getMinecraft();
                 if (minecraft == null) break;
                 jsonObj = minecraft.json();
+                if (jsonObj == null) break;
                 name = minecraft.getUsername();
             }
             case DISPLAY_NAME -> {
                 name = client.getDisplayName();
+                if (name == null) break;
                 jsonObj = Map.of("displayName", name);
             }
         }

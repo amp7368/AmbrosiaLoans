@@ -4,13 +4,19 @@ SELECT TO_CHAR(loans.date, 'MM/YYYY')                    period,
        CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') "Investor Stake of 1 STX",
        ROUND(total_invested_stx / 100.0, 3)              "STX for 1% Investor Stake",
        ROUND(total_invested_stx, 2)                      "Ambrosia Investment Pool",
-       COALESCE(profits.total_profits / 0.6, 0) AS       "Ambrosia Profits (STX)"
+       COALESCE(profits.total_profits / 0.6, 0) AS       "Investor Profits (STX)"
 FROM (SELECT SUM(delta) / 4096.0 / 64.0        total_profits,
              AVG(balance) / 4096.0 / 64        total_invested_stx,
              DATE_TRUNC('MONTH', rate.date)    ptimespan,
              SUM(delta) / MIN(balance) * 100.0 rate_of_return
-      FROM (SELECT SUM(delta)                                        delta,
-                   SUM(LEAST(balance, :investment_cap_stx * 262144)) balance,
+      FROM (SELECT SUM(delta) delta,
+                   SUM(LEAST(
+                           balance,
+                           CASE
+                               WHEN date < '10/01/2024' THEN 1000 * 262144
+                               ELSE 45 * 262144
+                               END
+                       ))     balance,
                    date
             FROM client_invest_snapshot
             WHERE event IN ('PROFIT')
@@ -46,8 +52,7 @@ FROM client_snapshot
 WHERE client_id = 210
   AND event = 'PROFIT'
 GROUP BY timespan
-ORDER BY timespan DESC
-;
+ORDER BY timespan DESC;
 
 
 

@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.service.name.UpdateClientMinecraftHook;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -72,7 +73,9 @@ public class ClientMinecraftDetails {
         return new ClientMinecraftDetails(this.uuid, this.username);
     }
 
+    @Nullable
     public Object json() {
+        if (uuid == null || username == null) return null;
         return Map.of(
             "uuid", uuid,
             "username", username

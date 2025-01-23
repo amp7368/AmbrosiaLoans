@@ -22,7 +22,9 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
         if (loan == null) return;
         Emeralds interestCap = CommandOption.LOAN_INTEREST_CAP.getRequired(event);
         if (interestCap == null) return;
-        if (loan.isPaid()) {
+        boolean force = CommandOption.FORCE.getOptional(event, false);
+
+        if (!force && loan.isPaid()) {
             String msg = "Loan %s %s is already paid off!".formatted(AmbrosiaEmoji.KEY_ID, loan.getId());
             replyError(event, msg);
             return;
@@ -30,7 +32,7 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
         Instant date = Instant.now();
         Emeralds totalOwed = loan.getTotalOwed(null, date);
         Emeralds adjustmentAmount = loan.getAccumulatedInterest().minus(interestCap);
-        if (adjustmentAmount.gt(totalOwed.amount())) {
+        if (!force && adjustmentAmount.gt(totalOwed.amount())) {
             String msg = "Only %s is owed on loan!".formatted(totalOwed);
             replyError(event, msg);
             return;
@@ -47,7 +49,8 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("interest", "[Staff] Cap/decrease the interest on a loan");
         return CommandOptionList.of(
-            List.of(CommandOption.LOAN_ID, CommandOption.LOAN_INTEREST_CAP)
+            List.of(CommandOption.LOAN_ID, CommandOption.LOAN_INTEREST_CAP),
+            List.of(CommandOption.FORCE)
         ).addToCommand(command);
     }
 }

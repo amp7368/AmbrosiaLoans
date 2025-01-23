@@ -52,7 +52,7 @@ public interface DiscordLog {
 
     private static SendDiscordLog modifyDiscord_(DClient client, UserActor actor) {
         String type = "Modify Discord";
-        String message = "Set Discord to @{discord}";
+        String message = "Set Discord to @${discord}";
         String discord = client.getDiscord(ClientDiscordDetails::getUsername);
         return account(client, actor, type, message)
             .addJson("discord", discord);
@@ -65,7 +65,7 @@ public interface DiscordLog {
 
     private static SendDiscordLog modifyMinecraft_(DClient client, UserActor actor) {
         String type = "Modify Discord";
-        String message = "Set Minecraft to @{minecraft}";
+        String message = "Set Minecraft to @${minecraft}";
         String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
         return account(client, actor, type, message)
             .addJson("minecraft", minecraft);

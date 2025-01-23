@@ -102,7 +102,7 @@ public class DClientMessage extends Model {
 
     public DClientMessage setMessage(Message msg) {
         this.acknowledged = MessageAcknowledged.SENT;
-        this.messageId = msg.getIdLong();
+        this.messageId = msg == null ? -1 : msg.getIdLong();
         return this;
     }
 }
