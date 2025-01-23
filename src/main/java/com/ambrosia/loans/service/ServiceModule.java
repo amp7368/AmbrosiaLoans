@@ -3,6 +3,7 @@ package com.ambrosia.loans.service;
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.service.loan.LoanFreezeService;
 import com.ambrosia.loans.service.message.MessageServiceManager;
+import com.ambrosia.loans.service.name.MinecraftNameUpdateScheduler;
 
 public class ServiceModule extends AppleModule {
 
@@ -20,6 +21,7 @@ public class ServiceModule extends AppleModule {
     public void onEnable() {
         LoanFreezeService.load();
         MessageServiceManager.load();
+        MinecraftNameUpdateScheduler.start();
     }
 
     @Override

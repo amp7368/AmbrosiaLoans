@@ -5,8 +5,10 @@ ORDER BY date DESC
 LIMIT 1;
 
 -- Investor Profits
-select sum(delta) / 4096 / 64
-from client_invest_snapshot
-where event = 'PROFIT';
+SELECT SUM(delta) / 4096 / 64, DATE_TRUNC('MONTH', date)
+FROM client_invest_snapshot
+WHERE event = 'PROFIT'
+GROUP BY DATE_TRUNC('MONTH', date)
+ORDER BY DATE_TRUNC('MONTH', date);
 
 

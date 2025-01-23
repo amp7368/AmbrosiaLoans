@@ -10,6 +10,7 @@ import com.ambrosia.loans.discord.message.loan.LoanMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -60,7 +61,9 @@ public class ProfileLoanPage extends ProfilePage {
 
     private void pastLoansSummary(EmbedBuilder embed) {
         DClient client = getClient();
-        List<DLoan> loans = client.getLoans();
+        List<DLoan> loans = client.getLoans().stream()
+            .sorted(Comparator.comparing(DLoan::getStartDate).reversed())
+            .toList();
         if (loans.isEmpty()) {
             embed.appendDescription("## No past loans");
             return;

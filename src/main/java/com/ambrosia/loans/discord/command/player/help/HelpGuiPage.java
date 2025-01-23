@@ -31,7 +31,7 @@ public abstract class HelpGuiPage extends DCFGuiPage<DCFGui> implements SendMess
         embed.setThumbnail(DiscordBot.getSelfAvatar());
         embed.setColor(this.color());
 
-        String title = title(getTitle(), getPageNum(), getPageSize());
+        String title = title(getTitle(), getPageNum(), getPageSize() - 1);
         embed.appendDescription("# %s\n".formatted(title));
 
         MessageCreateBuilder message = new MessageCreateBuilder()

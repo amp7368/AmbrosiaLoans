@@ -1,8 +1,11 @@
-package com.ambrosia.loans.database.entity.client.username;
+package com.ambrosia.loans.service.name;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
+import com.ambrosia.loans.database.entity.client.username.DNameHistory;
+import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -27,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class UpdateClientMinecraftHook {
 
-    private static final Duration HOURS_TILL_UPDATE = Duration.ofHours(24);
+    private static final Duration HOURS_TILL_UPDATE = Duration.ofHours(12);
 
     private static final String MINECRAFT_USERNAME_TO_UUID = "https://api.mojang.com/users/profiles/minecraft/";
     private static final String MINECRAFT_UUID_TO_USERNAME = "https://sessionserver.mojang.com/session/minecraft/profile/";
@@ -58,7 +61,7 @@ public class UpdateClientMinecraftHook {
         DatabaseModule.get().logger().info("Updating client {} minecraft {}{{}}",
             client.getEffectiveName(), minecraft.getUsername(), minecraftUUID);
 
-        Ambrosia.get().submit(() -> {
+        Ambrosia.get().execute(() -> {
             try {
                 ClientMinecraftDetails newMinecraft = fromUUIDNow(minecraftUUID);
                 if (newMinecraft == null) newMinecraft = minecraft.updated();

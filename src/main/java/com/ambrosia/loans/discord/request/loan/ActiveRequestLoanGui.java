@@ -36,17 +36,6 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         });
     }
 
-    @Override
-    protected List<Field> fields() {
-        Field rate = rate();
-        Field reason = reason();
-        Field repayment = repayment();
-        Field collateral = collateral();
-        Field vouch = vouch();
-        Field discounts = discounts();
-        return List.of(rate, reason, repayment, collateral, vouch, discounts);
-    }
-
     @NotNull
     private Field discounts() {
         String discount = Objects.requireNonNullElse(data.getDiscount(), AmbrosiaMessages.NULL_MSG);
@@ -96,6 +85,21 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     }
 
     @Override
+    public MessageCreateData makeMessage() {
+        return addButton(super.makeMessage());
+    }
+
+    @Override
+    public MessageCreateData makeClientMessage(String... extraDescription) {
+        return addButton(super.makeClientMessage(extraDescription));
+    }
+
+    @Override
+    protected String staffCommand() {
+        return "loan";
+    }
+
+    @Override
     protected String clientCommandName() {
         return "loan";
     }
@@ -104,8 +108,9 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     protected String clientModifyMessage() {
         if (!getData().stage.isBeforeClaimed()) return super.clientModifyMessage();
 
-        String addCollat = "\n**To add collateral use** `/collateral add request_id:%d`\n"
-            .formatted(data.getRequestId());
+        String collateralCommand = dcf.commands().getCommandAsMention("/collateral add");
+        String addCollat = "\n**Add collateral. Use** %s **request_id:%d**\n"
+            .formatted(collateralCommand, data.getRequestId());
         if (!getData().hasImageCollateral()) {
             addCollat = AmbrosiaEmoji.CHECK_ERROR.spaced(addCollat);
         }
@@ -119,8 +124,19 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     }
 
     @Override
-    protected String staffCommand() {
-        return "loan";
+    protected boolean hasApproveButton() {
+        return this.data.getRate() != null && this.data.hasAcceptedTOS();
+    }
+
+    @Override
+    protected List<Field> fields() {
+        Field rate = rate();
+        Field reason = reason();
+        Field repayment = repayment();
+        Field collateral = collateral();
+        Field vouch = vouch();
+        Field discounts = discounts();
+        return List.of(rate, reason, repayment, collateral, vouch, discounts);
     }
 
     @Override
@@ -131,24 +147,10 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
     }
 
     @Override
-    protected boolean hasApproveButton() {
-        return this.data.getRate() != null && this.data.hasAcceptedTOS();
-    }
-
-    @Override
-    public MessageCreateData makeClientMessage(String... extraDescription) {
-        return addButton(super.makeClientMessage(extraDescription));
-    }
-
-    @Override
-    public MessageCreateData makeMessage() {
-        return addButton(super.makeMessage());
-    }
-
-    private MessageCreateData addButton(MessageCreateData messageCreateData) {
-        MessageCreateBuilder builder = MessageCreateBuilder.from(messageCreateData);
-        builder.addComponents(ActionRow.of(showCollateralBtn(false)));
-        return builder.build();
+    protected String title() {
+        AccountEventType transactionType = data.transactionType();
+        Emeralds amount = data.getAmount();
+        return "%s %s %s".formatted(transactionType, amount, createEntityId());
     }
 
     @Override
@@ -160,10 +162,9 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         return page;
     }
 
-    @Override
-    protected String title() {
-        AccountEventType transactionType = data.transactionType();
-        Emeralds amount = data.getAmount();
-        return "%s %s %s".formatted(transactionType, amount, createEntityId());
+    private MessageCreateData addButton(MessageCreateData messageCreateData) {
+        MessageCreateBuilder builder = MessageCreateBuilder.from(messageCreateData);
+        builder.addComponents(ActionRow.of(showCollateralBtn(false)));
+        return builder.build();
     }
 }

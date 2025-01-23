@@ -51,6 +51,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     public ActiveRequestGui(long message, Data data) {
         super(message, data);
+        setDCF(DiscordBot.dcf);
         this.registerButton(BUTTON_DENY_ID, e -> this.checkPermissions(e, this::deny));
         this.registerButton(BUTTON_CLAIM_ID, e -> this.checkPermissions(e, this::claim));
         this.registerButton(BUTTON_APPROVE_ID, e -> this.checkPermissions(e, this::approve));
@@ -152,6 +153,20 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         return makeMessage(staffModifyMessage(), staffDescription());
     }
 
+    @Override
+    public void save() {
+        ActiveRequestDatabase.save(this.getData());
+    }
+
+    @Override
+    public void remove() {
+        ActiveRequestDatabase.remove(this.serialize());
+    }
+
+    public Data getData() {
+        return this.data;
+    }
+
     public MessageCreateData makeClientMessage(String... extraDescription) {
         List<String> description = new ArrayList<>(List.of(extraDescription));
         description.add(clientModifyMessage());
@@ -162,7 +177,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             .setComponents()
             .build();
     }
-
 
     protected MessageCreateData makeMessage(String... extraDescription) {
         EmbedBuilder embed = new EmbedBuilder();
@@ -221,7 +235,6 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             Use the above command to modify your request.
             """.formatted(mention, data.getRequestId());
     }
-
 
     @NotNull
     protected List<Button> getComponents() {
@@ -331,19 +344,5 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     private @NotNull String formatMessage(String unformattedMessage) {
         String endorser = Objects.requireNonNullElse(data.getEndorser(), "");
         return unformattedMessage.replace("{endorser}", endorser);
-    }
-
-    @Override
-    public void save() {
-        ActiveRequestDatabase.save(this.getData());
-    }
-
-    @Override
-    public void remove() {
-        ActiveRequestDatabase.remove(this.serialize());
-    }
-
-    public Data getData() {
-        return this.data;
     }
 }

@@ -140,7 +140,9 @@ public class ClientDiscordDetails {
         return this;
     }
 
+    @Nullable
     public Object json() {
+        if (id == null || username == null || avatarUrl == null) return null;
         return Map.of(
             "id", id,
             "username", username,

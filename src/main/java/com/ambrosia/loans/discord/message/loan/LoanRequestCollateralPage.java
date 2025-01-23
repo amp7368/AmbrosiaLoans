@@ -34,11 +34,6 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         parent.setTimeToOld(Duration.ofHours(2));
     }
 
-    public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData) {
-        this(parent, loanData, true);
-    }
-
-
     @Override
     protected Comparator<? super RequestCollateral> entriesComparator() {
         return Comparator.comparing(RequestCollateral::getIndex);
