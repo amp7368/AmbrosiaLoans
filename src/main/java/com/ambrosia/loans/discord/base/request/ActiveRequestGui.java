@@ -4,6 +4,7 @@ import apple.utilities.util.Pretty;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.DClientMeta;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.DiscordBot;
@@ -19,9 +20,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -137,7 +141,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         }
         event.deferEdit().queue(
             defer -> {
-                Ambrosia.get().submit(() -> {
+                Ambrosia.get().execute(() -> {
                         RunBankSimulation.complete();
                         this.editMessage(DCFEditMessage.ofHook(defer));
                         this.remove();
@@ -160,7 +164,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     public void remove() {
-        ActiveRequestDatabase.remove(this.serialize());
+        ActiveRequestDatabase.remove(this.getData());
     }
 
     public Data getData() {
@@ -231,9 +235,8 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         String mention = DiscordBot.dcf.commands()
             .getCommandAsMention("/modify_request " + staffCommand());
         return """
-            %s **request_id:%d**
-            Use the above command to modify your request.
-            """.formatted(mention, data.getRequestId());
+            Use %s to modify your request.
+            """.formatted(mention);
     }
 
     @NotNull
@@ -296,26 +299,46 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     protected abstract String title();
 
-    public void updateSender() {
-        updateSender(null);
+    public CompletableFuture<@Nullable Message> updateSender() {
+        return updateSender(null);
     }
 
-    public void updateSender(@Nullable String msgOverride) {
+    public CompletableFuture<@Nullable Message> updateSender(@Nullable String msgOverride) {
         DClient client = data.sender.getClient();
+        DClientMeta meta = client.getMeta();
         ClientDiscordDetails discord = client.getDiscord();
         if (discord == null) {
             String msg = "%s's discord is null!".formatted(client.getEffectiveName());
             DiscordLog.errorSystem(msg, null);
-            return;
+            return CompletableFuture.failedFuture(new IllegalStateException(msg));
         }
-        discord.tryOpenDirectMessages().thenAccept((channel) -> {
+
+        return discord.tryOpenDirectMessages()
+            .thenCompose((channel) -> {
                 DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
-                guiClient(editMessage, msgOverride).send(
-                    s -> client.getMeta().startMarkNotBlocked(),
-                    e -> client.getMeta().startMarkBlocked()
-                );
+                return guiClient(editMessage, msgOverride).submitSend();
+            })
+            .handle((message, err) -> err != null ? null : message)
+            .thenCompose(message -> {
+                    CompletableFuture<Void> action;
+                    if (message == null) action = meta.startMarkBlocked();
+                    else action = meta.startMarkNotBlocked();
+
+                    return action.thenApply(ignored -> message);
+                }
+            );
+    }
+
+    public <T> CompletableFuture<T> exceptionallyCompose(
+        CompletableFuture<T> future,
+        Function<Throwable, CompletableFuture<T>> exceptionHandler) {
+        return future.handle((result, ex) -> {
+            if (ex == null) {
+                return CompletableFuture.completedFuture(result);
+            } else {
+                return exceptionHandler.apply(ex);
             }
-        );
+        }).thenCompose(Function.identity());
     }
 
     public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {

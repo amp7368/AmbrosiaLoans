@@ -13,12 +13,16 @@ import com.ambrosia.loans.database.message.query.QDClientMessage;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.util.interaction.OnInteraction;
 import discord.util.dcf.gui.util.interaction.OnInteractionMap;
 import discord.util.dcf.util.message.DiscordMessageIdData;
 import io.ebean.DB;
 import io.ebean.Transaction;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -152,9 +156,7 @@ public abstract class SentClientMessage {
         try {
             updateDiscordMessages(event);
         } finally {
-            getDB().setStatus(this.status)
-                .setSentMessage(this)
-                .save();
+            getDB().setSentMessage(this).save();
         }
     }
 
@@ -200,17 +202,29 @@ public abstract class SentClientMessage {
 
         CompletableFuture<Void> future = new CompletableFuture<>();
         dmMsg.whenComplete((sent, err) -> {
+            String exceptionMessage;
             if (err == null) {
                 this.status = canInteract() ? MessageAcknowledged.SENT : MessageAcknowledged.SENT_NONINTERACTIVE;
                 this.message.setMessage(sent);
+                exceptionMessage = null;
             } else {
                 this.status = MessageAcknowledged.ERROR;
+                try (StringWriter exceptionString = new StringWriter()) {
+                    err.printStackTrace(new PrintWriter(exceptionString));
+                    exceptionMessage = exceptionString.toString();
+                    String msg = "%s\nFull error written to send_message_obj. Message_client %s"
+                        .formatted(err.getMessage(), AmbrosiaEmoji.KEY_ID.spaced(clientMessageId));
+                    DiscordLog.errorSystem(msg);
+                } catch (IOException e) {
+                    DiscordLog.errorSystem(null, e);
+                    throw new RuntimeException(e);
+                }
             }
             try {
                 List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
                     .map(dest -> dest.send(self))
                     .toList();
-                finishSetup(sent, destinationMsgs);
+                finishSetup(sent, destinationMsgs, exceptionMessage);
             } finally {
                 future.complete(null);
             }
@@ -218,7 +232,7 @@ public abstract class SentClientMessage {
         return future;
     }
 
-    private void finishSetup(Message sent, List<CompletableFuture<Message>> destinationMsgs) {
+    private void finishSetup(Message sent, List<CompletableFuture<Message>> destinationMsgs, String exceptionMessage) {
         for (CompletableFuture<Message> dest : destinationMsgs) {
             try {
                 Message destMsg = dest.get();
@@ -232,8 +246,9 @@ public abstract class SentClientMessage {
         DClientMessage db = getDB();
         try (Transaction transaction = DB.beginTransaction()) {
             db.refresh();
-            db.setMessage(sent)
-                .setSentMessage(this)
+            db.setSentMessage(this)
+                .setExceptionMessage(exceptionMessage)
+                .setMessage(sent)
                 .save(transaction);
             for (DMessageId m : staffMessageIds)
                 m.setClient(db).save(transaction);
@@ -242,7 +257,9 @@ public abstract class SentClientMessage {
         } catch (Exception e) {
             String error = "Cannot save %s's message".formatted(getClient().getEffectiveName());
             DiscordLog.errorSystem(error, e);
-            db.setStatus(MessageAcknowledged.ERROR).save();
+            db.setExceptionMessage(error)
+                .setStatus(MessageAcknowledged.ERROR)
+                .save();
         } finally {
             db.refresh();
         }

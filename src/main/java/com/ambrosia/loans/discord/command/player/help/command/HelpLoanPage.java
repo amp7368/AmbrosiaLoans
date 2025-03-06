@@ -35,8 +35,9 @@ public class HelpLoanPage extends HelpGuiPage {
         eb.addField(requestPayment + " (amount) (full)",
             "Request to make a payment on your active loan. Specify an amount for a partial payment, or full to pay the full balance.",
             false);
-        eb.addField(modifyRequest + " [request_id]",
-            "Modify a previous request, such as adding a Voucher or Reputable Vouch to a loan. The request ID can be found in the "
+        eb.addField(modifyRequest + " (request_id)",
+            "Modify a previous request, such as adding a Voucher or Reputable Vouch to a loan. The optional request ID can be found "
+                + "in the "
                 + "bot message for each request.",
             false);
 

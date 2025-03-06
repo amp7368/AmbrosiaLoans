@@ -1,6 +1,6 @@
 package com.ambrosia.loans.discord.command.manager.bank;
 
-import com.ambrosia.loans.database.bank.BankStatisticsQuery;
+import com.ambrosia.loans.database.bank.summary.BankSummaryQuery;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
@@ -9,10 +9,11 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class BankMainPage extends DCFGuiPage<BankProfileGui> implements SendMessage {
+public class BankMainPage extends DCFGuiPage<BankGui> implements SendMessage, IBankPage {
 
-    public BankMainPage(BankProfileGui bankProfileGui) {
+    public BankMainPage(BankGui bankProfileGui) {
         super(bankProfileGui);
+        registerButtons();
     }
 
     @Override
@@ -21,6 +22,15 @@ public class BankMainPage extends DCFGuiPage<BankProfileGui> implements SendMess
         embed.setColor(AmbrosiaColor.BLUE_SPECIAL);
         embed.appendDescription(title("# Bank", getPageNum(), getPageSize() - 1));
 
+        makeHeader(embed);
+
+        return new MessageCreateBuilder()
+            .setEmbeds(embed.build())
+            .addActionRow(btnMain(), btnProfits())
+            .build();
+    }
+
+    public void makeHeader(EmbedBuilder embed) {
         embed.appendDescription("\n## Profits\n");
         embed.appendDescription("%s **Bank Profits:** %s\n"
             .formatted(AmbrosiaEmoji.EMERALD, query().getBankBalance()));
@@ -34,14 +44,9 @@ public class BankMainPage extends DCFGuiPage<BankProfileGui> implements SendMess
             .formatted(AmbrosiaEmoji.LOAN_BALANCE, query().getActiveLoans()));
         embed.appendDescription("%s **Defaulted Loans:** %s\n"
             .formatted(AmbrosiaEmoji.LOAN_COLLATERAL, query().getDefaultedLoans()));
-
-        return new MessageCreateBuilder()
-            .setEmbeds(embed.build())
-            .setActionRow(btnPrev(), btnNext())
-            .build();
     }
 
-    private BankStatisticsQuery query() {
-        return parent.query();
+    private BankSummaryQuery query() {
+        return parent.querySummary();
     }
 }

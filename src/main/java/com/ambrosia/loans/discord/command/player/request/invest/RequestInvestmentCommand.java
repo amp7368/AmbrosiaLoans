@@ -6,6 +6,7 @@ import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.base.request.WarnBotBlockedObj;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSGui;
 import com.ambrosia.loans.discord.message.tos.AcceptTOSRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
@@ -13,6 +14,7 @@ import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
 import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestmentGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import com.ambrosia.loans.util.emerald.Emeralds;
+import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +46,13 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
 
     public void onAccept(ButtonInteractionEvent event, ActiveRequestInvestment request) {
         ActiveRequestInvestmentGui finishedGui = request.create();
-        event.reply(finishedGui.makeClientMessage()).queue();
+
+        WarnBotBlockedObj warning = new WarnBotBlockedObj(request.getClient(), finishedGui::updateSender);
+
+        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null)
+            .send(warning.initialSuccess(), warning.initialFailed());
         finishedGui.send(ActiveRequestDatabase::sendRequest);
-        finishedGui.updateSender();
+        warning.tryFirstDirectMessage();
     }
 
     private void onReject(ButtonInteractionEvent event, ActiveRequestInvestment request) {

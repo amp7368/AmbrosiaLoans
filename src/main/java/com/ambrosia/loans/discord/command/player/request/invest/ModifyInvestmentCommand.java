@@ -34,8 +34,8 @@ public class ModifyInvestmentCommand extends BaseSubCommand implements BaseModif
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("investment", "Modify an investment request");
         CommandOptionList.of(
-            List.of(CommandOption.REQUEST),
-            List.of(CommandOption.INVESTMENT_AMOUNT)
+            List.of(),
+            List.of(CommandOption.REQUEST, CommandOption.INVESTMENT_AMOUNT)
         ).addToCommand(command);
         return command;
     }

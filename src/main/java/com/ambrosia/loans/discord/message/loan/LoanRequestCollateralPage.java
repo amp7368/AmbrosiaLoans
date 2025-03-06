@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +29,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         super(parent);
         this.loanData = loanData;
         this.includeBackToMainBtn = includeBackToMainBtn;
-        registerButton(btnBackToMain().getId(), e -> parent.popSubPage());
+        registerButton(btnBackToMain().getId(), e -> this.parent.popSubPage());
         setEntries(this.loanData.getCollateral());
         sort();
         parent.setTimeToOld(Duration.ofHours(2));
@@ -75,14 +76,15 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
 
     @Override
     public void remove() {
-        super.remove();
-
-        if (this.includeBackToMainBtn) return;
-        removeMessage();
+        if (this.includeBackToMainBtn) {
+            parent.popSubPage();
+            super.remove();
+        } else removeMessage();
     }
 
     private void removeMessage() {
-        getParent().getMessage().tryDeleteMessage();
+        AuditableRestAction<Void> delete = getParent().getMessage().deleteMessage();
+        if (delete != null) delete.queue(null, null);
     }
 
     public void toLast() {

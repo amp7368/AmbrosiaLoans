@@ -40,8 +40,8 @@ public class ModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanR
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("loan", "Modify loan request");
         CommandOptionList.of(
-            List.of(CommandOption.REQUEST),
-            List.of(CommandOption.LOAN_VOUCH, CommandOption.LOAN_DISCOUNT)
+            List.of(),
+            List.of(CommandOption.REQUEST, CommandOption.LOAN_VOUCH, CommandOption.LOAN_DISCOUNT)
         ).addToCommand(command);
         return command;
     }

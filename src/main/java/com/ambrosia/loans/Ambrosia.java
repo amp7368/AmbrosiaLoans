@@ -34,11 +34,6 @@ public class Ambrosia extends ApplePlugin {
     }
 
     @Override
-    public List<AppleModule> createModules() {
-        return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule());
-    }
-
-    @Override
     public List<AppleConfigLike> getConfigs() {
         return List.of(
             configJson(AmbrosiaConfig.class, "AmbrosiaConfig").setPretty(),
@@ -49,6 +44,11 @@ public class Ambrosia extends ApplePlugin {
     @Override
     public String getName() {
         return "AmbrosiaLoans";
+    }
+
+    @Override
+    public List<AppleModule> createModules() {
+        return List.of(new DatabaseModule(), new DiscordModule(), new ServiceModule());
     }
 
     @Override
@@ -71,4 +71,5 @@ public class Ambrosia extends ApplePlugin {
     public <E extends Throwable, T> Consumer<E> futureException(CompletableFuture<T> sent) {
         return obj -> futureException(sent, obj);
     }
+
 }

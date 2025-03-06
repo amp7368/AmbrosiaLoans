@@ -10,18 +10,19 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 public class BankCommand extends BaseManagerCommand {
 
     @Override
-    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
-        BankProfileGui gui = new BankProfileGui(dcf, event::reply);
-        event.deferReply().queue(
-            defer -> {
-                new BankMainPage(gui).addPageToGui();
-                gui.editMessage(DCFEditMessage.ofHook(defer));
-            }
-        );
+    public SlashCommandData getStaffData() {
+        return Commands.slash("abank", "[Manager] View bank statistics");
     }
 
     @Override
-    public SlashCommandData getStaffData() {
-        return Commands.slash("abank", "[Manager] View bank statistics");
+    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
+        event.deferReply().queue(
+            defer -> {
+                BankGui gui = new BankGui(dcf, DCFEditMessage.ofHook(defer));
+                new BankMainPage(gui).addPageToGui();
+                new BankProfitsPage(gui).addPageToGui();
+                gui.send();
+            }
+        );
     }
 }

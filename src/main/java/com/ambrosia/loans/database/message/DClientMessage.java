@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import net.dv8tion.jda.api.entities.Message;
+import org.jetbrains.annotations.Nullable;
 
 @Entity
 @Table(name = "message_client")
@@ -45,6 +46,8 @@ public class DClientMessage extends Model {
     protected MessageAcknowledged acknowledged;
     @DbJson
     protected String sentMessageObj;
+    @Column(columnDefinition = "text")
+    protected String exception;
 
     public DClientMessage(DClient client, MessageReason reason, String message, SentClientMessage sentClientMessage) {
         this.client = client;
@@ -74,6 +77,7 @@ public class DClientMessage extends Model {
     }
 
     public DClientMessage setSentMessage(SentClientMessage sentMessage) {
+        this.setStatus(sentMessage.getStatus());
         this.sentMessageObj = SentClientMessageType.gson().toJson(sentMessage);
         return this;
     }
@@ -103,6 +107,11 @@ public class DClientMessage extends Model {
     public DClientMessage setMessage(Message msg) {
         this.acknowledged = MessageAcknowledged.SENT;
         this.messageId = msg == null ? -1 : msg.getIdLong();
+        return this;
+    }
+
+    public DClientMessage setExceptionMessage(@Nullable String exceptionMessage) {
+        this.exception = exceptionMessage;
         return this;
     }
 }

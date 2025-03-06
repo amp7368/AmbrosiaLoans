@@ -6,12 +6,16 @@ import apple.utilities.database.concurrent.ConcurrentAJD;
 import apple.utilities.database.concurrent.inst.ConcurrentAJDInst;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordConfig;
+import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
+import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import discord.util.dcf.gui.stored.DCFStoredGui;
-import discord.util.dcf.gui.stored.DCFStoredGuiFactory;
+import discord.util.dcf.gui.stored.DCFStoredManager;
+import discord.util.dcf.gui.stored.IDCFStoredDormantGui;
 import discord.util.dcf.gui.stored.model.DCFStoredModelManager;
 import java.io.File;
 import java.util.Comparator;
@@ -28,7 +32,7 @@ public class ActiveRequestDatabase {
     private static ConcurrentAJDInst<ActiveRequestDatabase> manager;
     private static TextChannel requestChannel;
 
-    protected DCFStoredModelManager<ActiveRequest<?>> requests = DCFStoredGuiFactory.createDCFStoredModel(DiscordBot.dcf);
+    protected DCFStoredModelManager<ActiveRequest<?>> requests = DCFStoredManager.createDCFStoredModel(DiscordBot.dcf);
 
     protected Map<Long, Long> requestIdToMessageId = new HashMap<>();
     protected long incrementalId = 1000;
@@ -73,6 +77,13 @@ public class ActiveRequestDatabase {
         return manager.getValue();
     }
 
+    private static boolean isClientRequestOwner(ActiveRequestGui<?> request, DClient client) {
+        if (request.getData() instanceof ActiveClientRequest<?> clientRequest) {
+            return clientRequest.getClient().getId() == client.getId();
+        }
+        return false;
+    }
+
     public DCFStoredGui<?> getRequest(long requestId) {
         Long messageId = this.requestIdToMessageId.get(requestId);
         if (messageId == null) return null;
@@ -96,5 +107,17 @@ public class ActiveRequestDatabase {
             })
             .max(Comparator.comparing(ActiveRequest::getDateCreated))
             .orElse(null);
+    }
+
+    public <T extends ActiveRequestGui<?>> List<T> getRequest(DClient client, Class<T> requestType) {
+        return requests.getAllMessagesCopy().stream()
+            .map(IDCFStoredDormantGui::load)
+            .filter(requestType::isInstance)
+            .map(requestType::cast)
+            .filter(request -> isClientRequestOwner(request, client))
+            .map(ActiveRequestGui::getMessageId)
+            .map(requests::fetchGui)
+            .map(requestType::cast)
+            .toList();
     }
 }

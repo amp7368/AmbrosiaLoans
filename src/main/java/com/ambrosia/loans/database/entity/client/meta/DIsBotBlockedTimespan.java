@@ -34,6 +34,11 @@ public class DIsBotBlockedTimespan extends Model {
         this.lastCheckedAt = this.startedAt;
     }
 
+    public Instant getStartedAt() {
+        if (startedAt == null) return Instant.now();
+        return startedAt.toInstant();
+    }
+
     public DClientMeta getClientMeta() {
         return clientMeta;
     }

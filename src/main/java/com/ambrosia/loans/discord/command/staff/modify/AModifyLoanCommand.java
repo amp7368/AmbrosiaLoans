@@ -3,9 +3,10 @@ package com.ambrosia.loans.discord.command.staff.modify;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatPercentage;
 
-import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoanGui;
 import com.ambrosia.loans.discord.request.loan.BaseModifyLoanRequest;
@@ -19,11 +20,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
-
+public class AModifyLoanCommand extends BaseStaffSubCommand implements BaseModifyLoanRequest {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         ActiveRequestLoanGui loan = findLoanRequest(event, true);
         if (loan == null) return;
         List<ModifyRequestMsg> changes = new ArrayList<>();
@@ -78,11 +78,6 @@ public class AModifyLoanCommand extends BaseSubCommand implements BaseModifyLoan
             return ModifyRequestMsg.warning(msg);
         }
         return ModifyRequestMsg.info("Set amount as %s.".formatted(amount));
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     @Override

@@ -11,7 +11,7 @@ public class BankApi {
     public static void updateBankBalance(long delta, Instant instant, AccountEventType eventType) {
         Timestamp timestamp = Timestamp.from(instant);
         DBankSnapshot snapshot = getLatestSnapshot();
-        long oldBalance = snapshot == null ? 0 : snapshot.getBalance();
+        long oldBalance = snapshot == null ? 0 : snapshot.getBalanceAmount();
         new DBankSnapshot(eventType, timestamp, oldBalance + delta, delta).save();
     }
 

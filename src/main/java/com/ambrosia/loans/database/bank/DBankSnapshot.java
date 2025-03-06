@@ -1,9 +1,11 @@
 package com.ambrosia.loans.database.bank;
 
 import com.ambrosia.loans.database.account.base.AccountEventType;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,7 +36,15 @@ public class DBankSnapshot extends Model {
         this.delta = delta;
     }
 
-    public long getBalance() {
+    public long getBalanceAmount() {
         return this.balance;
+    }
+
+    public Emeralds getBalance() {
+        return Emeralds.of(this.balance);
+    }
+
+    public Instant getDate() {
+        return date.toInstant();
     }
 }

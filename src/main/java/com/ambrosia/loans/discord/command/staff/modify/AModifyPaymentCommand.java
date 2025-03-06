@@ -2,9 +2,10 @@ package com.ambrosia.loans.discord.command.staff.modify;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
-import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import com.ambrosia.loans.discord.request.base.ModifyRequestMsg;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPaymentGui;
 import com.ambrosia.loans.discord.request.payment.BaseModifyPaymentRequest;
@@ -17,21 +18,16 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.jetbrains.annotations.Nullable;
 
-public class AModifyPaymentCommand extends BaseSubCommand implements BaseModifyPaymentRequest {
+public class AModifyPaymentCommand extends BaseStaffSubCommand implements BaseModifyPaymentRequest {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         @Nullable ActiveRequestPaymentGui request = findPaymentRequest(event, true);
         if (request == null) return;
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setPaymentAmount(request, event));
         changes.add(setDate(request, event));
         replyChanges(event, changes, request);
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     private ModifyRequestMsg setPaymentAmount(ActiveRequestPaymentGui request, SlashCommandInteractionEvent event) {
@@ -62,8 +58,8 @@ public class AModifyPaymentCommand extends BaseSubCommand implements BaseModifyP
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("payment", "[Staff] Modify a payment request");
         CommandOptionList.of(
-            List.of(CommandOption.REQUEST),
-            List.of(CommandOption.PAYMENT_AMOUNT, CommandOption.DATE)
+            List.of(),
+            List.of(CommandOption.REQUEST, CommandOption.PAYMENT_AMOUNT, CommandOption.DATE)
         ).addToCommand(command);
         return command;
     }

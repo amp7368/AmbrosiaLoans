@@ -9,10 +9,13 @@ import io.ebean.DB;
 import io.ebean.Model;
 import io.ebean.Transaction;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -60,21 +63,26 @@ public class DClientMeta extends Model {
         }
     }
 
-    public void startMarkNotBlocked() {
-        Ambrosia.get().execute(() -> setIsBotBlockedAndSave(false));
+    public CompletableFuture<Void> startMarkNotBlocked() {
+        return CompletableFuture.runAsync(() -> setIsBotBlockedAndSave(false), Ambrosia.get().executor());
     }
 
-    public void startMarkBlocked() {
-        Ambrosia.get().execute(() -> setIsBotBlockedAndSave(true));
+    public CompletableFuture<Void> startMarkBlocked() {
+        return CompletableFuture.runAsync(() -> setIsBotBlockedAndSave(true), Ambrosia.get().executor());
     }
 
     private void setIsBotBlockedAndSave(boolean isBotBlocked) {
         this.refresh();
+
+        DIsBotBlockedTimespan timespan = getLatestTimespan();
+        if (shouldLogBlocked(isBotBlocked, timespan)) {
+            DiscordLog.botBlocked(client, isBotBlocked, timespan);
+        }
+
         if (this.isBotBlocked == null) {
             saveFirstIsBotBlocked(isBotBlocked);
             return;
         }
-        DIsBotBlockedTimespan timespan = getLatestTimespan();
         if (timespan == null) {
             DiscordLog.errorSystem("getLatestTimespan is null, when there should be at least one...", null);
         } else if (this.isBotBlocked == isBotBlocked) {
@@ -85,10 +93,18 @@ public class DClientMeta extends Model {
         }
     }
 
+    private boolean shouldLogBlocked(boolean isBotBlocked, DIsBotBlockedTimespan timespan) {
+        if (this.isBotBlocked == null) return true;
+        if (!isBotBlocked || timespan == null) return true;
+        if (this.isBotBlocked) return false;
+
+        Duration sinceLastLog = Duration.between(timespan.getStartedAt(), Instant.now());
+        return sinceLastLog.compareTo(Duration.ofMinutes(30)) > 0;
+    }
+
     private void updateIsBotBlockedTimespan(DIsBotBlockedTimespan timespan) {
         if (isBotBlocked == null) throw new IllegalStateException("Impossible");
 
-        DiscordLog.botBlocked(client, isBotBlocked);
         try (Transaction transaction = DB.beginTransaction()) {
             DIsBotBlockedTimespan next = new DIsBotBlockedTimespan(this, isBotBlocked);
             next.save(transaction);
@@ -99,9 +115,11 @@ public class DClientMeta extends Model {
         }
     }
 
-    private void saveFirstIsBotBlocked(boolean isBotBlocked) {
-        if (isBotBlocked) DiscordLog.botBlocked(client, true);
+    public boolean isBotBlocked() {
+        return Objects.requireNonNullElse(isBotBlocked, false);
+    }
 
+    private void saveFirstIsBotBlocked(boolean isBotBlocked) {
         this.isBotBlocked = isBotBlocked;
         this.isBotBlockedCheckedAt = new Timestamp(System.currentTimeMillis());
         try (Transaction transaction = DB.beginTransaction()) {
