@@ -58,6 +58,6 @@ public class DiscordPermissions {
 
     @NotNull
     public String warn(String missingField) {
-        return missingField + " is not set in /Permissions.config.json";
+        return missingField + " is not set in discordPermissions within /AmbrosiaConfig.json";
     }
 }

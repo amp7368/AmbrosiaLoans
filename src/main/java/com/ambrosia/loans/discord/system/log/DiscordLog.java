@@ -8,6 +8,7 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.client.meta.DIsBotBlockedTimespan;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
@@ -180,11 +181,11 @@ public interface DiscordLog {
     }
 
 
-    static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked) {
-        return futureLog(() -> _botBlocked(client, isBlocked));
+    static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked, @Nullable DIsBotBlockedTimespan timespan) {
+        return futureLog(() -> _botBlocked(client, isBlocked, timespan));
     }
 
-    private static SendDiscordLog _botBlocked(DClient client, boolean blocked) {
+    private static SendDiscordLog _botBlocked(DClient client, boolean blocked, @Nullable DIsBotBlockedTimespan timespan) {
         String title = blocked ? "Blocked by User" : "Unblocked by User";
         String msg;
         if (blocked) msg = "Failed to send message to @%s.".formatted(client.getEffectiveName());
@@ -203,7 +204,7 @@ public interface DiscordLog {
      * @param exception Optional exception to display.
      * @apiNote If exception is null, a default exception is generated with the calling stacktrace
      */
-    static void errorSystem(@Nullable String msg, @Nullable Exception exception) {
+    static void errorSystem(@Nullable String msg, @Nullable Throwable exception) {
         if (msg == null) {
             if (exception == null)
                 msg = "No message provided";

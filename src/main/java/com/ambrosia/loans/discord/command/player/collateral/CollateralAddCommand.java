@@ -31,7 +31,7 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
 
     @Override
     protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", false);
+        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", true);
         if (request == null) return;
         if (isBadUser(event, request.getData())) return;
 
@@ -105,9 +105,11 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("add", "Add collateral to a loan request");
-        return CommandOptionList.of(
-            List.of(CommandOption.REQUEST),
-            List.of(CommandOption.LOAN_COLLATERAL_IMAGE, CommandOption.LOAN_COLLATERAL_NAME, CommandOption.LOAN_COLLATERAL_DESCRIPTION)
-        ).addToCommand(command);
+        return CommandOptionList.of(List.of(), List.of(
+            CommandOption.LOAN_COLLATERAL_IMAGE,
+            CommandOption.LOAN_COLLATERAL_NAME,
+            CommandOption.LOAN_COLLATERAL_DESCRIPTION,
+            CommandOption.REQUEST
+        )).addToCommand(command);
     }
 }

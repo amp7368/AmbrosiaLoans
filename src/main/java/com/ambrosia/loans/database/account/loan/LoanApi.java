@@ -86,7 +86,7 @@ public interface LoanApi {
                 .orElse(null);
             if (activity.isBefore(lastPayment, DLoanPayment::getDate))
                 activity = RecentActivityType.LOAN_PAYMENT.toActivity(lastPayment.getDate(), a ->
-                    "Made payment of %s on %s".formatted(lastPayment.getLoan(), a.getDateStr())
+                    "Made payment of %s on %s".formatted(lastPayment.getAmount(), a.getDateStr())
                 );
 
             @Nullable ActiveRequest<?> lastRequest = ActiveRequestDatabase.get().findLastPaymentActivity(loan);

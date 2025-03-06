@@ -36,7 +36,7 @@ public class HelpInvestmentPage extends HelpGuiPage {
                 + "balance. Partial withdrawals will pull out of your investor profits first, then investment. Please review our "
                 + hyperlink + " for rules regarding withdrawing, and DM any inquiries to @tealycraft.",
             false);
-        eb.addField("%s [request_id]\n%s [request_id]".formatted(modifyRequest, modifyWithdrawal),
+        eb.addField("%s (request_id)\n%s (request_id)".formatted(modifyRequest, modifyWithdrawal),
             "Modify a previous request, such as changing the amount of the investment/withdrawal. The request ID can be found in "
                 + "the bot message for each request.",
             false);

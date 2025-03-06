@@ -12,6 +12,7 @@ import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
@@ -56,14 +57,15 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
 
     @Override
     public void remove() {
-        super.remove();
-
-        if (this.includeBackToMainBtn) return;
-        removeMessage();
+        if (this.includeBackToMainBtn) {
+            parent.popSubPage();
+            super.remove();
+        } else removeMessage();
     }
 
     private void removeMessage() {
-        getParent().getMessage().tryDeleteMessage();
+        AuditableRestAction<Void> delete = getParent().getMessage().deleteMessage();
+        if (delete != null) delete.queue(null, null);
     }
 
     @Override

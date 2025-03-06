@@ -1,15 +1,18 @@
-package com.ambrosia.loans.database.bank;
+package com.ambrosia.loans.database.bank.summary;
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.query.QDClientInvestSnapshot;
+import com.ambrosia.loans.database.bank.BankApi;
+import com.ambrosia.loans.database.bank.DBankSnapshot;
+import com.ambrosia.loans.database.bank.query.CachedEmeraldsQueryResult;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.SqlQuery;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class BankStatisticsQuery {
+public class BankSummaryQuery {
 
     private static final SqlQuery ACTIVE_LOAN_BALANCE = sumLoanQuery(false);
     private static final SqlQuery DEFAULTED_LOAN_BALANCE = sumLoanQuery(true);
@@ -19,6 +22,7 @@ public class BankStatisticsQuery {
     private final CachedEmeraldsQueryResult defaultedLoans = new CachedEmeraldsQueryResult();
     private final CachedEmeraldsQueryResult investorProfits = new CachedEmeraldsQueryResult();
     private final CachedEmeraldsQueryResult bankBalance = new CachedEmeraldsQueryResult();
+
 
     private static SqlQuery investorBalanceQuery() {
         return DB.sqlQuery("""
@@ -41,7 +45,7 @@ public class BankStatisticsQuery {
             """).setParameter("isDefaulted", isDefaulted);
     }
 
-    public BankStatisticsQuery start() {
+    public BankSummaryQuery start() {
         List<Runnable> tasks = List.of(
             this::getActiveLoans,
             this::getTotalInvested,
@@ -57,7 +61,7 @@ public class BankStatisticsQuery {
     public Emeralds getBankBalance() {
         if (bankBalance.start()) return bankBalance.result();
         DBankSnapshot snapshot = BankApi.getLatestSnapshot();
-        long balance = snapshot == null ? 0 : snapshot.getBalance();
+        long balance = snapshot == null ? 0 : snapshot.getBalanceAmount();
         return bankBalance.result(balance);
     }
 
@@ -95,53 +99,6 @@ public class BankStatisticsQuery {
             .map(row -> row.getLong("balance"))
             .orElse(0L);
         return activeLoans.result(defaultedBalance);
-    }
-
-    private static class CachedEmeraldsQueryResult extends CachedQueryResult<Emeralds> {
-
-        public Emeralds result(Long value) {
-            if (value == null)
-                return result(Emeralds.zero());
-            else return result(Emeralds.of(value));
-        }
-    }
-
-    private static class CachedQueryResult<T> {
-
-        private final Object sync = new Object();
-        private boolean isStarted = false;
-        private T result;
-
-        public T result() {
-            synchronized (sync) {
-                if (result != null) return result;
-                try {
-                    sync.wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            return result;
-        }
-
-        public T result(T newValue) {
-            synchronized (sync) {
-                result = newValue;
-                sync.notifyAll();
-            }
-            return result;
-        }
-
-        /**
-         * @return true if the result is being computed
-         */
-        public boolean start() {
-            synchronized (sync) {
-                if (isStarted) return true;
-                isStarted = true;
-                return false;
-            }
-        }
     }
 
 }

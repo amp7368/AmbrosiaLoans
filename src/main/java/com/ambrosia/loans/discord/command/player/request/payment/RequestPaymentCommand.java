@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.command.client.BaseClientSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.base.request.WarnBotBlockedObj;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPayment;
 import com.ambrosia.loans.discord.request.payment.ActiveRequestPaymentGui;
@@ -53,10 +54,14 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
 
         ActiveRequestPayment request = new ActiveRequestPayment(client, loan.get().getId(), payment, timestamp);
 
-        ActiveRequestPaymentGui gui = request.create();
-        gui.guiClient(DCFEditMessage.ofReply(event::reply), null).send();
-        gui.send(ActiveRequestDatabase::sendRequest);
-        gui.updateSender();
+        ActiveRequestPaymentGui finishedGui = request.create();
+
+        WarnBotBlockedObj warning = new WarnBotBlockedObj(request.getClient(), finishedGui::updateSender);
+
+        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null)
+            .send(warning.initialSuccess(), warning.initialFailed());
+        finishedGui.send(ActiveRequestDatabase::sendRequest);
+        warning.tryFirstDirectMessage();
     }
 
     @Override

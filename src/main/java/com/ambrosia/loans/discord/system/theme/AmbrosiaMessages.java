@@ -24,6 +24,18 @@ public class AmbrosiaMessages {
     public static final String NULL_MSG = "N/A";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LLL dd yyyy")
         .withZone(AmbrosiaTimeZone.getTimeZoneId());
+    private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("LLLL yyyy")
+        .withZone(AmbrosiaTimeZone.getTimeZoneId());
+
+    public static String formatMonth(Instant date) {
+        return formatMonth(date, false);
+    }
+
+    public static String formatMonth(Instant date, boolean emoji) {
+        String dateFormatted = MONTH_FORMATTER.format(date);
+        if (emoji) return AmbrosiaEmoji.ANY_DATE + " " + dateFormatted;
+        return dateFormatted;
+    }
 
     public static String formatDate(Instant date) {
         return formatDate(date, false);
@@ -229,6 +241,15 @@ public class AmbrosiaMessages {
             return error(msg);
         }
 
+        public static AmbrosiaMessage youHaveNoRequests(String type) {
+            String msg = "You have no %s requests to modify".formatted(type);
+            return error(msg);
+        }
+
+        public static AmbrosiaMessage youHaveMultipleRequests(String type) {
+            String msg = "You have multiple %s requests. Specify the requestId to identify which request to modify".formatted(type);
+            return error(msg);
+        }
     }
 
     private record AmbrosiaStringMessage(String msg) implements AmbrosiaMessage, SendMessage {

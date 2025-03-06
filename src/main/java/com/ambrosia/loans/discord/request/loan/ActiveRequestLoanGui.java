@@ -109,8 +109,7 @@ public class ActiveRequestLoanGui extends ActiveRequestGui<ActiveRequestLoan> {
         if (!getData().stage.isBeforeClaimed()) return super.clientModifyMessage();
 
         String collateralCommand = dcf.commands().getCommandAsMention("/collateral add");
-        String addCollat = "\n**Add collateral. Use** %s **request_id:%d**\n"
-            .formatted(collateralCommand, data.getRequestId());
+        String addCollat = "**Add collateral. Use** %s\n".formatted(collateralCommand);
         if (!getData().hasImageCollateral()) {
             addCollat = AmbrosiaEmoji.CHECK_ERROR.spaced(addCollat);
         }

@@ -18,7 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCFStoredDormantGui<Gui> implements HasFilename {
+public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCFStoredDormantGui<Gui>
+    implements HasFilename {
 
     public String typeId;
     public ActiveRequestStage stage = ActiveRequestStage.CREATED;
@@ -27,10 +28,20 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
     protected String endorser;
     protected long endorserId;
     protected Instant dateCreated = Instant.now();
+    protected boolean issuedBotBlockedWarning = false;
 
     public ActiveRequest(ActiveRequestType typeId, ActiveRequestSender sender) {
         this.typeId = typeId.getTypeId();
         this.sender = sender;
+    }
+
+    public boolean isIssuedBotBlockedWarning() {
+        return issuedBotBlockedWarning;
+    }
+
+    public ActiveRequest<Gui> setIssuedBotBlockedWarning(boolean issuedBotBlockedWarning) {
+        this.issuedBotBlockedWarning = issuedBotBlockedWarning;
+        return this;
     }
 
     public Instant getDateCreated() {
