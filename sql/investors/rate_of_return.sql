@@ -4,7 +4,7 @@ SELECT TO_CHAR(loans.date, 'MM/YYYY')                    period,
        CONCAT(ROUND(100.0 / total_invested_stx, 3), '%') "Investor Stake of 1 STX",
        ROUND(total_invested_stx / 100.0, 3)              "STX for 1% Investor Stake",
        ROUND(total_invested_stx, 2)                      "Ambrosia Investment Pool",
-       COALESCE(profits.total_profits / 0.6, 0) AS       "Investor Profits (STX)"
+       COALESCE(profits.total_profits, 0) AS             "Investor Profits (STX)"
 FROM (SELECT SUM(delta) / 4096.0 / 64.0        total_profits,
              AVG(balance) / 4096.0 / 64        total_invested_stx,
              DATE_TRUNC('MONTH', rate.date)    ptimespan,
@@ -44,22 +44,11 @@ FROM (SELECT SUM(delta) / 4096.0 / 64.0        total_profits,
 WHERE loans.date >= MAKE_DATE(2024, 1, 1)
 ORDER BY loans.date;
 
-SELECT SUM(invest_delta)                                                             delta,
-       MIN(invest_balance) - MIN(invest_delta)                                       balance,
-       ROUND(SUM(invest_delta) / (MIN(invest_balance) - MIN(invest_delta)) * 100, 2) rate_of_return,
-       DATE_TRUNC('MONTH', date)                                                     timespan
-FROM client_snapshot
-WHERE client_id = 210
-  AND event = 'PROFIT'
-GROUP BY timespan
-ORDER BY timespan DESC;
-
-
-
-SELECT SUM(invest_delta) / 4096 / 64 adjustments,
-       DATE_TRUNC('YEAR', date)      timespan
-FROM client_snapshot
-WHERE event IN ('ADJUST_DOWN')
-GROUP BY timespan
-ORDER BY timespan;
+SELECT SUM(delta) / 4096                                   AS delta,
+       event,
+       (SELECT date < '2023-01-10 05:00:03.000000 +00:00') AS is_before
+FROM client_invest_snapshot
+WHERE client_id = 204
+GROUP BY is_before, event
+ORDER BY is_before DESC, event;
 

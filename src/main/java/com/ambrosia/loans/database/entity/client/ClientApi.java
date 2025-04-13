@@ -70,6 +70,12 @@ public interface ClientApi {
                 .setReadOnly(true)
                 .findList();
         }
+
+        static List<DClient> findALl() {
+            return new QDClient()
+                .setUseQueryCache(true)
+                .findList();
+        }
     }
 
     interface ClientAlterApi {

@@ -32,6 +32,7 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
         .addOption("All", "all", "Show all clients", AmbrosiaEmoji.STATUS_OFFLINE.getEmoji())
         .addOption("Investor", "investor", "Show only clients with active investments", AmbrosiaEmoji.INVESTMENT_BALANCE.getEmoji())
         .addOption("Customer", "customer", "Show only clients with active loans", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
+        .addOption("Bot Blocked", "bot_blocked", "Show only clients who have the bot blocked", AmbrosiaEmoji.CHECK_ERROR.getEmoji())
         .addOption("Blacklisted", "blacklisted", "Show only blacklisted clients", AmbrosiaEmoji.STATUS_ERROR.getEmoji())
         .addOption("Current", "current", "Show only current clients", AmbrosiaEmoji.STATUS_ACTIVE.getEmoji())
         .build();
@@ -44,7 +45,7 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
         .addOption("Name", "alphabetical", "Sort alphabetically by client name", AmbrosiaEmoji.UNUSED_SORT.getEmoji())
         .addOption("Join Date", "date", "Sort by the account creation date", AmbrosiaEmoji.ANY_DATE.getEmoji())
         .build();
-    private Predicate<? super LoadingClient> filter = client -> !client.isZero();
+    private Predicate<LoadingClient> filter = LoadingClient.filter(Predicate.not(LoadingClient::isZero));
     private Comparator<? super LoadingClient> comparator = CLIENT_ALPHABETICAL_COMPARE;
 
     public ListClientsPage(ListClientsGui parent) {
@@ -84,14 +85,16 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
 
     private void onSelectFilter(StringSelectInteractionEvent event) {
         String filterType = event.getValues().get(0);
-        filter = switch (filterType) {
+        Predicate<LoadingClient> clientFilter = switch (filterType) {
             case "investor" -> LoadingClient::isInvestor;
             case "customer" -> LoadingClient::hasActiveLoan;
             case "zero" -> LoadingClient::isZero;
+            case "bot_blocked" -> LoadingClient::isBlocked;
             case "blacklisted" -> LoadingClient::isBlacklisted;
             case "all" -> client -> true;
             default -> client -> !client.isZero();
         };
+        filter = LoadingClient.filter(clientFilter);
         filterMessages();
     }
 

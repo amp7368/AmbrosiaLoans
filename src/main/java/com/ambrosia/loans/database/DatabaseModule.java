@@ -26,6 +26,16 @@ public class DatabaseModule extends AppleModule {
     }
 
     @Override
+    public List<AppleConfigLike> getConfigs() {
+        return List.of(configJson(AmbrosiaDatabaseConfig.class, "DatabaseConfig").setPretty());
+    }
+
+    @Override
+    public String getName() {
+        return "Database";
+    }
+
+    @Override
     public void onLoad() {
         AppleEbeanDatabaseMetaConfig.configureMeta(
             Ambrosia.class,
@@ -40,15 +50,5 @@ public class DatabaseModule extends AppleModule {
 
         if (AmbrosiaConfig.get().shouldResimulate())
             RunBankSimulation.simulate(Instant.EPOCH);
-    }
-
-    @Override
-    public List<AppleConfigLike> getConfigs() {
-        return List.of(configJson(AmbrosiaDatabaseConfig.class, "DatabaseConfig"));
-    }
-
-    @Override
-    public String getName() {
-        return "Database";
     }
 }

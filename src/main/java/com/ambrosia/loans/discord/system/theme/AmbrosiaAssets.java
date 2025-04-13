@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.system.theme;
 
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
+import java.util.List;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
@@ -73,6 +74,10 @@ public class AmbrosiaAssets {
         AmbrosiaEmoji(String emojiStr) {
             this.emojiId = 0;
             this.emojiStr = emojiStr;
+        }
+
+        public static List<AmbrosiaEmoji> statusInOrder() {
+            return List.of(STATUS_OFFLINE, STATUS_ERROR, STATUS_PENDING, STATUS_ACTIVE, STATUS_COMPLETE);
         }
 
         public RichCustomEmoji getEmoji() {

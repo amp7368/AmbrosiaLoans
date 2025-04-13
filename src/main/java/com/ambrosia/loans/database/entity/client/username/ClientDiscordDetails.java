@@ -4,7 +4,6 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -68,6 +67,16 @@ public class ClientDiscordDetails {
         return new ClientDiscordDetails(discordId, avatarUrl, username);
     }
 
+    public static boolean checkIfBlocked(Throwable err) {
+        if (err instanceof ErrorResponseException e && e.getErrorResponse() == ErrorResponse.CANNOT_SEND_TO_USER) {
+            return true;
+        }
+        Throwable cause = err.getCause();
+        if (cause == null) return false;
+
+        return checkIfBlocked(cause);
+    }
+
     public ClientDiscordDetails setClient(DClient client) {
         this.client = client;
         return this;
@@ -88,7 +97,6 @@ public class ClientDiscordDetails {
     public Long getDiscordId() {
         return id;
     }
-
 
     public CompletableFuture<PrivateChannel> tryOpenDirectMessages() {
         CompletableFuture<PrivateChannel> future = new CompletableFuture<>();
@@ -128,23 +136,13 @@ public class ClientDiscordDetails {
             }
             if (onError != null)
                 onError.accept(err);
-            if (!checkIfBlocked(err)) {
-                DiscordLog.error("Failed to send message to client!", UserActor.of(client));
-                DiscordModule.get().logger().error("Failed to send message to client!", err);
+            if (checkIfBlocked(err)) {
+                client.getMeta().startMarkBlocked();
+            } else {
+                DiscordLog.error("Failed to send message to client!", UserActor.of(client), err);
             }
         }, Ambrosia.get().executor());
         return futureMsg;
-    }
-
-    private boolean checkIfBlocked(Throwable err) {
-        if (err instanceof ErrorResponseException e && e.getErrorResponse() == ErrorResponse.CANNOT_SEND_TO_USER) {
-            client.getMeta().startMarkBlocked();
-            return true;
-        }
-        Throwable cause = err.getCause();
-        if (cause == null) return false;
-
-        return checkIfBlocked(cause);
     }
 
     public Instant getLastUpdated() {

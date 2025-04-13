@@ -17,6 +17,7 @@ import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
+import com.ambrosia.loans.database.entity.client.username.query.QDNameHistory;
 import com.ambrosia.loans.database.message.comment.Commentable;
 import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
@@ -39,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -171,12 +171,13 @@ public class DClient extends Model implements ClientAccess, Commentable {
     }
 
     public List<DNameHistory> getNameHistory(@Nullable NameHistoryType nameType) {
-        Stream<DNameHistory> stream = this.nameHistory.stream();
-        if (nameType != null) stream = stream.filter(n -> n.getType() == nameType);
+        QDNameHistory query = new QDNameHistory().where()
+            .client.eq(this);
+        if (nameType != null) query.type.eq(nameType);
 
-        return stream
-            .sorted(Comparator.comparing(DNameHistory::getFirstUsed).reversed())
-            .toList();
+        return query
+            .orderBy().firstUsed.desc()
+            .findList();
     }
 
     public long getId() {
@@ -277,6 +278,15 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return loans.stream()
             .sorted(Comparator.comparing(DLoan::getStartDate))
             .toList();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public ClientMinecraftDetails getMinecraft() {
@@ -380,16 +390,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
         if (merged != null) mergedSnapshots.add(merged);
         return mergedSnapshots;
-    }
-
-
-    @Override
-    public String getDisplayName() {
-        return this.displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
     }
 
     public Instant getDateCreated() {

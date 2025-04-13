@@ -20,6 +20,7 @@ import com.ambrosia.loans.discord.command.staff.alter.loan.ALoanCommand;
 import com.ambrosia.loans.discord.command.staff.alter.payment.APaymentCommand;
 import com.ambrosia.loans.discord.command.staff.alter.withdrawal.AWithdrawalSetCommand;
 import com.ambrosia.loans.discord.command.staff.blacklist.ABlacklistCommand;
+import com.ambrosia.loans.discord.command.staff.calculator.ACalculatorCommand;
 import com.ambrosia.loans.discord.command.staff.comment.ACommentCommand;
 import com.ambrosia.loans.discord.command.staff.find.AFindCommand;
 import com.ambrosia.loans.discord.command.staff.history.AShowCommand;
@@ -80,6 +81,65 @@ public class DiscordModule extends AppleModule {
         return Button.link(DISCORD_INVITE_LINK, "Ambrosia Discord Server");
     }
 
+    public @NotNull JDA createJDA() {
+        ThreadPoolExecutor eventPool = new ThreadPoolExecutor(1, 3,
+            60L, TimeUnit.SECONDS, new SynchronousQueue<>());
+        String token = DiscordConfig.get().token;
+        List<GatewayIntent> intents = List.of(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS);
+
+        JDABuilder builder = JDABuilder.createDefault(token, intents)
+            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS)
+            .setEventPool(eventPool);
+        JDA jda = builder.build();
+        try {
+            jda.awaitReady();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        jda.getPresence().setPresence(Activity.customStatus("Calculating Loans"), false);
+
+        return jda;
+    }
+
+    private void updateCommandsCallback(List<Command> commands) {
+        for (Command command : commands) {
+            DCFAbstractCommand<?> abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
+            if (!(abstractCommand instanceof DCFSlashCommand baseCommand)) continue;
+
+            boolean isStaffCommand = isStaffCommand(baseCommand);
+            boolean isManagerCommand = isMangerCommand(baseCommand);
+            for (DCFSlashSubCommand dcfSub : baseCommand.getSubCommands()) {
+                if (!(dcfSub instanceof BaseSubCommand subCommand)) continue;
+
+                if (isStaffCommand)
+                    subCommand.setOnlyEmployee();
+                if (isManagerCommand)
+                    subCommand.setOnlyManager();
+            }
+            HelpCommandListManager.addCommand(baseCommand, isStaffCommand, isManagerCommand);
+        }
+        HelpCommandListManager.finishSetup();
+    }
+
+    private boolean isStaffCommand(DCFAbstractCommand<?> abstractCommand) {
+        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
+            return dcfCommand.isOnlyEmployee();
+        }
+        return false;
+    }
+
+    private boolean isMangerCommand(DCFAbstractCommand<?> abstractCommand) {
+        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
+            return dcfCommand.isOnlyManager();
+        }
+        return false;
+    }
+
+    @Override
+    public String getName() {
+        return "Discord";
+    }
 
     @Override
     public void onLoad() {
@@ -89,6 +149,17 @@ public class DiscordModule extends AppleModule {
             this.logger().fatal("Please configure {}", Ambrosia.get().getFile("AmbrosiaConfig.json"));
             System.exit(1);
         }
+    }
+
+    @Override
+    public void onEnablePost() {
+        DiscordConfig.get().load();
+        SendDiscordLog.load();
+        CommandData viewProfileCommand = Commands.user("view_profile");
+        DiscordBot.dcf.commands().updateCommands(
+            action -> action.addCommands(viewProfileCommand),
+            this::updateCommandsCallback
+        );
     }
 
     @Override
@@ -130,6 +201,8 @@ public class DiscordModule extends AppleModule {
         commands.addCommand(new AFindCommand());
         // employee message commands
         commands.addCommand(new AMessageCommand());
+        // employee util commands
+        commands.addCommand(new ACalculatorCommand());
 
         // client commands
         commands.addCommand(new HelpCommand(),
@@ -139,76 +212,5 @@ public class DiscordModule extends AppleModule {
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));
-    }
-
-    public @NotNull JDA createJDA() {
-        ThreadPoolExecutor eventPool = new ThreadPoolExecutor(1, 3,
-            60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-        String token = DiscordConfig.get().token;
-        List<GatewayIntent> intents = List.of(GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS_AND_STICKERS);
-
-        JDABuilder builder = JDABuilder.createDefault(token, intents)
-            .disableCache(CacheFlag.VOICE_STATE, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS)
-            .setEventPool(eventPool);
-        JDA jda = builder.build();
-        try {
-            jda.awaitReady();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        jda.getPresence().setPresence(Activity.customStatus("Calculating Loans"), false);
-
-        return jda;
-    }
-
-    @Override
-    public void onEnablePost() {
-        DiscordConfig.get().load();
-        SendDiscordLog.load();
-        CommandData viewProfileCommand = Commands.user("view_profile");
-        DiscordBot.dcf.commands().updateCommands(
-            action -> action.addCommands(viewProfileCommand),
-            this::updateCommandsCallback
-        );
-    }
-
-    private void updateCommandsCallback(List<Command> commands) {
-        for (Command command : commands) {
-            DCFAbstractCommand<?> abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
-            if (!(abstractCommand instanceof DCFSlashCommand baseCommand)) continue;
-
-            boolean isStaffCommand = isStaffCommand(baseCommand);
-            boolean isManagerCommand = isMangerCommand(baseCommand);
-            for (DCFSlashSubCommand dcfSub : baseCommand.getSubCommands()) {
-                if (!(dcfSub instanceof BaseSubCommand subCommand)) continue;
-
-                if (isStaffCommand)
-                    subCommand.setOnlyEmployee();
-                if (isManagerCommand)
-                    subCommand.setOnlyManager();
-            }
-            HelpCommandListManager.addCommand(baseCommand, isStaffCommand, isManagerCommand);
-        }
-        HelpCommandListManager.finishSetup();
-    }
-
-    private boolean isStaffCommand(DCFAbstractCommand<?> abstractCommand) {
-        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
-            return dcfCommand.isOnlyEmployee();
-        }
-        return false;
-    }
-
-    private boolean isMangerCommand(DCFAbstractCommand<?> abstractCommand) {
-        if (abstractCommand instanceof CommandCheckPermission dcfCommand) {
-            return dcfCommand.isOnlyManager();
-        }
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return "Discord";
     }
 }

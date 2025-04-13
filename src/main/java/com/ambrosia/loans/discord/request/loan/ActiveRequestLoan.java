@@ -89,44 +89,14 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
         return Emeralds.of(amount);
     }
 
-    public List<RequestCollateral> getCollateral() {
-        return this.collateral;
-    }
-
-    public boolean hasImageCollateral() {
-        if (this.collateral.isEmpty()) return false;
-        if (this.collateral.size() > 1) return true;
-        return this.collateral.get(0).hasImage();
-    }
-
     @Override
     public String getReason() {
         return this.reason;
     }
 
-    @Nullable
-    public Double getRate() {
-        return rate;
-    }
-
-    public void setRate(double rate) {
-        this.rate = rate;
-        this.save();
-    }
-
     @Override
     public String getRepayment() {
         return repayment;
-    }
-
-    @Override
-    public String getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(String discount) {
-        this.discount = discount;
-        this.save();
     }
 
     @Override
@@ -148,9 +118,39 @@ public class ActiveRequestLoan extends ActiveClientRequest<ActiveRequestLoanGui>
         return this.startDate;
     }
 
+    @Nullable
+    public Double getRate() {
+        return rate;
+    }
+
+    public void setRate(double rate) {
+        this.rate = rate;
+        this.save();
+    }
+
+    @Override
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
+        this.save();
+    }
+
     public void setStartDate(@Nullable Instant startDate) {
         this.startDate = startDate;
         this.save();
+    }
+
+    public List<RequestCollateral> getCollateral() {
+        return this.collateral;
+    }
+
+    public boolean hasImageCollateral() {
+        if (this.collateral.isEmpty()) return false;
+        if (this.collateral.size() > 1) return true;
+        return this.collateral.get(0).hasImage();
     }
 
     public void setInitialAmount(Emeralds amount) {
