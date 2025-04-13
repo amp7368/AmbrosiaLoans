@@ -34,24 +34,7 @@ FROM (SELECT *,
                    event,
                    client_id
             FROM client_loan_snapshot) q
-      WHERE client_id = 204) q
+      WHERE client_id = 218) q
          LEFT JOIN client ON client_id = client.id
 ORDER BY date, event;
-
-SELECT (SELECT SUM(ABS(amount)) / 4096.0 / 64 AS original
-        FROM (SELECT SUM(amount) AS amount
-              FROM adjust_balance
-              WHERE adjust_balance.event_type IN ('ADJUST_UP', 'ADJUST_DOWN')
-                AND client_id IN (SELECT id
-                                  FROM client
-                                  WHERE balance_invest_amount != 0)
-              GROUP BY client_id) q) original,
-       (SELECT SUM(ABS(amount)) / 4096.0 / 64 AS original
-        FROM (SELECT SUM(delta) AS amount
-              FROM client_invest_snapshot
-              WHERE client_invest_snapshot.event IN ('ADJUST_UP', 'ADJUST_DOWN')
-                AND client_id IN (SELECT id
-                                  FROM client
-                                  WHERE balance_invest_amount != 0)
-              GROUP BY client_id) q) current;
 
