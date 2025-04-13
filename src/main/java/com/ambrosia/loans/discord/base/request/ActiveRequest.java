@@ -28,20 +28,15 @@ public abstract class ActiveRequest<Gui extends ActiveRequestGui<?>> extends DCF
     protected String endorser;
     protected long endorserId;
     protected Instant dateCreated = Instant.now();
-    protected boolean issuedBotBlockedWarning = false;
 
     public ActiveRequest(ActiveRequestType typeId, ActiveRequestSender sender) {
         this.typeId = typeId.getTypeId();
         this.sender = sender;
     }
 
-    public boolean isIssuedBotBlockedWarning() {
-        return issuedBotBlockedWarning;
-    }
-
-    public ActiveRequest<Gui> setIssuedBotBlockedWarning(boolean issuedBotBlockedWarning) {
-        this.issuedBotBlockedWarning = issuedBotBlockedWarning;
-        return this;
+    @Nullable
+    public final ActiveRequestType getType() {
+        return ActiveRequestType.fromTypeId(typeId);
     }
 
     public Instant getDateCreated() {

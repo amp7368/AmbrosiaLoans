@@ -3,6 +3,7 @@ package com.ambrosia.loans.discord.request;
 import apple.utilities.gson.adapter.GsonEnumTypeAdapter;
 import apple.utilities.gson.adapter.GsonEnumTypeHolder;
 import apple.utilities.json.gson.GsonBuilderDynamic;
+import apple.utilities.util.Pretty;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import com.ambrosia.loans.discord.request.account.ActiveRequestAccount;
 import com.ambrosia.loans.discord.request.investment.ActiveRequestInvestment;
@@ -12,6 +13,8 @@ import com.ambrosia.loans.discord.request.withdrawal.ActiveRequestWithdrawal;
 import com.ambrosia.loans.util.InstantGsonSerializing;
 import com.google.gson.Gson;
 import java.time.Instant;
+import java.util.Arrays;
+import org.jetbrains.annotations.Nullable;
 
 public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest<?>> {
     LOAN(ActiveRequestLoan.class, "loan"),
@@ -34,6 +37,14 @@ public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest<?>> {
             .create();
     }
 
+    @Nullable
+    public static ActiveRequestType fromTypeId(String typeId) {
+        return Arrays.stream(values())
+            .filter(type -> type.typeId.equals(typeId))
+            .findAny()
+            .orElse(null);
+    }
+
     @Override
     public String getTypeId() {
         return this.typeId;
@@ -42,5 +53,9 @@ public enum ActiveRequestType implements GsonEnumTypeHolder<ActiveRequest<?>> {
     @Override
     public Class<? extends ActiveRequest<?>> getTypeClass() {
         return this.type;
+    }
+
+    public String getDisplayName() {
+        return Pretty.spaceEnumWords(name());
     }
 }

@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '8.3.6'
     id "io.ebean" version "13.14.0"
 }
 
@@ -15,9 +15,7 @@ java {
     }
 }
 
-ebean {
-    debugLevel 0
-}
+ebean { debugLevel 0 }
 
 project.group groupValue
 project.version versionValue

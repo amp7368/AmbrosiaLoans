@@ -24,6 +24,10 @@ public interface DiscordLogModifier {
         return log -> log.setColor(color);
     }
 
+    static DiscordLogModifier setException(Throwable exception) {
+        return log -> log.setException(exception);
+    }
+
     default int getPriority() {
         return 0;
     }

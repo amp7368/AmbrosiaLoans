@@ -21,9 +21,6 @@ import org.jetbrains.annotations.NotNull;
 public class DApiVersion extends Model {
 
     private static final Map<VersionEntityType, DApiVersion> CURRENT_VERSIONS = new HashMap<>();
-
-    @Id
-    private long id;
     @Column(nullable = false)
     private final VersionEntityType entityType;
     @Column(nullable = false)
@@ -32,6 +29,8 @@ public class DApiVersion extends Model {
     private final String description;
     @Column(nullable = false)
     private final Timestamp created;
+    @Id
+    private long id;
 
     public DApiVersion(ApiVersionList revision) {
         this.entityType = revision.getEntityType();
@@ -49,7 +48,7 @@ public class DApiVersion extends Model {
         insertNewVersions();
         // initialize CURRENT_VERSIONS
         List<DApiVersion> versions = new QDApiVersion()
-            .order().created.desc()
+            .orderBy().created.desc()
             .findList();
         for (DApiVersion version : versions) {
             CURRENT_VERSIONS.putIfAbsent(version.entityType, version);

@@ -10,3 +10,4 @@ FROM client_invest_snapshot
 WHERE event = 'PROFIT'
 GROUP BY DATE_TRUNC('MONTH', date)
 ORDER BY DATE_TRUNC('MONTH', date);
+

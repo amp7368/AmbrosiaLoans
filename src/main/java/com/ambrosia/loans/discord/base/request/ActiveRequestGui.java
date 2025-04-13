@@ -159,7 +159,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     public void save() {
-        ActiveRequestDatabase.save(this.getData());
+        ActiveRequestDatabase.save(getData());
     }
 
     @Override

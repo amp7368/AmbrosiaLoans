@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.message.log;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.system.log.SendDiscordLog;
+import com.ambrosia.loans.util.exception.StackTraceUtils;
 import io.ebean.Model;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.DbJson;
@@ -14,6 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import net.dv8tion.jda.api.entities.Message;
 
 @Entity
 @Table(name = "log")
@@ -40,6 +42,17 @@ public class DLog extends Model {
     protected Long actorDiscord;
     @Column
     protected String actorDiscordName;
+    @Column(columnDefinition = "text")
+    protected String exception;
+    @DbDefault("0")
+    @Column(nullable = false)
+    protected long discordMessageId;
+    @DbDefault("0")
+    @Column(nullable = false)
+    protected long discordChannelId;
+    @DbDefault("0")
+    @Column(nullable = false)
+    protected long discordServerId;
 
     public DLog(SendDiscordLog discordLog) {
         this.createdAt = new Timestamp(System.currentTimeMillis());
@@ -52,5 +65,17 @@ public class DLog extends Model {
         this.actor = actor.getClient();
         this.actorDiscord = actor.getDiscordIdLong();
         this.actorDiscordName = actor.getName();
+        this.exception = StackTraceUtils.stacktraceToString(discordLog.getException());
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setDiscordMessage(Message discordMessage) {
+        this.discordMessageId = discordMessage.getIdLong();
+        this.discordChannelId = discordMessage.getChannelIdLong();
+        this.discordServerId = discordMessage.getGuildIdLong();
+        this.save();
     }
 }

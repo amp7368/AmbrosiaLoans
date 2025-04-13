@@ -5,11 +5,13 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.base.request.ActiveRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
+import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -48,9 +50,16 @@ public class ListRequestsPage extends DCFScrollGuiFixed<DCFGui, ActiveRequest<?>
         List<DCFEntry<ActiveRequest<?>>> entries = getCurrentPageEntries();
         for (DCFEntry<ActiveRequest<?>> entry : entries) {
             ActiveRequest<?> request = entry.entry();
-            String msg = "**Request %d** - %s%n*Created on %s*%n"
-                .formatted(request.getRequestId(), request.getMessageLink(),
-                    formatDate(request.getDateCreated()));
+
+            String type = Optional.ofNullable(request.getType())
+                .map(ActiveRequestType::getDisplayName)
+                .orElse("Unknown");
+            long requestId = request.getRequestId();
+            String messageLink = request.getMessageLink();
+            String date = formatDate(request.getDateCreated());
+
+            String msg = "**%s Request %d** - %s\n*Created on %s*%n"
+                .formatted(type, requestId, messageLink, date);
             embed.appendDescription(msg);
         }
 

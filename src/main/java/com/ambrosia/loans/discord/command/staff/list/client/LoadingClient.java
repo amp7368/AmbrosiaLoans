@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.function.Predicate;
 
 public class LoadingClient {
 
@@ -13,6 +14,10 @@ public class LoadingClient {
 
     public LoadingClient(DClient client) {
         this.client = client;
+    }
+
+    public static Predicate<LoadingClient> filter(Predicate<LoadingClient> filter) {
+        return client -> !client.isLoaded() || filter.test(client);
     }
 
     public void load() {
@@ -46,7 +51,6 @@ public class LoadingClient {
     }
 
     public boolean isInvestor() {
-        if (!isLoaded) return true;
         return getInvestBalance().isPositive();
     }
 
@@ -60,5 +64,9 @@ public class LoadingClient {
 
     public boolean isZero() {
         return !isInvestor() && !hasActiveLoan();
+    }
+
+    public boolean isBlocked() {
+        return client.getMeta().isBotBlocked();
     }
 }

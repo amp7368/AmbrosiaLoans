@@ -24,7 +24,7 @@ public class DComment extends Model {
 
     @Column(nullable = false)
     private final Timestamp date = Timestamp.from(Instant.now());
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     private final String comment;
     @ManyToOne
     private final DStaffConductor conductor;

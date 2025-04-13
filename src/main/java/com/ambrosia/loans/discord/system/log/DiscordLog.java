@@ -8,12 +8,12 @@ import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.meta.DIsBotBlockedTimespan;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.modifier.DiscordLogModifier;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
@@ -22,7 +22,7 @@ import io.github.bucket4j.local.LocalBucket;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.Nullable;
@@ -159,18 +159,15 @@ public interface DiscordLog {
     }
 
     private static CompletableFuture<SendDiscordLog> futureLog(Supplier<SendDiscordLog> createLog) {
-        CompletableFuture<SendDiscordLog> future = new CompletableFuture<>();
-        Ambrosia.get().execute(() -> {
-            try {
-                SendDiscordLog log = createLog.get();
-                future.complete(log.submit().get());
-            } catch (InterruptedException | ExecutionException e) {
-                future.completeExceptionally(e);
-            }
-        });
-        return future;
+        return Ambrosia.get().submit(createLog)
+            .thenCompose(SendDiscordLog::submit)
+            .whenComplete((log, err) -> {
+                if (err != null) {
+                    DiscordModule.get().logger().error("Failed to create or send DiscordLog", err);
+                    throw new CompletionException(err);
+                }
+            });
     }
-
 
     static void infoSystem(String msg) {
         futureLog(() -> infoSystem_(msg));
@@ -181,11 +178,11 @@ public interface DiscordLog {
     }
 
 
-    static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked, @Nullable DIsBotBlockedTimespan timespan) {
-        return futureLog(() -> _botBlocked(client, isBlocked, timespan));
+    static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked) {
+        return futureLog(() -> _botBlocked(client, isBlocked));
     }
 
-    private static SendDiscordLog _botBlocked(DClient client, boolean blocked, @Nullable DIsBotBlockedTimespan timespan) {
+    private static SendDiscordLog _botBlocked(DClient client, boolean blocked) {
         String title = blocked ? "Blocked by User" : "Unblocked by User";
         String msg;
         if (blocked) msg = "Failed to send message to @%s.".formatted(client.getEffectiveName());
@@ -196,7 +193,8 @@ public interface DiscordLog {
     }
 
     static void errorSystem(String msg) {
-        error(msg, UserActor.system());
+        Exception exception = popStacktraceElement(new RuntimeException(msg));
+        errorSystem(msg, exception);
     }
 
     /**
@@ -206,16 +204,16 @@ public interface DiscordLog {
      */
     static void errorSystem(@Nullable String msg, @Nullable Throwable exception) {
         if (msg == null) {
-            if (exception == null)
-                msg = "No message provided";
+            if (exception == null) msg = "No message provided";
             else msg = exception.getMessage();
         }
-        error(msg, UserActor.system());
+        error(msg, UserActor.system(), exception);
 
         if (exception == null)
             exception = popStacktraceElement(new RuntimeException(msg));
 
         Ambrosia.get().logger().error(msg, exception);
+
     }
 
     private static Exception popStacktraceElement(RuntimeException exception) {
@@ -226,17 +224,22 @@ public interface DiscordLog {
     }
 
     static void error(String msg, UserActor actor) {
+        error(msg, actor, null);
+    }
+
+    static void error(String msg, UserActor actor, Throwable exception) {
         boolean test = ERROR_RATE_LIMIT.tryConsume(1);
         if (!test) {
             Ambrosia.get().logger().fatal("Hit error rate limit!!!");
             Ambrosia.get().logger().error(msg);
             return;
         }
-        futureLog(() -> error_(msg, actor));
+        futureLog(() -> error_(msg, actor, exception));
     }
 
-    private static SendDiscordLog error_(String msg, UserActor of) {
+    private static SendDiscordLog error_(String msg, UserActor of, Throwable exception) {
         return new SendDiscordLog(null, of, "System", "Error", msg)
+            .modify(DiscordLogModifier.setException(exception))
             .modify(DiscordLogModifier.setColor(AmbrosiaColor.RED));
     }
 }

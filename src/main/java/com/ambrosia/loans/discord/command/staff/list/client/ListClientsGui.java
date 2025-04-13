@@ -17,7 +17,7 @@ public class ListClientsGui extends DCFGui {
 
     public ListClientsGui(DCF dcf, GuiReplyFirstMessage createFirstMessage) {
         super(dcf, createFirstMessage);
-        this.clients = ClientQueryApi.findAllReadOnly().stream()
+        this.clients = ClientQueryApi.findALl().stream()
             .map(LoadingClient::new)
             .toList();
         new Thread(this::load).start();

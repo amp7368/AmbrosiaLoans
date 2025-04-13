@@ -63,6 +63,26 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     }
 
     @Override
+    protected DatabaseConfig configureDatabase(DataSourceConfig dataSourceConfig) {
+        DatabaseConfig databaseConfig = super.configureDatabase(dataSourceConfig);
+        AutoTuneConfig autoTune = databaseConfig.getAutoTuneConfig();
+        autoTune.setProfiling(true);
+        autoTune.setQueryTuning(true);
+        autoTune.setMode(AutoTuneMode.DEFAULT_ON);
+        return databaseConfig;
+    }
+
+    @Override
+    protected void configureMigration(DbMigration migration, MigrationConfig config) {
+        DB.sqlUpdate(ACCOUNT_EVENT_ENUM).executeNow();
+    }
+
+    @Override
+    protected boolean isDefault() {
+        return true;
+    }
+
+    @Override
     protected void addEntities(List<Class<?>> entities) {
         // client
         entities.addAll(List.of(DClientSettings.class, DClientMessagingSettings.class,
@@ -97,11 +117,6 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     }
 
     @Override
-    protected boolean isDefault() {
-        return true;
-    }
-
-    @Override
     protected Collection<Class<?>> getQueryBeans() {
         return List.of();
     }
@@ -109,22 +124,6 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected AppleEbeanDatabaseConfig getConfig() {
         return AmbrosiaDatabaseConfig.get();
-    }
-
-    @Override
-    protected DatabaseConfig configureDatabase(DataSourceConfig dataSourceConfig) {
-        DatabaseConfig databaseConfig = super.configureDatabase(dataSourceConfig);
-        AutoTuneConfig autoTune = databaseConfig.getAutoTuneConfig();
-        autoTune.setProfiling(true);
-        autoTune.setQueryTuning(true);
-        autoTune.setMode(AutoTuneMode.DEFAULT_ON);
-        return databaseConfig;
-    }
-
-    @Override
-    protected void configureMigration(DbMigration migration, MigrationConfig config) {
-//        migration.setGeneratePendingDrop("1.7");
-        DB.sqlUpdate(ACCOUNT_EVENT_ENUM).executeNow();
     }
 
     @Override

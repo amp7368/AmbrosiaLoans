@@ -34,19 +34,9 @@ FROM (SELECT *,
                    event,
                    client_id
             FROM client_loan_snapshot) q
-      WHERE client_id = 221) q
+      WHERE client_id = 204) q
          LEFT JOIN client ON client_id = client.id
 ORDER BY date, event;
-
-SELECT SUM(delta) / 4096
-FROM client_invest_snapshot
-WHERE date = '2024-05-23 00:00:00.000000 +00:00'
-  AND event = 'PROFIT';
-
-SELECT *
-FROM client_history
-WHERE id = 275
-ORDER BY balance_invest_last_updated, LOWER(sys_period);
 
 SELECT (SELECT SUM(ABS(amount)) / 4096.0 / 64 AS original
         FROM (SELECT SUM(amount) AS amount

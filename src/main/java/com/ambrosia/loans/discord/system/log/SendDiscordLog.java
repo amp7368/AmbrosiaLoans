@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
@@ -38,6 +40,8 @@ public class SendDiscordLog {
     private Map<String, Object> json;
     private String finalizedMessage;
     private int color = AmbrosiaColor.GREEN;
+    private Throwable exception;
+    private DLog db;
 
     public SendDiscordLog(DClient client, UserActor actor, String category, String logType, String message) {
         this.client = client;
@@ -55,10 +59,8 @@ public class SendDiscordLog {
         }
     }
 
-    private static void send(String log, MessageEmbed embed) {
-        String msg = log.replace("\n", "  ").trim();
-        DiscordModule.get().logger().info(msg);
-        channel.sendMessageEmbeds(embed).queue();
+    private void gatherData() {
+        actor.fetch();
     }
 
     private void handleModifiers() {
@@ -76,39 +78,76 @@ public class SendDiscordLog {
         return StrSubstitutor.replace(msg, stringMap);
     }
 
-    public final Future<SendDiscordLog> submit() {
-        return Ambrosia.get().submit(this::_run);
+    public final CompletableFuture<SendDiscordLog> submit() {
+        ScheduledExecutorService executor = Ambrosia.get().executor();
+
+        return Ambrosia.get().submit(this::prepare)
+            .whenCompleteAsync((res, err) -> saveToDB(), executor)
+            .thenComposeAsync(res -> send(), executor)
+            .thenAcceptAsync(msg -> getDB().setDiscordMessage(msg), executor)
+            .thenApplyAsync(res -> this, executor);
     }
 
-    private void gatherData() {
-        actor.fetch();
+    private CompletableFuture<Message> send() {
+        String cmdLineMsg = cmdLineMessage().replace("\n", "  ").trim();
+        if (exception == null)
+            DiscordModule.get().logger().info(cmdLineMsg);
+        else {
+            DiscordModule.get().logger().error(cmdLineMsg, exception);
+        }
+
+        MessageEmbed embed = embed().build();
+        return channel.sendMessageEmbeds(embed).submit();
     }
 
-    private SendDiscordLog _run() {
+    private DLog getDB() {
+        return db;
+    }
+
+
+    private void prepare() {
         this.gatherData();
         this.handleModifiers();
         this.finalizedMessage = this.finalizeMessage();
-        send(this.log(), embed().build());
-        new DLog(this).save();
-        return this;
     }
 
-    public String log() {
-        if (client != null)
-            return new ParameterizedMessage(
+    private void saveToDB() {
+        db = new DLog(this);
+        db.save();
+    }
+
+    public Throwable getException() {
+        return this.exception;
+    }
+
+    public void setException(Throwable exception) {
+        this.exception = exception;
+    }
+
+    public String cmdLineMessage() {
+        String cmdLineMsg;
+        if (client != null) {
+            cmdLineMsg = new ParameterizedMessage(
                 "{} - {} <= {}: \"{}\"",
                 getTitle(),
                 client.getEffectiveName(),
                 getActor().getName(),
                 getMessage()
             ).getFormattedMessage();
+        } else {
+            cmdLineMsg = new ParameterizedMessage(
+                "{} <= {}: \"{}\"",
+                getTitle(),
+                getActor().getName(),
+                getMessage()
+            ).getFormattedMessage();
+        }
 
-        return new ParameterizedMessage(
-            "{} <= {}: \"{}\"",
-            getTitle(),
-            getActor().getName(),
-            getMessage()
-        ).getFormattedMessage();
+        if (getException() != null) {
+            DLog db = getDB();
+            return "[%s] %s ".formatted(db.getId(), cmdLineMsg);
+        }
+        return cmdLineMsg;
     }
 
     @NotNull
@@ -124,6 +163,7 @@ public class SendDiscordLog {
             embed.appendDescription("## Client Id %s\n".formatted(clientId));
         }
         embed.appendDescription(this.getMessage());
+        embed.setFooter("Log id %s".formatted(getDB().getId()));
         return embed;
     }
 

@@ -13,16 +13,13 @@ import com.ambrosia.loans.database.message.query.QDClientMessage;
 import com.ambrosia.loans.discord.DiscordConfig;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
-import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
+import com.ambrosia.loans.util.exception.StackTraceUtils;
 import discord.util.dcf.gui.util.interaction.OnInteraction;
 import discord.util.dcf.gui.util.interaction.OnInteractionMap;
 import discord.util.dcf.util.message.DiscordMessageIdData;
 import io.ebean.DB;
 import io.ebean.Transaction;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -200,8 +197,7 @@ public abstract class SentClientMessage {
                 .submit();
         }
 
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        dmMsg.whenComplete((sent, err) -> {
+        return dmMsg.whenComplete((sent, err) -> {
             String exceptionMessage;
             if (err == null) {
                 this.status = canInteract() ? MessageAcknowledged.SENT : MessageAcknowledged.SENT_NONINTERACTIVE;
@@ -209,27 +205,15 @@ public abstract class SentClientMessage {
                 exceptionMessage = null;
             } else {
                 this.status = MessageAcknowledged.ERROR;
-                try (StringWriter exceptionString = new StringWriter()) {
-                    err.printStackTrace(new PrintWriter(exceptionString));
-                    exceptionMessage = exceptionString.toString();
-                    String msg = "%s\nFull error written to send_message_obj. Message_client %s"
-                        .formatted(err.getMessage(), AmbrosiaEmoji.KEY_ID.spaced(clientMessageId));
-                    DiscordLog.errorSystem(msg);
-                } catch (IOException e) {
-                    DiscordLog.errorSystem(null, e);
-                    throw new RuntimeException(e);
-                }
+                exceptionMessage = StackTraceUtils.stacktraceToString(err);
+                // error has already been logged by ClientDiscordDetails#sendDm
             }
-            try {
-                List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
-                    .map(dest -> dest.send(self))
-                    .toList();
-                finishSetup(sent, destinationMsgs, exceptionMessage);
-            } finally {
-                future.complete(null);
-            }
-        });
-        return future;
+            List<CompletableFuture<Message>> destinationMsgs = destinations.stream()
+                .map(dest -> dest.send(self))
+                .toList();
+            finishSetup(sent, destinationMsgs, exceptionMessage);
+
+        }).thenRun(() -> {});
     }
 
     private void finishSetup(Message sent, List<CompletableFuture<Message>> destinationMsgs, String exceptionMessage) {
