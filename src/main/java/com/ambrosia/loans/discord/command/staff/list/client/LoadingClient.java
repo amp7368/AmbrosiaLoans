@@ -4,6 +4,7 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 public class LoadingClient {
@@ -18,6 +19,20 @@ public class LoadingClient {
 
     public static Predicate<LoadingClient> filter(Predicate<LoadingClient> filter) {
         return client -> !client.isLoaded() || filter.test(client);
+    }
+
+    public static Comparator<? super LoadingClient> sortBy(Comparator<? super LoadingClient> comparator) {
+        return (o1, o2) -> {
+            boolean o1Loaded = o1.isLoaded();
+            boolean o2Loaded = o2.isLoaded();
+
+            // if both are loaded, we can compare normally
+            if (o1Loaded && o2Loaded) return comparator.compare(o1, o2);
+            // if neither are loaded, we do not compare
+            if (o1Loaded == o2Loaded) return 0;
+            // loaded goes first
+            return o1Loaded ? 1 : -1;
+        };
     }
 
     public void load() {
@@ -44,6 +59,10 @@ public class LoadingClient {
 
     public Emeralds getLoanAmount() {
         return this.balance.loanBalance().negative();
+    }
+
+    public Emeralds getBalance() {
+        return getInvestBalance().minus(getLoanAmount());
     }
 
     public boolean hasActiveLoan() {

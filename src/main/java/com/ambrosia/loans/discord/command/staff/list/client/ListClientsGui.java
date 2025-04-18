@@ -1,5 +1,6 @@
 package com.ambrosia.loans.discord.command.staff.list.client;
 
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import discord.util.dcf.DCF;
 import discord.util.dcf.gui.base.GuiReplyFirstMessage;
@@ -20,7 +21,7 @@ public class ListClientsGui extends DCFGui {
         this.clients = ClientQueryApi.findALl().stream()
             .map(LoadingClient::new)
             .toList();
-        new Thread(this::load).start();
+        Ambrosia.get().execute(this::load);
     }
 
     public List<LoadingClient> getClients() {
@@ -31,7 +32,7 @@ public class ListClientsGui extends DCFGui {
         // stuff to make listeners.forEach able to run outside the
         // for loop, while still progressing through the for loop.
         while (true) {
-            Optional<LoadingClient> client = clients.stream()
+            Optional<LoadingClient> client = getClients().stream()
                 .filter(Predicate.not(LoadingClient::isLoaded))
                 .findAny();
             client.ifPresent(LoadingClient::load);

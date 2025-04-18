@@ -14,6 +14,7 @@ import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import com.ambrosia.loans.util.clover.CloverBotButtons;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Duration;
@@ -56,6 +57,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
     public ActiveRequestGui(long message, Data data) {
         super(message, data);
         setDCF(DiscordBot.dcf);
+        CloverBotButtons.registerButtons(this::registerButton, data.sender.getClient());
         this.registerButton(BUTTON_DENY_ID, e -> this.checkPermissions(e, this::deny));
         this.registerButton(BUTTON_CLAIM_ID, e -> this.checkPermissions(e, this::claim));
         this.registerButton(BUTTON_APPROVE_ID, e -> this.checkPermissions(e, this::approve));
@@ -154,7 +156,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
     @Override
     protected MessageCreateData makeMessage() {
-        return makeMessage(staffModifyMessage(), staffDescription());
+        return makeStaffMessage();
     }
 
     @Override
@@ -171,18 +173,33 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         return this.data;
     }
 
+    private MessageCreateData makeStaffMessage() {
+        EmbedBuilder embed = makeEmbed(staffModifyMessage(), staffDescription());
+
+        MessageCreateBuilder message = new MessageCreateBuilder().setEmbeds(embed.build());
+
+        DClient client = getData().sender.getClient();
+
+        List<Button> components = getComponents();
+        if (!components.isEmpty()) message.addActionRow(components);
+        message.addComponents(CloverBotButtons.row(client));
+
+        return message.build();
+    }
+
     public MessageCreateData makeClientMessage(String... extraDescription) {
         List<String> description = new ArrayList<>(List.of(extraDescription));
         description.add(clientModifyMessage());
         description.add(clientDescription());
 
-        MessageCreateData message = this.makeMessage(description.toArray(String[]::new));
-        return MessageCreateBuilder.from(message)
-            .setComponents()
+        EmbedBuilder embed = this.makeEmbed(description.toArray(String[]::new));
+
+        return new MessageCreateBuilder()
+            .setEmbeds(embed.build())
             .build();
     }
 
-    protected MessageCreateData makeMessage(String... extraDescription) {
+    protected EmbedBuilder makeEmbed(String... extraDescription) {
         EmbedBuilder embed = new EmbedBuilder();
 
         AmbrosiaEmoji statusEmoji = this.data.stage.getEmoji();
@@ -202,13 +219,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
 
         this.finalizeEmbed(embed);
 
-        MessageCreateBuilder message = new MessageCreateBuilder()
-            .setEmbeds(embed.build());
-
-        List<Button> components = getComponents();
-        if (components.isEmpty()) message.setComponents();
-        else message.setActionRow(components);
-        return message.build();
+        return embed;
     }
 
     protected void finalizeEmbed(EmbedBuilder embed) {
