@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
+import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -26,15 +27,26 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
 
     private static final Comparator<? super LoadingClient> CLIENT_ALPHABETICAL_COMPARE =
         Comparator.comparing(e -> e.client().getEffectiveName());
+    private static final Comparator<LoadingClient> LOAN_BALANCE_COMPARE =
+        Comparator.comparing(LoadingClient::getBalance);
+    private static final Comparator<LoadingClient> JOIN_DATE_COMPARE =
+        Comparator.comparing(LoadingClient::joinDate).reversed();
+    private static final Comparator<LoadingClient> INVESTMENT_BALANCE_COMPARE =
+        LOAN_BALANCE_COMPARE.reversed();
+    private static final Comparator<? super LoadingClient> FALLBACK_COMPARE =
+        LOAN_BALANCE_COMPARE
+            .thenComparing(JOIN_DATE_COMPARE)
+            .thenComparing(CLIENT_ALPHABETICAL_COMPARE);
+
     private final StringSelectMenu FILTER_MENU = StringSelectMenu.create("filter")
         .setPlaceholder("Filter")
         .setRequiredRange(1, 1)
-        .addOption("All", "all", "Show all clients", AmbrosiaEmoji.STATUS_OFFLINE.getEmoji())
-        .addOption("Investor", "investor", "Show only clients with active investments", AmbrosiaEmoji.INVESTMENT_BALANCE.getEmoji())
-        .addOption("Customer", "customer", "Show only clients with active loans", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
-        .addOption("Bot Blocked", "bot_blocked", "Show only clients who have the bot blocked", AmbrosiaEmoji.CHECK_ERROR.getEmoji())
-        .addOption("Blacklisted", "blacklisted", "Show only blacklisted clients", AmbrosiaEmoji.STATUS_ERROR.getEmoji())
-        .addOption("Current", "current", "Show only current clients", AmbrosiaEmoji.STATUS_ACTIVE.getEmoji())
+        .addOption("All Clients", "all", "Show all clients", AmbrosiaEmoji.STATUS_OFFLINE.getEmoji())
+        .addOption("Investors", "investor", "Show only clients with active investments", AmbrosiaEmoji.INVESTMENT_BALANCE.getEmoji())
+        .addOption("Customers", "customer", "Show only clients with active loans", AmbrosiaEmoji.LOAN_BALANCE.getEmoji())
+        .addOption("Bot is Blocked", "bot_blocked", "Show only clients with the bot blocked", AmbrosiaEmoji.CHECK_ERROR.getEmoji())
+        .addOption("Blacklisted Clients", "blacklisted", "Show only blacklisted clients", AmbrosiaEmoji.STATUS_ERROR.getEmoji())
+        .addOption("Current Clients", "current", "Show only current clients", AmbrosiaEmoji.STATUS_ACTIVE.getEmoji())
         .build();
     private final StringSelectMenu SORT_BY_MENU = StringSelectMenu.create("sort")
         .setPlaceholder("Sort by")
@@ -45,8 +57,10 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
         .addOption("Name", "alphabetical", "Sort alphabetically by client name", AmbrosiaEmoji.UNUSED_SORT.getEmoji())
         .addOption("Join Date", "date", "Sort by the account creation date", AmbrosiaEmoji.ANY_DATE.getEmoji())
         .build();
+    private String sortByLabel = "Loan Balance";
+    private String filterLabel = "Current Clients";
     private Predicate<LoadingClient> filter = LoadingClient.filter(Predicate.not(LoadingClient::isZero));
-    private Comparator<? super LoadingClient> comparator = CLIENT_ALPHABETICAL_COMPARE;
+    private Comparator<? super LoadingClient> comparator = LoadingClient.sortBy(FALLBACK_COMPARE);
 
     public ListClientsPage(ListClientsGui parent) {
         super(parent);
@@ -62,7 +76,7 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
         parent.addListener(editOnTimer::tryRun);
     }
 
-    private void filterMessages() {
+    private synchronized void filterMessages() {
         List<LoadingClient> filteredClients = parent.getClients().stream()
             .filter(filter)
             .toList();
@@ -72,24 +86,31 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
     }
 
     private void onSelectSort(StringSelectInteractionEvent event) {
-        String sortType = event.getValues().get(0);
-        this.comparator = switch (sortType) {
-            case "investment_balance" -> Comparator.comparing(LoadingClient::getInvestBalance).reversed();
-            case "date" -> Comparator.comparing(LoadingClient::joinDate).reversed();
+        SelectOption selected = event.getSelectedOptions().get(0);
+        this.sortByLabel = selected.getLabel();
+        String sortType = selected.getValue();
+        Comparator<? super LoadingClient> clientSortBy = switch (sortType) {
+            case "investment_balance" -> INVESTMENT_BALANCE_COMPARE;
+            case "date" -> JOIN_DATE_COMPARE;
             case "alphabetical" -> CLIENT_ALPHABETICAL_COMPARE;
-            default -> Comparator.comparing(LoadingClient::getLoanAmount).reversed();
+            default -> LOAN_BALANCE_COMPARE.thenComparing(FALLBACK_COMPARE);
         };
-        this.entryPage = 0;
-        this.sort();
+        this.comparator = LoadingClient.sortBy(clientSortBy);
+        this.filterMessages();
     }
 
     private void onSelectFilter(StringSelectInteractionEvent event) {
-        String filterType = event.getValues().get(0);
+        SelectOption selected = event.getSelectedOptions().get(0);
+        this.filterLabel = selected.getLabel();
+        String filterType = selected.getValue();
         Predicate<LoadingClient> clientFilter = switch (filterType) {
             case "investor" -> LoadingClient::isInvestor;
             case "customer" -> LoadingClient::hasActiveLoan;
             case "zero" -> LoadingClient::isZero;
-            case "bot_blocked" -> LoadingClient::isBlocked;
+            case "bot_blocked" -> {
+                this.filterLabel = "Clients with unreachable DMs";
+                yield LoadingClient::isBlocked;
+            }
             case "blacklisted" -> LoadingClient::isBlacklisted;
             case "all" -> client -> true;
             default -> client -> !client.isZero();
@@ -109,15 +130,17 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
     }
 
     @Override
-    public MessageCreateData makeMessage() {
-        List<DCFEntry<LoadingClient>> loans = getCurrentPageEntries();
-        String description = loans.stream()
+    public synchronized MessageCreateData makeMessage() {
+        List<DCFEntry<LoadingClient>> clients = getCurrentPageEntries();
+        String description = clients.stream()
             .map(this::clientToString)
             .collect(Collectors.joining("\n"));
         EmbedBuilder embed = new EmbedBuilder();
 
-        embed.setTitle(title("Ambrosia Client Listing", entryPage, getMaxPage()))
-            .setDescription("`%d clients found!\n`".formatted(getEntriesSize()) + description)
+        String title = title("Ambrosia Client Listing", entryPage, getMaxPage());
+        embed.appendDescription("# %s\n".formatted(title))
+            .appendDescription("**%s** sorted by **%s**\n".formatted(filterLabel, sortByLabel))
+            .appendDescription("`%d clients found!`\n".formatted(getEntriesSize()) + description)
             .setColor(AmbrosiaColor.YELLOW);
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())
