@@ -30,7 +30,7 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
             return;
         }
         Instant date = Instant.now();
-        Emeralds totalOwed = loan.getTotalOwed(null, date);
+        Emeralds totalOwed = loan.getTotalOwed(date);
         Emeralds adjustmentAmount = loan.getAccumulatedInterest().minus(interestCap);
         if (!force && adjustmentAmount.gt(totalOwed.amount())) {
             String msg = "Only %s is owed on loan!".formatted(totalOwed);

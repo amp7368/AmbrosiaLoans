@@ -37,20 +37,13 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
     }
 
     @Override
-    protected List<Field> fields() {
-        String balance = data.getBalance().negative().toString();
-        return List.of(
-        );
+    public MessageCreateData makeMessage() {
+        return addButton(super.makeMessage());
     }
 
     @Override
     public MessageCreateData makeClientMessage(String... extraDescription) {
         return addButton(super.makeClientMessage(extraDescription));
-    }
-
-    @Override
-    public MessageCreateData makeMessage() {
-        return addButton(super.makeMessage());
     }
 
     @Override
@@ -60,7 +53,7 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
         DLoan loan = data.getLoan();
         Instant timestamp = data.getTimestamp();
         Emeralds payment = data.getPayment();
-        Emeralds balance = data.getLoan().getTotalOwed(null, timestamp);
+        Emeralds balance = data.getLoan().getTotalOwed(timestamp);
         Instant startDate = loan.getStartDate();
         embed.appendDescription("**Payment:** %s\n".formatted(payment));
         embed.appendDescription("**Initiated on:** %s\n\n".formatted(formatDate(timestamp)));
@@ -79,10 +72,26 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
         embed.setFooter("%s is the associated staff".formatted(staff), staffIcon);
     }
 
-    private MessageCreateData addButton(MessageCreateData messageCreateData) {
-        MessageCreateBuilder builder = MessageCreateBuilder.from(messageCreateData);
-        builder.addComponents(ActionRow.of(showCollateralBtn(false)));
-        return builder.build();
+    @Override
+    protected String staffCommand() {
+        return "payment";
+    }
+
+    @Override
+    protected String clientCommandName() {
+        return null;
+    }
+
+    @Override
+    protected List<Field> fields() {
+        String balance = data.getBalance().negative().toString();
+        return List.of(
+        );
+    }
+
+    @Override
+    protected String title() {
+        return "Payment %s %s".formatted(data.getPayment(), createEntityId());
     }
 
     @Override
@@ -96,18 +105,9 @@ public class ActiveRequestPaymentGui extends ActiveRequestGui<ActiveRequestPayme
         return page;
     }
 
-    @Override
-    protected String clientCommandName() {
-        return null;
-    }
-
-    @Override
-    protected String staffCommand() {
-        return "payment";
-    }
-
-    @Override
-    protected String title() {
-        return "Payment %s %s".formatted(data.getPayment(), createEntityId());
+    private MessageCreateData addButton(MessageCreateData messageCreateData) {
+        MessageCreateBuilder builder = MessageCreateBuilder.from(messageCreateData);
+        builder.addComponents(ActionRow.of(showCollateralBtn(false)));
+        return builder.build();
     }
 }

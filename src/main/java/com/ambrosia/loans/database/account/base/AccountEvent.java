@@ -49,25 +49,6 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
         this(request.getClient(), date, request.getConductor(), request.getAmount(), request.getEventType());
     }
 
-    @Override
-    public Instant getDate() {
-        return this.date.toInstant();
-    }
-
-    public void setDate(Instant value) {
-        this.date = Timestamp.from(value);
-    }
-
-    @Override
-    public void updateSimulation() {
-        this.client.updateBalance(this.amount, this.getDate(), getEventType());
-    }
-
-    @Override
-    public AccountEventType getEventType() {
-        return this.eventType;
-    }
-
     public Emeralds getDeltaAmount() {
         return Emeralds.of(this.amount);
     }
@@ -84,6 +65,25 @@ public abstract class AccountEvent extends Model implements Commentable, IAccoun
     @Override
     public DClient getClient() {
         return client;
+    }
+
+    @Override
+    public Instant getDate() {
+        return this.date.toInstant();
+    }
+
+    public void setDate(Instant value) {
+        this.date = Timestamp.from(value);
+    }
+
+    @Override
+    public void updateSimulation() {
+        this.client.updateBalance(null, this.amount, this.getDate(), getEventType());
+    }
+
+    @Override
+    public AccountEventType getEventType() {
+        return this.eventType;
     }
 
 }

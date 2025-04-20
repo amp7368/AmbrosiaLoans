@@ -40,7 +40,10 @@ public class CloverApi {
         if (!response.isSuccessful())
             return null;
         ResponseBody body = response.body();
-        if (body == null) return null;
+        if (body == null) {
+            Ambrosia.get().logger().error("Response has no body");
+            return null;
+        }
         try (Reader reader = new InputStreamReader(body.byteStream(), StandardCharsets.ISO_8859_1)) {
             return gson().fromJson(reader, PlayerTermsResponse.class);
         }

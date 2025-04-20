@@ -36,7 +36,7 @@ public interface AdjustApi {
             loan.refresh();
         }
         if (updateBalance)
-            client.updateBalance(difference.amount(), date, type);
+            client.updateBalance(loan, difference.amount(), date, type);
     }
 
     static DAdjustLoan createAdjustment(DStaffConductor staff, DLoan loan, Emeralds amount, Instant date) {
@@ -47,8 +47,8 @@ public interface AdjustApi {
             transaction.commit();
         }
         AlterCreateApi.create(staff, AlterCreateType.ADJUST_LOAN, adjustment.getId());
-        
-        adjustment.getClient().updateBalance(amount.amount(), date, adjustment.getEventType());
+
+        adjustment.getClient().updateBalance(loan, amount.amount(), date, adjustment.getEventType());
         return adjustment;
     }
 }

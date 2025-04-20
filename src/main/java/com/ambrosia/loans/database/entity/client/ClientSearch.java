@@ -44,7 +44,8 @@ public class ClientSearch {
 
         List<String> names = Stream.concat(
                 client.getNameHistory().stream()
-                    .map(DNameHistory::getName),
+                    .map(DNameHistory::getName)
+                    .filter(Objects::nonNull),
                 Stream.of(displayName, discord, minecraft)
             ).filter(Objects::nonNull)
             .toList();

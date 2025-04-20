@@ -29,7 +29,7 @@ public class ScheduledLoanMessage extends ScheduledClientMessage<LoanReminderMes
             This is a friendly reminder about your loan from *%s*.
             **Recent activity:**
             - %s
-                        
+
             %s
             """.trim().formatted(formatDate(loan.getStartDate()), lastActivity, nextMessageTime.message());
     }

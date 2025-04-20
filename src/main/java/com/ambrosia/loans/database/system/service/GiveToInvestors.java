@@ -112,10 +112,10 @@ public class GiveToInvestors {
             long adjustment = investor.newlyAdjusted.longValue();
             if (adjustment != 0) {
                 AccountEventType eventType = adjustment > 0 ? AccountEventType.ADJUST_UP : AccountEventType.ADJUST_DOWN;
-                investor.client.updateBalance(adjustment, currentTime, eventType);
+                investor.client.updateBalance(null, adjustment, currentTime, eventType);
             }
             if (amountToInvestor != 0)
-                investor.client.updateBalance(amountToInvestor, currentTime, AccountEventType.PROFIT);
+                investor.client.updateBalance(null, amountToInvestor, currentTime, AccountEventType.PROFIT);
         }
         return amountGiven;
     }

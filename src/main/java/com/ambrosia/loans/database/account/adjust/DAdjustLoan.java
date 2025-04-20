@@ -70,6 +70,15 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
         return this.comments;
     }
 
+    public Emeralds getAmount() {
+        return Emeralds.of(amount);
+    }
+
+    @Override
+    public long getId() {
+        return this.id;
+    }
+
     @Override
     public DClient getClient() {
         return this.loan.getClient();
@@ -82,20 +91,11 @@ public class DAdjustLoan extends Model implements Commentable, IAccountChange {
 
     @Override
     public void updateSimulation() {
-        this.getClient().updateBalance(this.amount, this.getDate(), getEventType());
+        this.getClient().updateBalance(this.loan, this.amount, this.getDate(), getEventType());
     }
 
     @Override
     public AccountEventType getEventType() {
         return type;
-    }
-
-    public Emeralds getAmount() {
-        return Emeralds.of(amount);
-    }
-
-    @Override
-    public long getId() {
-        return this.id;
     }
 }
