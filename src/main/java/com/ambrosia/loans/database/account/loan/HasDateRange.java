@@ -20,15 +20,22 @@ public interface HasDateRange {
     }
 
     @NotNull
+    default Instant getEarliestOfEnd(Instant otherEnd) {
+        Instant endDate = getEndDate();
+        if (endDate == null) return otherEnd;
+        if (endDate.isAfter(otherEnd)) return otherEnd;
+        return endDate;
+    }
+
+    @NotNull
     default Instant getEndDateOrNow() {
         return getEndDate(Instant.now());
     }
 
     default Duration getDuration(Instant start, Instant end) {
         Instant startDate = this.getStartDate();
-        Instant endDate = this.getEndDate(end);
         Instant constrainedStart = start.isAfter(startDate) ? start : startDate;
-        Instant constrainedEnd = end.isBefore(endDate) ? end : endDate;
+        Instant constrainedEnd = this.getEarliestOfEnd(end);
         return Duration.between(constrainedStart, constrainedEnd);
     }
 

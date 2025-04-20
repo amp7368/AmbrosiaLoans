@@ -28,7 +28,7 @@ public class RequestPaymentCommand extends BaseClientSubCommand {
             replyError(event, "You have no active loans!");
             return;
         }
-        Emeralds loanAmount = loan.get().getTotalOwed(null, timestamp);
+        Emeralds loanAmount = loan.get().getTotalOwed(timestamp);
         Emeralds payment;
         Boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event);
         if (isFull != null && isFull) payment = loanAmount;

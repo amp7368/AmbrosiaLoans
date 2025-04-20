@@ -25,7 +25,7 @@ public interface AccountEventApi {
             investment = new DWithdrawal(client, date, staff, emeralds, type);
 
         try (Transaction transaction = DB.beginTransaction()) {
-            client.updateBalance(emeralds.amount(), date, type, transaction);
+            client.updateBalance(null, emeralds.amount(), date, type, transaction);
             investment.save(transaction);
             transaction.commit();
         }

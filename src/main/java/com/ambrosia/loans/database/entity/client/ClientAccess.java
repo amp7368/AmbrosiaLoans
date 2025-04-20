@@ -5,7 +5,7 @@ import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.loan.DLoan;
-import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
+import com.ambrosia.loans.database.account.loan.InterestCheckpoint;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
@@ -26,10 +26,12 @@ import net.dv8tion.jda.api.entities.User;
 
 public interface ClientAccess {
 
-    private DClientSnapshot newLoanSnapshot(Instant timestamp, long delta, AccountEventType eventType, Transaction transaction) {
+    private DClientSnapshot newLoanSnapshot(InterestCheckpoint checkpoint, Instant timestamp, long delta,
+        AccountEventType eventType,
+        Transaction transaction) {
         DClient client = getEntity();
         Emeralds newLoanBalance = client.addLoanBalance(delta, timestamp);
-        DClientLoanSnapshot snapshot = new DClientLoanSnapshot(client, timestamp,
+        DClientLoanSnapshot snapshot = new DClientLoanSnapshot(checkpoint, client, timestamp,
             newLoanBalance.amount(), delta, eventType);
         client.addAccountSnapshot(snapshot);
         snapshot.save(transaction);
@@ -85,32 +87,41 @@ public interface ClientAccess {
         return discord != null && discord == user.getIdLong();
     }
 
-    default void updateBalance(long delta, Instant timestamp, AccountEventType eventType) {
+    default void updateBalance(DLoan associatedLoan, long delta, Instant timestamp, AccountEventType eventType) {
         try (Transaction transaction = DB.beginTransaction()) {
-            updateBalance(delta, timestamp, eventType, transaction);
+            updateBalance(associatedLoan, delta, timestamp, eventType, transaction);
             transaction.commit();
         }
     }
 
-    default void updateBalance(long delta, Instant timestamp, AccountEventType eventType, Transaction transaction) {
+    default void updateBalance(DLoan associatedLoan, long delta, Instant timestamp, AccountEventType eventType,
+        Transaction transaction) {
         DClient client = getEntity();
         client.refresh();
 
-        BalanceWithInterest balanceWithInterest = client.getBalanceWithRecentInterest(timestamp);
-        if (balanceWithInterest.hasInterest() && eventType.isLoanLike()) {
-            long interest = balanceWithInterest.interestAsNegative().amount();
-            newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
-        }
-        if (eventType.isLoanLike()) {
+        if (associatedLoan != null) {
+            InterestCheckpoint nextCheckpoint;
+            if (!associatedLoan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
+                associatedLoan.refresh();
+                InterestCheckpoint prevCheckpoint = associatedLoan.getLastCheckpoint();
+                nextCheckpoint = associatedLoan.getInterest(prevCheckpoint.copy(), timestamp);
+                long interestAsNegative = -nextCheckpoint.addInterest();
+                if (interestAsNegative != 0) {
+                    newLoanSnapshot(prevCheckpoint, timestamp, interestAsNegative, AccountEventType.INTEREST, transaction);
+                }
+            } else {
+                nextCheckpoint = new InterestCheckpoint(associatedLoan);
+            }
             // todo idk why checkLoansPaid has to go before newLoanSnapshot, but it does
             checkLoansPaid(timestamp, transaction);
-            newLoanSnapshot(timestamp, delta, eventType, transaction);
+            newLoanSnapshot(nextCheckpoint, timestamp, delta, eventType, transaction);
         } else {
             newInvestSnapshot(timestamp, delta, eventType, transaction);
         }
     }
 
     private void checkLoansPaid(Instant timestamp, Transaction transaction) {
+        // actually marks loans as paid
         List<DLoan> paidLoans = getEntity().getLoans().stream()
             .filter(DLoan::isActive)
             .filter(loan -> loan.getStartDate().isBefore(timestamp))
@@ -120,8 +131,10 @@ public interface ClientAccess {
         paidLoans.stream()
             .filter(loan -> loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
             .forEach(loan -> {
-                long interest = loan.getInterest(null, null, timestamp).negative().amount();
-                newLoanSnapshot(timestamp, interest, AccountEventType.INTEREST, transaction);
+                InterestCheckpoint checkpoint = loan.getInterest(null, timestamp);
+                long interestAsNegative = -checkpoint.addInterest();
+                if (interestAsNegative != 0)
+                    newLoanSnapshot(checkpoint, timestamp, interestAsNegative, AccountEventType.INTEREST, transaction);
             });
     }
 

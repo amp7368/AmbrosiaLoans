@@ -69,7 +69,7 @@ public class DLoanPayment extends Model implements Commentable {
     public void updateSimulation() {
         DClient client = this.loan.getClient();
         client.refresh();
-        client.updateBalance(amount, getDate(), AccountEventType.PAYMENT);
+        client.updateBalance(loan, amount, getDate(), AccountEventType.PAYMENT);
     }
 
     public DLoan getLoan() {

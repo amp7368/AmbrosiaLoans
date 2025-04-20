@@ -23,8 +23,6 @@ public class BankProfitsPage extends DCFScrollGuiFixed<BankGui, BankMonthlySnaps
         registerButtons();
         setEntries(parent.queryMonthlyProfits().getBankProfits());
         sort();
-//        entryPage = getMaxPage() - 1;
-//        verifyPageNumber();
     }
 
     @Override

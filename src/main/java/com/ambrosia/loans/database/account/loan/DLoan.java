@@ -5,6 +5,8 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.DClientLoanSnapshot;
+import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.base.IAccountChange;
@@ -34,7 +36,6 @@ import io.ebean.Transaction;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -42,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -61,6 +61,8 @@ import org.jetbrains.annotations.Nullable;
 @Table(name = "loan")
 public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateRange, Commentable {
 
+    @OneToMany
+    protected List<DClientLoanSnapshot> clientSnapshots = new ArrayList<>();
     @Id
     @Identity(start = 100)
     private long id;
@@ -121,6 +123,13 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public static boolean isWithinPaidBounds(long loanBalance) {
         return Math.abs(loanBalance) < Emeralds.BLOCK;
+    }
+
+    public InterestCheckpoint getLastCheckpoint() {
+        return clientSnapshots.stream()
+            .max(DClientSnapshot.COMPARATOR)
+            .map(InterestCheckpoint::new)
+            .orElseGet(() -> new InterestCheckpoint(this));
     }
 
     public DStaffConductor getConductor() {
@@ -193,132 +202,131 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        return getTotalOwed(null, Instant.now());
+        return getTotalOwed(Instant.now());
     }
 
-    public Emeralds getTotalOwed(@Nullable Instant start, Instant endDate) {
-        boolean isIllegalStart = start == null || !start.isAfter(getStartDate());
-        Emeralds owedAtStart = isIllegalStart ? getInitialAmount() : getTotalOwed(null, start);
-        BigDecimal accountBalanceAtStart = owedAtStart.negative().toBigDecimal();
-
-        Instant startDate = Objects.requireNonNullElseGet(start, this::getStartDate);
-        Emeralds interest = getInterest(accountBalanceAtStart, startDate, endDate);
-        Emeralds adjustment = getTotalOwedAdjustments(startDate, endDate);
-        return interest.add(owedAtStart)
-            .add(getTotalPaid(startDate, endDate).negative())
-            .add(adjustment.negative());
+    public Emeralds getTotalOwed(Instant endDate) {
+        InterestCheckpoint checkpoint = new InterestCheckpoint(this);
+        return getInterest(checkpoint, endDate).balanceEmeralds();
     }
 
-    private Emeralds getTotalOwedAdjustments(Instant startDate, Instant endDate) {
-        Predicate<DAdjustLoan> isDateBetween = ad -> {
-            Instant date = ad.getDate();
-            return date.isAfter(startDate) ||
-                !date.isAfter(endDate);
-        };
-        return this.adjustments.stream()
-            .filter(isDateBetween)
-            .map(DAdjustLoan::getAmount)
-            .reduce(Emeralds.zero(), Emeralds::add);
-    }
+    public InterestCheckpoint getInterest(@Nullable InterestCheckpoint checkpoint, @NotNull Instant end) {
+        if (checkpoint == null) checkpoint = new InterestCheckpoint(this);
 
-
-    public Emeralds getInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end) {
         DApiVersion version = this.getVersion();
         if (version.getLoan().equals(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
-            return getSimpleInterest(accountBalanceAtStart, start, end);
+            return getSimpleInterest(checkpoint, end);
         }
-        return getExactInterest(accountBalanceAtStart, start, end);
+        return getExactInterest(checkpoint, end);
     }
 
-    private Emeralds getSimpleInterest(BigDecimal accountBalanceAtStart, Instant assumedStart, Instant end) {
-        List<DLoanSection> sections = getSections();
-        Instant checkpoint = getStartDate();
-        BigDecimal principal = getInitialAmount().toBigDecimal();
-        BigDecimal totalInterest = BigDecimal.ZERO;
-        if (end.isAfter(getEndDate(end)))
-            end = getEndDate(end);
+    private InterestCheckpoint getSimpleInterest(InterestCheckpoint checkpointt, Instant end) {
+        InterestCheckpoint checkpoint = new InterestCheckpoint(this);
+        Instant start = checkpoint.lastUpdated();
 
-        for (DLoanSection section : sections) {
-            Instant estimatedCheckpoint = section.getEndDate(end);
-            Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(checkpoint, estimatedCheckpoint));
-            Instant nextCheckpoint = checkpoint.plus(duration);
-            BigDecimal sectionInterest = section.getInterest(checkpoint, nextCheckpoint, principal);
-            checkpoint = nextCheckpoint;
-            totalInterest = totalInterest.add(sectionInterest);
+        for (DLoanSection section : getSections()) {
+            Instant estimatedCheckpoint = section.getEarliestOfEnd(end);
+            Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(checkpoint.lastUpdated(), estimatedCheckpoint));
+            Instant nextCheckpoint = checkpoint.lastUpdated().plus(duration);
+            section.accumulateInterest(checkpoint, nextCheckpoint);
         }
 
-        return Emeralds.of(totalInterest);
+        List<DLoanPayment> payments = getPayments().stream()
+            .filter(p -> !p.getDate().isBefore(start))
+            .filter(p -> !p.getDate().isAfter(end))
+            .toList();
+        List<DAdjustLoan> adjustments = this.adjustments.stream()
+            .filter(a -> !a.getDate().isBefore(start))
+            .filter(a -> !a.getDate().isAfter(end))
+            .toList();
+
+        long paymentsDelta = payments.stream()
+            .mapToLong(payment -> payment.getAmount().amount())
+            .sum();
+        long adjustmentsDelta = adjustments.stream()
+            .mapToLong(adjustment -> adjustment.getAmount().amount())
+            .sum();
+
+        long totalDelta = -paymentsDelta - adjustmentsDelta;
+        checkpoint.updateBalance(totalDelta, end);
+        return checkpoint;
     }
 
+    private InterestCheckpoint getExactInterest(InterestCheckpoint checkpoint, @NotNull Instant end) {
+        checkpoint.resetInterest();
 
-    private Emeralds getExactInterest(BigDecimal accountBalanceAtStart, Instant start, Instant end) {
-        BigDecimal runningBalance = accountBalanceAtStart.negate();
-        BigDecimal totalInterest = BigDecimal.ZERO;
-        if (accountBalanceAtStart.compareTo(BigDecimal.ZERO) > 0) {
-            Emeralds bal = Emeralds.of(accountBalanceAtStart);
+        if (checkpoint.balance() < 0) {
+            Emeralds bal = Emeralds.of(checkpoint.balance());
             String msg = "%s{%d}'s balance of %s is > 0, but has active loan!"
                 .formatted(client.getEffectiveName(), client.getId(), bal);
             DatabaseModule.get().logger().warn(msg);
-            return Emeralds.zero();
+            return checkpoint;
         }
 
-        int paymentIndex = 0;
         int sectionIndex = 0;
+        int paymentIndex = 0;
+        int adjustmentIndex = 0;
         List<DLoanSection> sections = getSections().stream()
-            .filter(s -> s.getEndDate(end).isAfter(start))
+            .filter(s -> s.getStartDate().isBefore(end))
+            .filter(s -> s.getEarliestOfEnd(end).isAfter(checkpoint.lastUpdated()))
             .toList();
         List<DLoanPayment> payments = getPayments().stream()
-            .filter(p -> p.getDate().isAfter(start))
+            .filter(p -> p.getDate().isAfter(checkpoint.lastUpdated()))
             .toList();
-        BigDecimal initialLoanBal = this.getInitialAmount().toBigDecimal();
-        Instant checkpoint = start;
-        BigDecimal principal = initialLoanBal;
+        List<DAdjustLoan> adjustments = this.adjustments.stream()
+            .filter(a -> a.getDate().isAfter(checkpoint.lastUpdated()))
+            .toList();
 
         // while there's payments, make payments until there's none left
         // each iteration, increment either sectionIndex or paymentIndex
-        while (paymentIndex < payments.size()) {
+        while (paymentIndex < payments.size() || adjustmentIndex < adjustments.size()) {
             if (sectionIndex >= sections.size()) break; // payments in future means running simulation
+
+            boolean hasPayment = paymentIndex < payments.size();
+            boolean hasAdjustment = adjustmentIndex < adjustments.size();
+            DLoanPayment payment = hasPayment ? payments.get(paymentIndex) : null;
+            DAdjustLoan adjustment = hasAdjustment ? adjustments.get(adjustmentIndex) : null;
+
             DLoanSection section = sections.get(sectionIndex);
-            DLoanPayment payment = payments.get(paymentIndex);
-            Instant sectionEndDate = section.getEndDate(end);
-            boolean isPaymentEarlierOrEq = !payment.getDate().isAfter(sectionEndDate);
-            principal = principal.min(runningBalance);
-            if (isPaymentEarlierOrEq) {
-                boolean isPaymentAfterOrEq = payment.getDate().isBefore(end);
-                if (!isPaymentAfterOrEq) break;
-                // make payment
-                BigDecimal sectionInterest = section.getInterest(checkpoint, payment.getDate(), principal);
-                BigDecimal paymentAmount = payment.getAmount().toBigDecimal();
-                runningBalance = runningBalance.add(sectionInterest).subtract(paymentAmount);
-                totalInterest = totalInterest.add(sectionInterest);
-                checkpoint = payment.getDate();
-                paymentIndex++;
+            Instant sectionEndDate = section.getEarliestOfEnd(end);
+
+            boolean isSectionLater = false;
+            if (hasPayment)
+                isSectionLater = !payment.getDate().isAfter(sectionEndDate);
+            if (hasAdjustment && !isSectionLater)
+                isSectionLater = !adjustment.getDate().isAfter(sectionEndDate);
+            if (hasPayment && hasAdjustment) {
+                hasPayment = payment.getDate().isBefore(adjustment.getDate());
+            }
+            if (isSectionLater) {
+                if (hasPayment) paymentIndex++;
+                else adjustmentIndex++;
+
+                Emeralds delta = hasPayment ? payment.getAmount().negative() : adjustment.getAmount().negative();
+                Instant date = hasPayment ? payment.getDate() : adjustment.getDate();
+                boolean isDateAfterOrEq = date.isAfter(end);
+                if (isDateAfterOrEq) break;
+                // make balance change
+                section.accumulateInterest(checkpoint, date);
+                checkpoint.updateBalance(delta.amount(), date);
             } else {
-                BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
-                checkpoint = section.getEndDate(end);
-                runningBalance = runningBalance.add(sectionInterest);
-                totalInterest = totalInterest.add(sectionInterest);
+                Instant date = section.getEarliestOfEnd(end);
+                section.accumulateInterest(checkpoint, date);
                 sectionIndex++;
             }
         }
-        principal = principal.min(runningBalance);
         while (sectionIndex < sections.size()) {
             DLoanSection section = sections.get(sectionIndex);
-            BigDecimal sectionInterest = section.getInterest(checkpoint, end, principal);
-            checkpoint = section.getEndDate(end);
-            totalInterest = totalInterest.add(sectionInterest);
+            Instant date = section.getEarliestOfEnd(end);
+            section.accumulateInterest(checkpoint, date);
             sectionIndex++;
         }
-        return Emeralds.of(totalInterest);
-    }
-
-    public DClient getClient() {
-        return this.client;
+        return checkpoint;
     }
 
     public void makePayment(DLoanPayment payment, Transaction transaction) {
         this.payments.add(payment);
-        long loanBalance = getTotalOwed(null, payment.getDate()).amount();
+        long loanBalance = getTotalOwed(payment.getDate()).amount();
         if (isWithinPaidBounds(loanBalance)) {
             markPaid(payment.getDate(), transaction);
         }
@@ -328,7 +336,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     public void makeAdjustment(DAdjustLoan adjustment, Transaction transaction) {
         this.adjustments.add(adjustment);
-        long loanBalance = getTotalOwed(null, adjustment.getDate()).amount();
+        long loanBalance = getTotalOwed(adjustment.getDate()).amount();
         if (isWithinPaidBounds(loanBalance)) {
             markPaid(adjustment.getDate(), transaction);
         }
@@ -355,10 +363,8 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this.id;
     }
 
-    public List<DLoanPayment> getPayments() {
-        return this.payments.stream()
-            .sorted(Comparator.comparing(DLoanPayment::getDate))
-            .toList();
+    public DClient getClient() {
+        return this.client;
     }
 
     @Override
@@ -368,12 +374,18 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
     @Override
     public void updateSimulation() {
-        this.client.updateBalance(-this.initialAmount, getDate(), getEventType());
+        this.client.updateBalance(this, -this.initialAmount, getDate(), getEventType());
     }
 
     @Override
     public AccountEventType getEventType() {
         return AccountEventType.LOAN;
+    }
+
+    public List<DLoanPayment> getPayments() {
+        return this.payments.stream()
+            .sorted(Comparator.comparing(DLoanPayment::getDate))
+            .toList();
     }
 
     public DLoanStatus getStatus() {
@@ -413,7 +425,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public boolean checkIsPaid(Instant endDate, Transaction transaction) {
-        Emeralds totalOwed = getTotalOwed(null, endDate);
+        Emeralds totalOwed = getTotalOwed(endDate);
         if (isWithinPaidBounds(totalOwed.amount())) {
             markPaid(endDate, transaction);
             return true;
@@ -480,16 +492,14 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.checkIsFrozen(false);
         this.save(transaction);
 
-        // todo could be async
         EmbedBuilder embed = new EmbedBuilder().setColor(AmbrosiaColor.BLUE_NORMAL);
         LoanMessageBuilder msgBuilder = LoanMessage.of(this);
         msgBuilder.clientMsg().clientAuthor(embed);
         msgBuilder.loanDescription(embed);
 
         MessageCreateData message = MessageCreateData.fromEmbeds(embed.build());
-        // todo log dest to inform staff
-        //      also record messages in db
-        Ambrosia.get().logger().info("Sent unfreeze loan message");
+
+        Ambrosia.get().logger().info("Sending unfreeze loan message");
         DiscordLog.unfreezeLoan(this, UserActor.of(DStaffConductor.SYSTEM));
         ClientDiscordDetails discord = this.getClient().getDiscord();
         if (discord == null) {

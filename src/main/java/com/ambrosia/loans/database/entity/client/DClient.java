@@ -7,6 +7,7 @@ import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.base.AccountEvent;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.InterestCheckpoint;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
@@ -32,7 +33,6 @@ import io.ebean.annotation.Cache;
 import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -206,10 +206,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .filter(loan -> loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
             .filter(loan -> !loan.getEndDate(currentTime).isBefore(currentTime))
             .toList();
-        Emeralds legacyInterest;
-        if (legacyLoans.isEmpty()) legacyInterest = Emeralds.zero();
-        else legacyInterest = legacyLoans.stream()
-            .map(loan -> loan.getInterest(null, null, currentTime))
+        Emeralds legacyInterest = legacyLoans.stream()
+            .map(loan -> loan.getInterest(null, currentTime))
+            .map(InterestCheckpoint::interestEmeralds)
             .reduce(Emeralds.zero(), Emeralds::add)
             .negative();
 
@@ -225,19 +224,24 @@ public class DClient extends Model implements ClientAccess, Commentable {
         return this.balance.addInvestBalance(investDelta, date);
     }
 
+    // returns positive
     @NotNull
     private Emeralds getInterest(Instant currentTime) throws IllegalArgumentException {
         this.refresh();
         Instant lastUpdated = this.balance.getLoanLastUpdated();
+        if (lastUpdated.equals(currentTime)) {
+            return Emeralds.zero();
+        }
         if (willBalanceFailAtTimestamp(currentTime)) {
             String error = "Client{%s}'s balance was last updated at %s, which is later than the current timestamp of %s"
                 .formatted(this.getEffectiveName(), lastUpdated, currentTime);
             throw new IllegalArgumentException(error);
         }
-        BigDecimal totalInterest = BigDecimal.ZERO;
+        long totalInterest = 0;
         List<DLoan> loans = getLoans().stream()
             .filter(loan -> !loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
             .toList();
+
         for (DLoan loan : loans) {
             Duration loanDuration = loan.getDuration(lastUpdated, currentTime);
             if (loanDuration.isNegative()) continue;
@@ -245,9 +249,9 @@ public class DClient extends Model implements ClientAccess, Commentable {
 
             // if we call this for running a simulation, we don't want to include payments.
             // However,
-            BigDecimal balanceAtStart = loan.getTotalOwed(null, lastUpdated).negative().toBigDecimal();
-            Emeralds interest = loan.getInterest(balanceAtStart, lastUpdated, currentTime);
-            totalInterest = totalInterest.add(interest.toBigDecimal());
+            InterestCheckpoint balanceAtStart = loan.getInterest(null, lastUpdated);
+            InterestCheckpoint interest = loan.getInterest(balanceAtStart, currentTime);
+            totalInterest += interest.accumulatedInterest();
         }
         return Emeralds.of(totalInterest);
     }

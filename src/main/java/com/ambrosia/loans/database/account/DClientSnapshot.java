@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 @MappedSuperclass
 public class DClientSnapshot extends Model implements Comparable<DClientSnapshot> {
 
-    private static final Comparator<DClientSnapshot> COMPARATOR = Comparator.comparing(DClientSnapshot::getDate)
+    public static final Comparator<DClientSnapshot> COMPARATOR = Comparator.comparing(DClientSnapshot::getDate)
         .thenComparing(DClientSnapshot::getEventType, AccountEventType.ORDER);
     @Id
     private UUID id;

@@ -76,6 +76,7 @@ public class DNameHistory extends Model {
         return client;
     }
 
+    @Nullable
     public String getName() {
         return this.name;
     }

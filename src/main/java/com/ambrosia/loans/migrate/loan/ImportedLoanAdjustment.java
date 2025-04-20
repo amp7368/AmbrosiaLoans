@@ -14,16 +14,16 @@ public record ImportedLoanAdjustment(DLoan loan, Instant date, Emeralds amount, 
     public Emeralds getBalanceAt(Instant date) {
         loan.refresh();
         loan.getSections().forEach(Model::refresh);
-        return loan.getTotalOwed(null, date).negative();
-    }
-
-    @Override
-    public long getId() {
-        return 0;
+        return loan.getTotalOwed(date).negative();
     }
 
     @Override
     public void createAdjustment(Emeralds difference, Instant date) {
         AdjustApi.createMigrationAdjustment(loan, difference, client(), date, true);
+    }
+
+    @Override
+    public long getId() {
+        return 0;
     }
 }

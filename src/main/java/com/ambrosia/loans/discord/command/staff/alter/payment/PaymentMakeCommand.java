@@ -44,7 +44,7 @@ public class PaymentMakeCommand extends BaseStaffSubCommand {
 
         Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
         if (date == null) return;
-        Emeralds maxPayment = loan.getTotalOwed(null, date);
+        Emeralds maxPayment = loan.getTotalOwed(date);
 
         boolean isFull = CommandOption.PAYMENT_FULL.getOptional(event, false);
         Emeralds amount = isFull ? maxPayment : CommandOption.PAYMENT_AMOUNT.getOptional(event);

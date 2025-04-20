@@ -117,7 +117,7 @@ public interface LoanAccess {
         if (emeralds.isNegative()) throw new IllegalArgumentException("Cannot make negative payment!");
 
         DLoan loan = getEntity();
-        Emeralds totalOwed = loan.getTotalOwed(null, timestamp);
+        Emeralds totalOwed = loan.getTotalOwed(timestamp);
         if (emeralds.gt(totalOwed.amount())) throw new OverpaymentException(emeralds, totalOwed);
 
         DLoanPayment payment = new DLoanPayment(loan, timestamp, emeralds.amount(), staff);
@@ -132,7 +132,7 @@ public interface LoanAccess {
 
         if (loan.isPaid()) {
             Instant adjustmentDate = payment.getDate().plusMillis(1);
-            Emeralds adjustment = loan.getTotalOwed(null, adjustmentDate);
+            Emeralds adjustment = loan.getTotalOwed(adjustmentDate);
             Ambrosia.get().logger().info("Loan is paid on {}. Adjustment is {}.", formatDate(adjustmentDate), adjustment);
             if (!adjustment.isZero()) {
                 AdjustApi.createAdjustment(staff, loan, adjustment, adjustmentDate);

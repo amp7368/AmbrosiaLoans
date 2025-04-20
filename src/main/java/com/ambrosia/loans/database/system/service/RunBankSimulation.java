@@ -115,7 +115,11 @@ public class RunBankSimulation {
 
     public static void simulate(Instant simulateStartDate) {
         synchronized (RunBankSimulation.SYNC) {
-            simulate(simulateStartDate, SimulationOptions.DEFAULT);
+            try {
+                simulate(simulateStartDate, SimulationOptions.DEFAULT);
+            } catch (Exception e) {
+                DatabaseModule.get().logger().error("", e);
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.account.loan.section;
 import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.HasDateRange;
+import com.ambrosia.loans.database.account.loan.InterestCheckpoint;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import io.ebean.Model;
 import io.ebean.annotation.History;
@@ -79,8 +80,8 @@ public class DLoanSection extends Model implements HasDateRange {
         this.rate = rate;
     }
 
-    public BigDecimal getInterest(Instant start, Instant end, BigDecimal principal) {
-        Duration duration = getDuration(start, end);
+    public BigDecimal getInterest(InterestCheckpoint checkpoint, Instant end) {
+        Duration duration = getDuration(checkpoint.lastUpdated(), end);
         if (!duration.isPositive()) return BigDecimal.ZERO;
         BigDecimal rate = BigDecimal.valueOf(getRate());
 
@@ -89,6 +90,11 @@ public class DLoanSection extends Model implements HasDateRange {
             duration = Bank.legacySimpleWeeksDuration(duration);
         }
 
-        return Bank.interest(duration, principal, rate);
+        return Bank.interest(duration, checkpoint.principal(), rate);
+    }
+
+    public void accumulateInterest(InterestCheckpoint checkpoint, Instant end) {
+        BigDecimal sectionInterest = getInterest(checkpoint, end);
+        checkpoint.accumulateInterest(sectionInterest, end);
     }
 }
