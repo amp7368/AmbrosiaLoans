@@ -9,9 +9,9 @@ public abstract class BaseSubCommand extends DCFSlashSubCommand implements Comma
     private boolean isOnlyManager = false;
 
     @Override
-    public void onCommand(SlashCommandInteractionEvent event) {
-        if (this.isBadPermission(event)) return;
-        this.onCheckedCommand(event);
+    public boolean checkRunPermission(SlashCommandInteractionEvent event) {
+        if (!super.checkRunPermission(event)) return false;
+        return this.hasPermission(event);
     }
 
     public void setOnlyEmployee() {
@@ -31,7 +31,4 @@ public abstract class BaseSubCommand extends DCFSlashSubCommand implements Comma
     public boolean isOnlyManager() {
         return isOnlyManager;
     }
-
-    protected abstract void onCheckedCommand(SlashCommandInteractionEvent event);
-
 }

@@ -48,7 +48,6 @@ public class DStaffConductor extends Model {
     }
 
     public static DStaffConductor insertSystemConductor(String systemUsername, long systemId) {
-
         DStaffConductor conductor = new QDStaffConductor().where()
             .id.eq(systemId)
             .findOne();

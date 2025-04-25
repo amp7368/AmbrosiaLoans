@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.message.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
+import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.time.Instant;
@@ -25,10 +26,19 @@ public interface CollateralMessage {
         @Nullable FileUpload image,
         DCollateralStatus status,
         @Nullable Instant date,
+        @Nullable DLoan loan,
         ActionRow... actionRow) {
         embed.setColor(status.getColor());
         embed.appendDescription(header);
 
+        if (loan != null) {
+            embed.appendDescription(
+                "%s **Loan:** %s - %s\n".formatted(
+                    AmbrosiaEmoji.LOAN_REPAYMENT_PLAN,
+                    loan.getInitialAmount(),
+                    AmbrosiaEmoji.KEY_ID.spaced(loan.getId())
+                ));
+        }
         embed.appendDescription("%s **Name:** %s\n".formatted(AmbrosiaEmoji.COLLATERAL_TEXT, filename));
         if (description != null)
             embed.appendDescription("%s **Description:** %s\n".formatted(AmbrosiaEmoji.COLLATERAL_TEXT, description));

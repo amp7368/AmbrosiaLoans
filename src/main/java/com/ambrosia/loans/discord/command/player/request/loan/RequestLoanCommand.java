@@ -10,7 +10,12 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class RequestLoanCommand extends BaseSubCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public SubcommandData getData() {
+        return new SubcommandData("loan", "Request to take out a loan");
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         DClient client = ClientQueryApi.findByDiscord(event.getUser().getIdLong());
         if (client != null && client.isBlacklisted()) {
             ErrorMessages.blacklisted().replyError(event);
@@ -18,10 +23,5 @@ public class RequestLoanCommand extends BaseSubCommand {
         }
         RequestLoanModalType modalType = RequestLoanModalType.get(client == null);
         event.replyModal(modalType.buildModal()).queue();
-    }
-
-    @Override
-    public SubcommandData getData() {
-        return new SubcommandData("loan", "Request to take out a loan");
     }
 }

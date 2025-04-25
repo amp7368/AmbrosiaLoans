@@ -18,7 +18,17 @@ import org.jetbrains.annotations.Nullable;
 public class ModifyWithdrawalCommand extends BaseSubCommand implements BaseModifyWithdrawalRequest {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("withdrawal", "Modify an investment request");
+        CommandOptionList.of(
+            List.of(),
+            List.of(CommandOption.REQUEST, CommandOption.INVESTMENT_AMOUNT)
+        ).addToCommand(command);
+        return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         @Nullable ActiveRequestWithdrawalGui withdrawal = findWithdrawalRequest(event, false);
         if (withdrawal == null) return;
         DClient client = withdrawal.getData().getClient();
@@ -34,15 +44,5 @@ public class ModifyWithdrawalCommand extends BaseSubCommand implements BaseModif
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setAmount(withdrawal, event));
         replyChanges(event, changes, withdrawal);
-    }
-
-    @Override
-    public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("withdrawal", "Modify an investment request");
-        CommandOptionList.of(
-            List.of(),
-            List.of(CommandOption.REQUEST, CommandOption.INVESTMENT_AMOUNT)
-        ).addToCommand(command);
-        return command;
     }
 }

@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.base.request;
 
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.gui.util.interaction.OnInteraction;

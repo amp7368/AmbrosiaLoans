@@ -16,7 +16,17 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class ModifyInvestmentCommand extends BaseSubCommand implements BaseModifyInvestmentRequest {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("investment", "Modify an investment request");
+        CommandOptionList.of(
+            List.of(),
+            List.of(CommandOption.REQUEST, CommandOption.INVESTMENT_AMOUNT)
+        ).addToCommand(command);
+        return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         ActiveRequestInvestmentGui investment = findInvestmentRequest(event, false);
         if (investment == null) return;
         DClient client = investment.getData().getClient();
@@ -28,15 +38,5 @@ public class ModifyInvestmentCommand extends BaseSubCommand implements BaseModif
         List<ModifyRequestMsg> changes = new ArrayList<>();
         changes.add(setAmount(investment, event));
         replyChanges(event, changes, investment);
-    }
-
-    @Override
-    public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("investment", "Modify an investment request");
-        CommandOptionList.of(
-            List.of(),
-            List.of(CommandOption.REQUEST, CommandOption.INVESTMENT_AMOUNT)
-        ).addToCommand(command);
-        return command;
     }
 }

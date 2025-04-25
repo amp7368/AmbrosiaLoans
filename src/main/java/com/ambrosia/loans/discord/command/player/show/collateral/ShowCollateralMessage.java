@@ -2,8 +2,8 @@ package com.ambrosia.loans.discord.command.player.show.collateral;
 
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
+import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.message.loan.CollateralMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -23,8 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral> implements CollateralMessage {
 
-    public static final Comparator<DCollateral> BY_COLLECTION = Comparator.comparing(
-        c -> Objects.requireNonNullElse(c.getCollectionDate(), Instant.EPOCH));
+    public static final Comparator<DCollateral> BY_COLLECTION = Comparator.comparing(DCollateral::getCollectionDate);
     public static final Comparator<DCollateral> BY_RETURNED = Comparator.comparing(
         c -> Objects.requireNonNullElse(c.getReturnedDate(), Instant.MAX));
     public static final Comparator<DCollateral> BY_NAME = Comparator.comparing(DCollateral::getName)
@@ -33,11 +33,13 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         .thenComparing(DCollateral::getId);
     private static final Comparator<DCollateral> BY_LOAN = Comparator.comparing(c -> c.getLoan().getStartDate());
 
+    private final DClient client;
     private final Collection<DCollateral> allCollateral;
     private Comparator<DCollateral> comparator = BY_LOAN.reversed().thenComparing(BY_NAME);
 
-    public ShowCollateralMessage(ClientGui gui, Collection<DCollateral> collateral) {
+    public ShowCollateralMessage(DCFGui gui, DClient client, Collection<DCollateral> collateral) {
         super(gui);
+        this.client = client;
         this.allCollateral = collateral;
         setEntries(collateral);
         sort();
@@ -47,21 +49,22 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
 
     private void onFilter(StringSelectInteractionEvent event) {
         String selected = event.getValues().get(0);
-        Collection<DCollateral> collateral;
-        if (selected.equals("returned")) {
-            collateral = allCollateral.stream()
-                .filter(c -> c.getStatus() == DCollateralStatus.RETURNED)
-                .toList();
-        } else if (selected.equals("collected")) {
-            collateral = allCollateral.stream()
-                .filter(c -> c.getStatus() == DCollateralStatus.COLLECTED)
-                .toList();
-        } else collateral = allCollateral;
-        setEntries(collateral);
+
+        Predicate<DCollateral> predicate = switch (selected) {
+            case "returned" -> c -> c.getStatus() == DCollateralStatus.RETURNED;
+            case "collected" -> c -> c.getStatus() == DCollateralStatus.COLLECTED;
+            case "sold" -> c -> c.getStatus() == DCollateralStatus.SOLD;
+            default -> c -> true;
+        };
+        List<DCollateral> entries = allCollateral.stream()
+            .filter(predicate)
+            .toList();
+
+        setEntries(entries);
         sort();
     }
 
-    public void setPageTo(DCollateral collateral) {
+    public ShowCollateralMessage setPageTo(DCollateral collateral) {
         List<DCollateral> entries = getEntriesCopy();
         for (int i = 0; i < entries.size(); i++) {
             if (collateral.equals(entries.get(i))) {
@@ -69,6 +72,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
                 verifyPageNumber();
             }
         }
+        return this;
     }
 
     public StringSelectMenu filter() {
@@ -78,6 +82,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
             .addOption("All", "all", "Show all collateral")
             .addOption("Returned", "returned", "Show all returned collateral")
             .addOption("Collected", "collected", "Show all collected collateral")
+            .addOption("Sold", "sold", "Show all sold collateral")
             .build();
     }
 
@@ -116,13 +121,14 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
     public MessageCreateData makeMessage() {
         List<DCFEntry<DCollateral>> page = getCurrentPageEntries();
         EmbedBuilder embed = new EmbedBuilder();
-        clientAuthor(embed);
         if (page.isEmpty()) {
             embed.appendDescription("## No Collateral");
+            clientAuthor(embed);
             return build(embed, null, components());
         }
         DCFEntry<DCollateral> entry = page.get(0);
         DCollateral collateral = entry.entry();
+        clientAuthor(embed, collateral);
         String header = "## Collateral %s %d (%d/%d)\n"
             .formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getMaxPage() + 1);
 
@@ -134,8 +140,9 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
             collateral.getImage(),
             collateral.getStatus(),
             collateral.getLastActionDate(),
-            components());
+            collateral.getLoan(), components());
     }
+
 
     public ActionRow @NotNull [] components() {
         ActionRow filterRow = ActionRow.of(filter());
@@ -145,9 +152,12 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
     }
 
     private void clientAuthor(EmbedBuilder embed) {
-        if (parent instanceof ClientGui gui) {
-            ClientMessage.of(gui.getClient()).clientAuthor(embed);
+        if (client != null) {
+            ClientMessage.of(client).clientAuthor(embed);
         }
     }
 
+    private void clientAuthor(EmbedBuilder embed, DCollateral collateral) {
+        ClientMessage.of(collateral.getLoan().getClient()).clientAuthor(embed);
+    }
 }

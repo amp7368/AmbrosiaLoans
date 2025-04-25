@@ -7,14 +7,14 @@ import com.ambrosia.loans.discord.command.player.request.payment.RequestPaymentC
 import com.ambrosia.loans.discord.command.player.request.withdrawal.RequestWithdrawalCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 public class CommandRequest extends BaseCommand {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public SlashCommandData getData() {
+        return Commands.slash("request", "Request to withdraw/deposit emeralds");
     }
 
     @Override
@@ -26,10 +26,5 @@ public class CommandRequest extends BaseCommand {
             new RequestInvestmentCommand(),
             new RequestWithdrawalCommand()
         );
-    }
-
-    @Override
-    public SlashCommandData getData() {
-        return Commands.slash("request", "Request to withdraw/deposit emeralds");
     }
 }

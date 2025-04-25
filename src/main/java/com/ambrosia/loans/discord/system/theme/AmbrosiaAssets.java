@@ -31,6 +31,10 @@ public class AmbrosiaAssets {
         return "https://static.voltskiya.com/ambrosia/loans/" + file;
     }
 
+    public static String skinUrl(String player) {
+        return "https://mc-heads.net/head/" + player;
+    }
+
     public enum AmbrosiaEmoji {
         ANY_DATE(1208248441805738044L),
         ANY_WITHDRAWAL(1202017229315784724L),

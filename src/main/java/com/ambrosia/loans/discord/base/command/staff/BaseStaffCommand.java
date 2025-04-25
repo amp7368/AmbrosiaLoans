@@ -10,18 +10,18 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 public abstract class BaseStaffCommand extends BaseCommand {
 
     @Override
-    protected final void onCheckedCommand(SlashCommandInteractionEvent event) {
-        DStaffConductor staff = StaffCommandUtil.getOrMakeStaff(event);
-        if (staff == null) return;
-        this.onStaffCommand(event, staff);
-    }
-
-    @Override
     public final SlashCommandData getData() {
         SlashCommandData data = getStaffData();
         data.setGuildOnly(true);
         data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_MENTION_EVERYONE));
         return data;
+    }
+
+    @Override
+    public final void onCommand(SlashCommandInteractionEvent event) {
+        DStaffConductor staff = StaffCommandUtil.getOrMakeStaff(event);
+        if (staff == null) return;
+        this.onStaffCommand(event, staff);
     }
 
     public abstract SlashCommandData getStaffData();

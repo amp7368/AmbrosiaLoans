@@ -19,7 +19,16 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 public class CommandRemoveCollateral extends BaseSubCommand implements BaseModifyRequest, CollateralMessage {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("remove", "Remove collateral from a loan request");
+        CommandOptionList.of(
+            List.of(CommandOption.REQUEST, CommandOption.LOAN_COLLATERAL_REQUEST_ID)
+        ).addToCommand(command);
+        return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", false);
         if (request == null) return;
         if (isBadUser(event, request.getData())) return;
@@ -42,17 +51,9 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
             collateral.getDescription(),
             collateral.getImage(),
             DCollateralStatus.DELETED,
+            null,
             null
         );
         event.reply(msg).queue();
-    }
-
-    @Override
-    public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("remove", "Remove collateral from a loan request");
-        CommandOptionList.of(
-            List.of(CommandOption.REQUEST, CommandOption.LOAN_COLLATERAL_REQUEST_ID)
-        ).addToCommand(command);
-        return command;
     }
 }

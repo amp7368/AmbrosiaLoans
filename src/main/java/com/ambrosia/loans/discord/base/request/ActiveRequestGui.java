@@ -10,7 +10,7 @@ import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.DiscordPermissions;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;

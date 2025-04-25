@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
+import com.ambrosia.loans.database.account.loan.collateral.CollateralApi;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
@@ -15,16 +16,20 @@ import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.entity.staff.StaffConductorApi;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.system.help.HelpCommandListType;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
+import com.ambrosia.loans.util.clover.CloverRequest.CloverTimeResolution;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message.Attachment;
@@ -53,6 +58,10 @@ public interface CommandOption<R> {
     CommandOptionDate DATE = new CommandOptionDate();
     CommandOptionDate LOAN_START_DATE = new CommandOptionDate("start_date",
         "The start date (MM/DD/YY) for the loan. (Defaults to current date if not specified)");
+    CommandOptionDate FILTER_START_DATE = new CommandOptionDate("filter_start_date",
+        "Filter to anything after this start date (MM/DD/YY).");
+    CommandOptionDate FILTER_END_DATE = new CommandOptionDate("filter_end_date",
+        "Filter to anything before this end date (MM/DD/YY).");
 
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
@@ -90,7 +99,7 @@ public interface CommandOption<R> {
     CommandOptionMulti<Long, DLoan> LOAN_ID = multi("loan_id", "The id of the loan", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findById);
     CommandOptionMulti<Long, DCollateral> COLLATERAL_ID = multi("collateral_id", "The id of the collateral", OptionType.INTEGER,
-        OptionMapping::getAsLong, LoanQueryApi::findCollateralById);
+        OptionMapping::getAsLong, id -> CollateralApi.findById(id));
     CommandOptionMulti<Long, DLoanPayment> PAYMENT_ID = multi("payment_id", "The id of the payment", OptionType.INTEGER,
         OptionMapping::getAsLong, LoanQueryApi::findPaymentById);
     CommandOptionMulti<Long, DWithdrawal> WITHDRAWAL_ID = multi("withdrawal_id", "The id of the withdrawal", OptionType.INTEGER,
@@ -124,6 +133,17 @@ public interface CommandOption<R> {
         .addChoices("Payment", "Loan", "Investment", "Withdrawal", "General");
     CommandOption<Boolean> FORCE = basic("force", "Caution! Whether to force the action.",
         OptionType.BOOLEAN, OptionMapping::getAsBoolean);
+    CommandOption<List<String>> KEYWORDS = multi("keywords",
+        "List of comma-separated keywords to search for..Example: \"epoch, Olympc,bOrEAl\"",
+        OptionType.STRING, OptionMapping::getAsString,
+        s -> Arrays.stream(s.split(","))
+            .map(String::trim)
+            .filter(Predicate.not(String::isBlank))
+            .toList());
+    CommandOption<CloverTimeResolution> CLOVER_TIME_RESOLUTION = new CommandOptionMapEnum<>("group_by",
+        "Group playtime into DAY/WEEK/MONTH chunks", CloverTimeResolution.class, CloverTimeResolution.values());
+    CommandOptionMulti<String, DStaffConductor> STAFF = multi("staff", "Associated staff members", OptionType.STRING,
+        OptionMapping::getAsString, StaffConductorApi::findByName).setAutocomplete();
 
     static CommandOptionBasic<AlterCreateType> deleteEntity() {
         CommandOptionMulti<String, AlterCreateType> option = CommandOption.multi("delete_entity", "The entity type to delete",

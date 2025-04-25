@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord.command.staff.list;
 
 import com.ambrosia.loans.discord.base.command.staff.BaseStaffCommand;
 import com.ambrosia.loans.discord.command.staff.list.client.ListClientsCommand;
+import com.ambrosia.loans.discord.command.staff.list.collateral.ListCollateralCommand;
 import com.ambrosia.loans.discord.command.staff.list.loan.ListLoansCommand;
 import com.ambrosia.loans.discord.command.staff.list.message.ListMessagesCommand;
 import com.ambrosia.loans.discord.command.staff.list.request.ListRequestsCommand;
@@ -14,7 +15,13 @@ public class AListCommand extends BaseStaffCommand {
 
     @Override
     public List<DCFSlashSubCommand> getSubCommands() {
-        return List.of(new ListLoansCommand(), new ListClientsCommand(), new ListRequestsCommand(), new ListMessagesCommand());
+        return List.of(
+            new ListLoansCommand(),
+            new ListClientsCommand(),
+            new ListRequestsCommand(),
+            new ListMessagesCommand(),
+            new ListCollateralCommand()
+        );
     }
 
     @Override

@@ -14,21 +14,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
 public class ModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanRequest {
 
-    @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui loan = findLoanRequest(event, false);
-        if (loan == null) return;
-        Long loanDiscord = loan.getData().getClient().getDiscord(ClientDiscordDetails::getDiscordId);
-        if (loanDiscord != event.getUser().getIdLong()) {
-            replyError(event, "You cannot edit a loan request you didn't make!");
-            return;
-        }
-        List<ModifyRequestMsg> changes = new ArrayList<>();
-        changes.add(setVouch(loan, event));
-        changes.add(setDiscount(loan, event));
-        replyChanges(event, changes, loan);
-    }
-
     private ModifyRequestMsg setDiscount(ActiveRequestLoanGui loan, SlashCommandInteractionEvent event) {
         String discount = CommandOption.LOAN_DISCOUNT.getOptional(event);
         if (discount == null) return null;
@@ -44,5 +29,20 @@ public class ModifyLoanCommand extends BaseSubCommand implements BaseModifyLoanR
             List.of(CommandOption.REQUEST, CommandOption.LOAN_VOUCH, CommandOption.LOAN_DISCOUNT)
         ).addToCommand(command);
         return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
+        ActiveRequestLoanGui loan = findLoanRequest(event, false);
+        if (loan == null) return;
+        Long loanDiscord = loan.getData().getClient().getDiscord(ClientDiscordDetails::getDiscordId);
+        if (loanDiscord != event.getUser().getIdLong()) {
+            replyError(event, "You cannot edit a loan request you didn't make!");
+            return;
+        }
+        List<ModifyRequestMsg> changes = new ArrayList<>();
+        changes.add(setVouch(loan, event));
+        changes.add(setDiscount(loan, event));
+        replyChanges(event, changes, loan);
     }
 }

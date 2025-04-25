@@ -18,7 +18,7 @@ public class UserContextListener extends ListenerAdapter {
                 return;
             }
             if (!DiscordPermissions.get().isEmployee(event.getMember())) {
-                ErrorMessages.badRole("employee", event).replyError(event);
+                ErrorMessages.badRole("Employee", event).replyError(event);
                 return;
             }
             DClient client = ClientQueryApi.findByDiscord(event.getTarget().getIdLong());
@@ -26,7 +26,8 @@ public class UserContextListener extends ListenerAdapter {
                 SendMessage.get().replyError(event, "%s is not registered!".formatted(event.getTarget().getEffectiveName()));
                 return;
             }
-            client.profile(event::reply).send();
+            client.profile(msg -> event.reply(msg).setEphemeral(true))
+                .send();
         }
     }
 }

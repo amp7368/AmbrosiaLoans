@@ -10,7 +10,7 @@ import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.discord.DiscordBot;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileInvestPage;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileLoanPage;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileOverviewPage;

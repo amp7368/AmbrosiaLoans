@@ -6,23 +6,24 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 public abstract class BaseManagerCommand extends BaseStaffCommand {
 
-    public static boolean isManagerBadPermission(SlashCommandInteractionEvent event) {
+    public static boolean isManagerCorrectChannel(SlashCommandInteractionEvent event) {
         boolean isStaff = DiscordConfig.get().isStaffChannel(event.getChannelIdLong());
         if (!isStaff) {
             String channel = event.getChannel().getAsMention();
             SendMessage.get().replyError(event, channel + " is not a staff channel!");
-            return true;
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    public boolean isBadPermission(SlashCommandInteractionEvent event) {
-        return isManagerBadPermission(event) || super.isBadPermission(event);
+        return true;
     }
 
     @Override
     public boolean isOnlyManager() {
         return true;
+    }
+
+    @Override
+    public boolean checkRunPermission(SlashCommandInteractionEvent event) {
+        if (!super.checkRunPermission(event)) return true;
+        return BaseManagerCommand.isManagerCorrectChannel(event);
     }
 }

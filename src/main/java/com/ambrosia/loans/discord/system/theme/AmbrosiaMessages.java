@@ -75,7 +75,11 @@ public class AmbrosiaMessages {
         @CheckReturnValue
         public static AmbrosiaMessage badRole(String requiredRole, CommandInteraction event) {
             String commandName = event.getFullCommandName();
-            return error(String.format("You must be a %s to run '/%s'", requiredRole, commandName));
+            String article;
+            if (requiredRole.startsWith("e"))
+                article = "an";
+            else article = "a";
+            return error(String.format("You must be %s %s to run '/%s'", article, requiredRole, commandName));
         }
 
 

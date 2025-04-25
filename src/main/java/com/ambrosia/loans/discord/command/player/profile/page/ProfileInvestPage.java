@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.command.player.profile.page;
 
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.AmbrosiaTimeZone;

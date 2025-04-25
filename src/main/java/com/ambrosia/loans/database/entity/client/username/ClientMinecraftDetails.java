@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.entity.client.username;
 
 import com.ambrosia.loans.database.entity.client.DClient;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets;
 import com.ambrosia.loans.service.name.UpdateClientMinecraftHook;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
@@ -53,7 +54,7 @@ public class ClientMinecraftDetails {
     }
 
     public String skinUrl() {
-        return "https://mc-heads.net/head/" + this.uuid;
+        return AmbrosiaAssets.skinUrl(this.uuid.toString());
     }
 
     public String getUsername() {

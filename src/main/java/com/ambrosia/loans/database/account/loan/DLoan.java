@@ -215,12 +215,12 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
 
         DApiVersion version = this.getVersion();
         if (version.getLoan().equals(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
-            return getSimpleInterest(checkpoint, end);
+            return getSimpleInterest(end);
         }
         return getExactInterest(checkpoint, end);
     }
 
-    private InterestCheckpoint getSimpleInterest(InterestCheckpoint checkpointt, Instant end) {
+    private InterestCheckpoint getSimpleInterest(Instant end) {
         InterestCheckpoint checkpoint = new InterestCheckpoint(this);
         Instant start = checkpoint.lastUpdated();
 

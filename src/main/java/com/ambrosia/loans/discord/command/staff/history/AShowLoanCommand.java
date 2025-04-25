@@ -5,7 +5,7 @@ import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
 import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.command.player.show.loan.LoanHistoryMessage;
 import discord.util.dcf.gui.base.edit_message.DCFEditMessage;
 import discord.util.dcf.util.DCFUtils;

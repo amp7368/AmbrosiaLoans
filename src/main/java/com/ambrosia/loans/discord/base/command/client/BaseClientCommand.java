@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public abstract class BaseClientCommand extends BaseCommand implements ClientCommandUtil {
 
     @Override
-    protected final void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public final void onCommand(SlashCommandInteractionEvent event) {
         getClientAndDoCommand(event);
     }
 }

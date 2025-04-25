@@ -36,7 +36,7 @@ public class DCollateral extends Model {
     protected Timestamp returnedDate;
     @Column
     protected Timestamp collectionDate = Timestamp.from(Instant.now());
-    @DbDefault("collateral description")
+    @DbDefault("N/A")
     @Column(nullable = false, columnDefinition = "text")
     protected String name;
     @Column(columnDefinition = "text")
@@ -83,9 +83,13 @@ public class DCollateral extends Model {
     public FileUpload getImage() {
         File imageFile = getImageFile();
         if (imageFile == null) return null;
-        String filename = this.name == null ? "collateral.png" : this.name;
+
+        String filename = this.name == null ? "" : this.name;
+        int index = filename.lastIndexOf('.') + 1;
+        String ext = index <= 0 || index == filename.length() ?
+            "png" : filename.substring(index);
         @SuppressWarnings("resource")
-        FileUpload fileUpload = FileUpload.fromData(imageFile, filename);
+        FileUpload fileUpload = FileUpload.fromData(imageFile, "collateral." + ext);
         return fileUpload.setDescription(description);
     }
 
