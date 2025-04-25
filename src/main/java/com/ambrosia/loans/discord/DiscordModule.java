@@ -45,7 +45,6 @@ import discord.util.dcf.DCF;
 import discord.util.dcf.DCFCommandManager;
 import discord.util.dcf.slash.DCFAbstractCommand;
 import discord.util.dcf.slash.DCFSlashCommand;
-import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,8 +52,6 @@ import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.interactions.commands.Command;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -102,14 +99,11 @@ public class DiscordModule extends AppleModule {
         return jda;
     }
 
-    private void updateCommandsCallback(List<Command> commands) {
-        for (Command command : commands) {
-            DCFAbstractCommand<?> abstractCommand = DiscordBot.dcf.commands().getCommand(command.getFullCommandName());
-            if (!(abstractCommand instanceof DCFSlashCommand baseCommand)) continue;
-
+    private void updateCommandsCallback() {
+        for (DCFSlashCommand baseCommand : DiscordBot.dcf.commands().getDCFBaseCommands()) {
             boolean isStaffCommand = isStaffCommand(baseCommand);
             boolean isManagerCommand = isMangerCommand(baseCommand);
-            for (DCFSlashSubCommand dcfSub : baseCommand.getSubCommands()) {
+            for (DCFAbstractCommand<?> dcfSub : baseCommand.peekAllSubCommands()) {
                 if (!(dcfSub instanceof BaseSubCommand subCommand)) continue;
 
                 if (isStaffCommand)
@@ -117,6 +111,7 @@ public class DiscordModule extends AppleModule {
                 if (isManagerCommand)
                     subCommand.setOnlyManager();
             }
+
             HelpCommandListManager.addCommand(baseCommand, isStaffCommand, isManagerCommand);
         }
         HelpCommandListManager.finishSetup();
@@ -155,11 +150,8 @@ public class DiscordModule extends AppleModule {
     public void onEnablePost() {
         DiscordConfig.get().load();
         SendDiscordLog.load();
-        CommandData viewProfileCommand = Commands.user("view_profile");
-        DiscordBot.dcf.commands().updateCommands(
-            action -> action.addCommands(viewProfileCommand),
-            this::updateCommandsCallback
-        );
+        DiscordBot.dcf.commands().updateCommands()
+            .thenRun(this::updateCommandsCallback);
     }
 
     @Override
@@ -209,6 +201,8 @@ public class DiscordModule extends AppleModule {
             new ProfileCommand(), new ShowCommand(),
             new CommandRequest(), new CommandModifyRequest(),
             new CommandCollateral());
+
+        commands.addCommand(Commands.user("view_profile"));
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));

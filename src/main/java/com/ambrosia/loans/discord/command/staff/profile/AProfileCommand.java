@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 public class AProfileCommand extends BaseCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public void onCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
         client.profile(event::reply).send();

@@ -12,7 +12,7 @@ import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.command.player.show.collateral.ShowCollateralMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.ErrorMessages;
 import discord.util.dcf.DCF;
@@ -119,11 +119,12 @@ public abstract class IAddCollateral {
                 hook.editOriginalEmbeds(SendMessage.get().error("Error adding collateral!")).queue();
                 return;
             }
+
             ClientGui gui = new ClientGui(client, dcf, DCFEditMessage.ofHook(hook));
-            ShowCollateralMessage page = new ShowCollateralMessage(gui, collateral.collateral());
-            gui.addPage(page);
-            page.setPageTo(collateral.showCollateral());
-            gui.send();
+            new ShowCollateralMessage(gui, client, collateral.collateral())
+                .setPageTo(collateral.showCollateral())
+                .addPageToGui()
+                .send();
         };
         DCFUtils.get().builderDefer(event, supplyMessage, supplyCollateral).startDefer();
     }
@@ -145,5 +146,4 @@ public abstract class IAddCollateral {
     private record CollateralReturn(List<DCollateral> collateral, DCollateral showCollateral) {
 
     }
-
 }

@@ -1,8 +1,8 @@
 package com.ambrosia.loans.database.alter.type;
 
+import apple.utilities.gson.adapter.time.InstantGsonSerializing;
 import apple.utilities.json.gson.GsonBuilderDynamic;
 import com.ambrosia.loans.database.alter.change.AlterDBChange;
-import com.ambrosia.loans.util.InstantGsonSerializing;
 import com.ambrosia.loans.util.emerald.EmeraldsGsonSerializing;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;

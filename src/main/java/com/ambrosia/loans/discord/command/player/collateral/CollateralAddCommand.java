@@ -6,7 +6,7 @@ import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.message.loan.LoanRequestCollateralPage;
 import com.ambrosia.loans.discord.request.base.BaseModifyRequest;
 import com.ambrosia.loans.discord.request.loan.ActiveRequestLoan;
@@ -28,46 +28,6 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.Nullable;
 
 public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRequest {
-
-    @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", true);
-        if (request == null) return;
-        if (isBadUser(event, request.getData())) return;
-
-        @Nullable String name = CommandOption.LOAN_COLLATERAL_NAME.getOptional(event);
-        if (name != null && name.isBlank()) name = null;
-        else if (name != null) name = name.replaceAll("\\s+", "_");
-
-        @Nullable String description = CommandOption.LOAN_COLLATERAL_DESCRIPTION.getOptional(event);
-        if (description != null && description.isBlank()) description = null;
-
-        @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL_IMAGE.getOptional(event);
-        if (IAddCollateral.hasErrorsAttachment(event, attachment)) return;
-        if (IAddCollateral.hasErrorsMissingAll(event, description, name, attachment)) return;
-        if (IAddCollateral.hasErrorsArgLength(event, description, name)) return;
-
-        int id = request.getData().assignCollateralId();
-        RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
-
-        String msgOverride = "**Added collateral!**";
-        if (attachment == null) {
-            request.getData().addCollateral(collateral);
-            DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);
-            ClientGui gui = request.guiClient(editMessage, msgOverride);
-            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData(), false);
-            page.toLast();
-            gui.addSubPage(page);
-            gui.send();
-        } else {
-            File imageFile = collateral.getImageFile();
-            if (imageFile == null) throw new IllegalStateException("imageFile is null, while attachment exists");
-            CompletableFuture<File> downloadAction = attachment.getProxy().downloadToFile(imageFile);
-            DCFEditMessage editMessage = DCFEditMessage.ofReply(msg -> event.deferReply());
-            ClientGui gui = request.guiClient(editMessage, msgOverride);
-            gui.send(msg -> afterDefer(downloadAction, gui, collateral, request.getData()), null);
-        }
-    }
 
     private void afterDefer(CompletableFuture<File> downloadAction, ClientGui gui, RequestCollateral collateral,
         ActiveRequestLoan request) {
@@ -111,5 +71,45 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
             CommandOption.LOAN_COLLATERAL_DESCRIPTION,
             CommandOption.REQUEST
         )).addToCommand(command);
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
+        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", true);
+        if (request == null) return;
+        if (isBadUser(event, request.getData())) return;
+
+        @Nullable String name = CommandOption.LOAN_COLLATERAL_NAME.getOptional(event);
+        if (name != null && name.isBlank()) name = null;
+        else if (name != null) name = name.replaceAll("\\s+", "_");
+
+        @Nullable String description = CommandOption.LOAN_COLLATERAL_DESCRIPTION.getOptional(event);
+        if (description != null && description.isBlank()) description = null;
+
+        @Nullable Attachment attachment = CommandOption.LOAN_COLLATERAL_IMAGE.getOptional(event);
+        if (IAddCollateral.hasErrorsAttachment(event, attachment)) return;
+        if (IAddCollateral.hasErrorsMissingAll(event, description, name, attachment)) return;
+        if (IAddCollateral.hasErrorsArgLength(event, description, name)) return;
+
+        int id = request.getData().assignCollateralId();
+        RequestCollateral collateral = CollateralManager.newCollateral(id, attachment, name, description);
+
+        String msgOverride = "**Added collateral!**";
+        if (attachment == null) {
+            request.getData().addCollateral(collateral);
+            DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);
+            ClientGui gui = request.guiClient(editMessage, msgOverride);
+            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData(), false);
+            page.toLast();
+            gui.addSubPage(page);
+            gui.send();
+        } else {
+            File imageFile = collateral.getImageFile();
+            if (imageFile == null) throw new IllegalStateException("imageFile is null, while attachment exists");
+            CompletableFuture<File> downloadAction = attachment.getProxy().downloadToFile(imageFile);
+            DCFEditMessage editMessage = DCFEditMessage.ofReply(msg -> event.deferReply());
+            ClientGui gui = request.guiClient(editMessage, msgOverride);
+            gui.send(msg -> afterDefer(downloadAction, gui, collateral, request.getData()), null);
+        }
     }
 }

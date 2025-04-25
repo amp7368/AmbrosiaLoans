@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 public class AProfileCreateCommand extends BaseCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public void onCommand(SlashCommandInteractionEvent event) {
         @Nullable String clientName = CommandOption.CLIENT.getMap1(event);
         if (clientName == null) return;
         Member discord = CommandOption.DISCORD.getRequired(event);

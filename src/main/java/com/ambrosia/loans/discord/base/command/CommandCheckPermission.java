@@ -8,26 +8,24 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 public interface CommandCheckPermission extends SendMessage {
 
-    default boolean isBadPermission(SlashCommandInteractionEvent event) {
+    default boolean hasPermission(SlashCommandInteractionEvent event) {
         Member sender = event.getMember();
         if (requiresMember() && !DiscordBot.isMainServer(event.getGuild())) {
             ErrorMessages.onlyInAmbrosia().replyError(event);
-            return true;
+            return false;
         }
         DiscordPermissions perms = DiscordPermissions.get();
         boolean isManager = perms.isManager(sender);
         boolean isEmployee = perms.isEmployee(sender) || isManager;
-        if (!isEmployee && isOnlyEmployee()) {
-            ErrorMessages.badRole("Employee", event)
-                .replyError(event);
-            return true;
-        }
         if (!isManager && isOnlyManager()) {
-            ErrorMessages.badRole("Manager", event)
-                .replyError(event);
-            return true;
+            ErrorMessages.badRole("Manager", event).replyError(event);
+            return false;
         }
-        return false;
+        if (!isEmployee && isOnlyEmployee()) {
+            ErrorMessages.badRole("Employee", event).replyError(event);
+            return false;
+        }
+        return true;
     }
 
     default boolean requiresMember() {

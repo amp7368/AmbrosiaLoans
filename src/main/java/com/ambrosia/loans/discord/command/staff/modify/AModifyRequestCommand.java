@@ -1,17 +1,16 @@
 package com.ambrosia.loans.discord.command.staff.modify;
 
-import com.ambrosia.loans.discord.base.command.BaseCommand;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffCommand;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import java.util.List;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
-public class AModifyRequestCommand extends BaseCommand {
+public class AModifyRequestCommand extends BaseStaffCommand {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-
+    public SlashCommandData getStaffData() {
+        return Commands.slash("amodify_request", "[Staff] Modify a request");
     }
 
     @Override
@@ -21,15 +20,5 @@ public class AModifyRequestCommand extends BaseCommand {
             new AModifyPaymentCommand(),
             new AModifyInvestmentCommand()
         );
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
-    }
-
-    @Override
-    public SlashCommandData getData() {
-        return Commands.slash("amodify_request", "[Staff] Modify a request");
     }
 }

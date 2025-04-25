@@ -11,7 +11,6 @@ import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanUnfreeze;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterPaymentAmount;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
-import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
@@ -65,12 +64,6 @@ public interface LoanApi {
 
         static DLoanPayment findPaymentById(long id) {
             return new QDLoanPayment()
-                .where().id.eq(id)
-                .findOne();
-        }
-
-        static DCollateral findCollateralById(long id) {
-            return new QDCollateral()
                 .where().id.eq(id)
                 .findOne();
         }

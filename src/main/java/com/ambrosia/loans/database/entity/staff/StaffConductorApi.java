@@ -26,4 +26,10 @@ public class StaffConductorApi {
         if (client == null) throw new InvalidStaffConductorException(staffUsername, staffId);
         return create(client);
     }
+
+    public static DStaffConductor findByName(String username) {
+        return new QDStaffConductor().where()
+            .username.ieq(username)
+            .findOne();
+    }
 }

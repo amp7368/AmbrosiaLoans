@@ -103,6 +103,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
             image,
             collateral.getStatus(),
             collateral.getLastActionDate(),
+            collateral.getLoan(),
             actionRow);
     }
 }

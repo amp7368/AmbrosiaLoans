@@ -71,7 +71,16 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
 
         String header = "## Collateral (%d/%d) %s %d\n"
             .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
-        return collateralDescription(embed, header, filename, description, image, DCollateralStatus.NOT_COLLECTED, null, actionRow);
+        return collateralDescription(embed,
+            header,
+            filename,
+            description,
+            image,
+            DCollateralStatus.NOT_COLLECTED,
+            null,
+            null,
+            actionRow
+        );
     }
 
     @Override

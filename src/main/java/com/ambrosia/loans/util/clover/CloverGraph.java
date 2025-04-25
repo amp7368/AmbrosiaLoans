@@ -25,11 +25,11 @@ import org.jfree.data.time.TimeSeriesCollection;
 public class CloverGraph {
 
     public static byte[] graph(String title, CloverTimeResolution resolution, PlayerTermsResponse response) {
-
         TimeSeries series = new TimeSeries(title);
         RegularTimePeriod lastDay = resolution.graphPast();
+        long minutes = resolution.countOfDays() * 24 * 60;
         for (PlaySessionTerm term : response.terms) {
-            if (term.playtimeDelta > 24 * 60)
+            if (term.playtimeDelta > minutes)
                 continue;
             RegularTimePeriod currentDay = resolution.graphUnit(term.retrieved);
             while (lastDay.getSerialIndex() < currentDay.getSerialIndex()) {

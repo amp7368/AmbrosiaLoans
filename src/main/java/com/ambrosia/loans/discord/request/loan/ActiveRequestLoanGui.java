@@ -5,7 +5,7 @@ import static com.ambrosia.loans.discord.message.loan.LoanCollateralPage.showCol
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.base.request.ActiveRequestClientPage;
 import com.ambrosia.loans.discord.base.request.ActiveRequestGui;
 import com.ambrosia.loans.discord.message.loan.LoanCollateralPage;

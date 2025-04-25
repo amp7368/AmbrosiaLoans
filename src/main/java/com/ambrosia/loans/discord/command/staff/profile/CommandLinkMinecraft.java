@@ -14,7 +14,20 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 public class CommandLinkMinecraft extends BaseSubCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("minecraft", "[Staff] Link a client's profile with their minecraft account");
+        CommandOptionList.of(List.of(CommandOption.MINECRAFT, CommandOption.CLIENT))
+            .addToCommand(command);
+        return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
         String username = CommandOption.MINECRAFT.getRequired(event);
@@ -29,18 +42,5 @@ public class CommandLinkMinecraft extends BaseSubCommand {
         client.save();
         client.profile(event::reply).send();
         DiscordLog.modifyMinecraft(client, UserActor.of(event.getUser()));
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
-    }
-
-    @Override
-    public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("minecraft", "[Staff] Link a client's profile with their minecraft account");
-        CommandOptionList.of(List.of(CommandOption.MINECRAFT, CommandOption.CLIENT))
-            .addToCommand(command);
-        return command;
     }
 }

@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.command.staff.calculator.interest.gui;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.gui.client.ClientGui;
+import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.command.staff.calculator.interest.base.InterestFactor;
 import com.ambrosia.loans.discord.command.staff.calculator.interest.base.InterestMultiplierChoice;
 import com.ambrosia.loans.discord.command.staff.calculator.interest.factors.CollateralFactor;

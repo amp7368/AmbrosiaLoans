@@ -16,7 +16,19 @@ public class CommandLinkDiscord extends BaseSubCommand {
 
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public boolean isOnlyEmployee() {
+        return true;
+    }
+
+    @Override
+    public SubcommandData getData() {
+        SubcommandData command = new SubcommandData("discord", "[Staff] Link a client's profile with their discord account");
+        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
+        return options.addToCommand(command);
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
         Member member = CommandOption.DISCORD.getRequired(event);
@@ -27,17 +39,5 @@ public class CommandLinkDiscord extends BaseSubCommand {
         client.profile(event::reply).send();
 
         DiscordLog.modifyDiscord(client, UserActor.of(event.getUser()));
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
-    }
-
-    @Override
-    public SubcommandData getData() {
-        SubcommandData command = new SubcommandData("discord", "[Staff] Link a client's profile with their discord account");
-        CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
-        return options.addToCommand(command);
     }
 }

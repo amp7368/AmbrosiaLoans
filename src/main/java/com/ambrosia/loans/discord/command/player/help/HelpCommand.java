@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class HelpCommand extends BaseCommand {
 
     @Override
-    public void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public void onCommand(SlashCommandInteractionEvent event) {
         helpGUI(event).send();
     }
 

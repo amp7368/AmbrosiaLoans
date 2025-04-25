@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public abstract class BaseStaffSubCommand extends BaseSubCommand {
 
     @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
+    public void onCommand(SlashCommandInteractionEvent event) {
         DStaffConductor staff = StaffCommandUtil.getOrMakeStaff(event);
         if (staff == null) return;
         this.onStaffCommand(event, staff);

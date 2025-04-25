@@ -30,16 +30,6 @@ public class CommandRequestAccount extends BaseSubCommand {
         return true;
     }
 
-    @Override
-    protected void onCheckedCommand(SlashCommandInteractionEvent event) {
-        if (event.getMember() == null) return;
-        DCFUtils.get().builderDefer(
-            event,
-            (defer, client) -> handleClient(event, defer, client),
-            () -> ClientQueryApi.findByDiscord(event.getUser().getIdLong())
-        ).startDefer();
-    }
-
     private void handleClient(SlashCommandInteractionEvent event, InteractionHook defer, DClient client) {
         Member member = event.getMember();
         if (member == null) return;
@@ -79,5 +69,15 @@ public class CommandRequestAccount extends BaseSubCommand {
         command.addOption(OptionType.STRING, OPTION_MINECRAFT, "Your minecraft in-game name", true);
         command.addOption(OptionType.STRING, OPTION_DISPLAY_NAME, "Your profile display name");
         return command;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
+        if (event.getMember() == null) return;
+        DCFUtils.get().builderDefer(
+            event,
+            (defer, client) -> handleClient(event, defer, client),
+            () -> ClientQueryApi.findByDiscord(event.getUser().getIdLong())
+        ).startDefer();
     }
 }
