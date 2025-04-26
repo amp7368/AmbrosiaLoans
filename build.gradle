@@ -40,7 +40,6 @@ dependencies {
 
     // migration
     implementation "io.ebean:ebean-ddl-generator:${ebean_version}"
-    implementation 'io.ebean:ebean-migration:13.11.1'
     implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 
     //json

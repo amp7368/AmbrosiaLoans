@@ -13,10 +13,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> implements CollateralMessage {
 
@@ -89,21 +87,13 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
         DCollateral collateral = entry.entry();
 
         long id = collateral.getId();
-        @NotNull String filename = collateral.getName();
-        @Nullable String description = collateral.getDescription();
-        @Nullable FileUpload image = collateral.getImage();
-
         int index = entry.indexInAll() + 1;
         String collateralMsg = "## Collateral %s %d (%d/%d)\n".formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1);
         return collateralDescription(
             embed,
             collateralMsg,
-            filename,
-            description,
-            image,
-            collateral.getStatus(),
-            collateral.getLastActionDate(),
-            collateral.getLoan(),
-            actionRow);
+            collateral,
+            actionRow
+        );
     }
 }

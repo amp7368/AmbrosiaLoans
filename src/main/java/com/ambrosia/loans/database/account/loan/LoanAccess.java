@@ -139,7 +139,7 @@ public interface LoanAccess {
             }
             for (DCollateral collateral : loan.getCollateral()) {
                 if (collateral.getStatus() != DCollateralStatus.COLLECTED) continue;
-                LoanAlterApi.markCollateral(staff, collateral, loan.getEndDate(), DCollateralStatus.RETURNED);
+                LoanAlterApi.markCollateral(staff, collateral, timestamp, DCollateralStatus.RETURNED, null);
             }
         }
 

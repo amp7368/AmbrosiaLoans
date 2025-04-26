@@ -40,6 +40,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface LoanApi {
@@ -134,9 +135,9 @@ public interface LoanApi {
             return AlterCreateApi.applyChange(staff, change);
         }
 
-        static DAlterChange markCollateral(DStaffConductor staff, DCollateral collateral, Instant effectiveDate,
-            DCollateralStatus status) {
-            AlterCollateralStatus change = new AlterCollateralStatus(collateral, effectiveDate, status);
+        static DAlterChange markCollateral(DStaffConductor staff, DCollateral collateral, @NotNull Instant effectiveDate,
+            @NotNull DCollateralStatus status, @Nullable Emeralds soldForAmount) {
+            AlterCollateralStatus change = new AlterCollateralStatus(collateral, effectiveDate, status, soldForAmount);
             return AlterCreateApi.applyChange(staff, change);
         }
     }

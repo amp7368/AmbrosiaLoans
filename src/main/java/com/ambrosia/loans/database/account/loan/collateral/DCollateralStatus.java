@@ -9,17 +9,19 @@ public enum DCollateralStatus {
     COLLECTED,
     RETURNED,
     SOLD,
+    SOLD_FOR_PAYMENT,
+    DEFAULTED,
     DELETED;
 
     public static DCollateralStatus[] commandChoices() {
-        return new DCollateralStatus[]{COLLECTED, RETURNED, SOLD};
+        return new DCollateralStatus[]{COLLECTED, RETURNED, SOLD_FOR_PAYMENT, DEFAULTED};
     }
 
     public int getColor() {
         return switch (this) {
-            case NOT_COLLECTED, COLLECTED -> AmbrosiaColor.GREEN;
+            case NOT_COLLECTED, COLLECTED, SOLD_FOR_PAYMENT -> AmbrosiaColor.GREEN;
             case RETURNED -> AmbrosiaColor.BLUE_NORMAL;
-            case SOLD -> AmbrosiaColor.RED;
+            case SOLD, DEFAULTED -> AmbrosiaColor.RED;
             case DELETED -> AmbrosiaColor.BLACK;
         };
     }
@@ -32,5 +34,9 @@ public enum DCollateralStatus {
     @Override
     public String toString() {
         return Pretty.spaceEnumWords(name());
+    }
+
+    public boolean requiresAmount() {
+        return this == SOLD_FOR_PAYMENT || this == DEFAULTED;
     }
 }
