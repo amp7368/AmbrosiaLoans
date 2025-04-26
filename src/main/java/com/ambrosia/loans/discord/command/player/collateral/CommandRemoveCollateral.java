@@ -50,9 +50,7 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
             collateral.getName(),
             collateral.getDescription(),
             collateral.getImage(),
-            DCollateralStatus.DELETED,
-            null,
-            null
+            DCollateralStatus.DELETED
         );
         event.reply(msg).queue();
     }

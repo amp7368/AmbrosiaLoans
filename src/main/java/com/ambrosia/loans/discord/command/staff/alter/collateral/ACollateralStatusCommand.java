@@ -16,6 +16,7 @@ import com.ambrosia.loans.discord.command.staff.alter.AlterCommandField;
 import com.ambrosia.loans.discord.command.staff.alter.BaseAlterCommand;
 import com.ambrosia.loans.discord.command.staff.alter.ReplyAlterMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -27,10 +28,12 @@ public class ACollateralStatusCommand extends BaseAlterCommand {
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         AlterCommandField<DCollateral> collateral = field(CommandOption.COLLATERAL_ID);
         AlterCommandField<DCollateralStatus> status = field(CommandOption.LOAN_COLLATERAL_STATUS);
+        AlterCommandField<Emeralds> soldFor = field(CommandOption.COLLATERAL_SOLD_AMOUNT);
         AlterCommandField<Instant> date = field(CommandOption.DATE, new CheckDate());
 
         CheckErrorList errors = getAndCheckErrors(event,
-            List.of(collateral, status)
+            List.of(collateral, status),
+            List.of(soldFor, date)
         );
         if (errors.hasError()) return;
 
@@ -42,12 +45,21 @@ public class ACollateralStatusCommand extends BaseAlterCommand {
             errors.reply(event);
             return;
         }
+        Emeralds soldForValue = soldFor.get();
+        DCollateralStatus statusValue = status.get();
+
+        if (statusValue.requiresAmount() && soldForValue == null) {
+            errors.addError(statusValue + " requires an amount to be paid");
+            errors.reply(event);
+            return;
+        }
 
         ReplyAlterMessage message = new ReplyAlterMessage();
 
-        DAlterChange alter = LoanAlterApi.markCollateral(staff, dCollateral, dateValue, status.get());
+        DAlterChange alter = LoanAlterApi.markCollateral(staff, dCollateral, dateValue,
+            statusValue, soldForValue);
         String successMsg = "Mark collateral %s %d as %s on %s"
-            .formatted(AmbrosiaEmoji.KEY_ID, dCollateral.getId(), status.get(), formatDate(dateValue));
+            .formatted(AmbrosiaEmoji.KEY_ID, dCollateral.getId(), statusValue, formatDate(dateValue));
         message.add(alter, successMsg);
 
         replyChange(event, errors, message);
@@ -58,7 +70,7 @@ public class ACollateralStatusCommand extends BaseAlterCommand {
         SubcommandData command = new SubcommandData("status", "[Staff] Set the status of collateral");
         CommandOptionList.of(
             List.of(CommandOption.COLLATERAL_ID, CommandOption.LOAN_COLLATERAL_STATUS),
-            List.of(CommandOption.DATE)
+            List.of(CommandOption.DATE, CommandOption.COLLATERAL_SOLD_AMOUNT)
         ).addToCommand(command);
         return command;
     }

@@ -9,5 +9,6 @@ public enum AlterImpactedField {
     CLIENT_BLACKLISTED,
     LOAN_PAYMENT_AMOUNT,
     LOAN_END_DATE,
+    COLLATERAL_SOLD_FOR,
     COLLATERAL_STATUS
 }

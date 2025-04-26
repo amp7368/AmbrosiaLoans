@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -26,7 +27,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
 
     public static final Comparator<DCollateral> BY_COLLECTION = Comparator.comparing(DCollateral::getCollectionDate);
     public static final Comparator<DCollateral> BY_RETURNED = Comparator.comparing(
-        c -> Objects.requireNonNullElse(c.getReturnedDate(), Instant.MAX));
+        c -> Objects.requireNonNullElse(c.getEndDate(), Instant.MAX));
     public static final Comparator<DCollateral> BY_NAME = Comparator.comparing(DCollateral::getName)
         .thenComparing(BY_RETURNED)
         .thenComparing(BY_COLLECTION)
@@ -48,12 +49,15 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
     }
 
     private void onFilter(StringSelectInteractionEvent event) {
-        String selected = event.getValues().get(0);
+        Set<DCollateralStatus> sold = Set.of(DCollateralStatus.SOLD, DCollateralStatus.DEFAULTED, DCollateralStatus.SOLD_FOR_PAYMENT);
 
+        String selected = event.getValues().get(0);
         Predicate<DCollateral> predicate = switch (selected) {
             case "returned" -> c -> c.getStatus() == DCollateralStatus.RETURNED;
             case "collected" -> c -> c.getStatus() == DCollateralStatus.COLLECTED;
-            case "sold" -> c -> c.getStatus() == DCollateralStatus.SOLD;
+            case "sold" -> c -> sold.contains(c.getStatus());
+            case "defaulted" -> c -> c.getStatus() == DCollateralStatus.DEFAULTED;
+            case "sold_for_payment" -> c -> c.getStatus() == DCollateralStatus.SOLD_FOR_PAYMENT;
             default -> c -> true;
         };
         List<DCollateral> entries = allCollateral.stream()
@@ -82,7 +86,9 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
             .addOption("All", "all", "Show all collateral")
             .addOption("Returned", "returned", "Show all returned collateral")
             .addOption("Collected", "collected", "Show all collected collateral")
-            .addOption("Sold", "sold", "Show all sold collateral")
+            .addOption("Defaulted", "defaulted", "Show all sold collateral")
+            .addOption("Sold For Payment", "sold_for_payment", "Show all sold collateral")
+            .addOption("Sold", "sold", "Show all sold collateral (For payment or defaulted)")
             .build();
     }
 
@@ -135,12 +141,9 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         return collateralDescription(
             embed,
             header,
-            collateral.getName(),
-            collateral.getDescription(),
-            collateral.getImage(),
-            collateral.getStatus(),
-            collateral.getLastActionDate(),
-            collateral.getLoan(), components());
+            collateral,
+            components()
+        );
     }
 
 

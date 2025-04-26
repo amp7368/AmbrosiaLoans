@@ -3,6 +3,7 @@ package com.ambrosia.loans.database.account.loan.collateral;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.Model;
 import io.ebean.annotation.DbDefault;
 import io.ebean.annotation.History;
@@ -29,9 +30,6 @@ public class DCollateral extends Model {
     protected long id;
     @ManyToOne
     protected DLoan loan;
-    @Deprecated
-    @Column
-    protected String link;
     @Column
     protected Timestamp returnedDate;
     @Column
@@ -41,8 +39,11 @@ public class DCollateral extends Model {
     protected String name;
     @Column(columnDefinition = "text")
     protected String description;
+    @DbDefault("COLLECTED")
+    @Column(nullable = false)
+    protected DCollateralStatus status = DCollateralStatus.COLLECTED;
     @Column
-    protected DCollateralStatus returned = DCollateralStatus.COLLECTED;
+    protected Long soldForAmount;
 
     public DCollateral(DLoan loan, RequestCollateral collateral) {
         this.loan = loan;
@@ -64,7 +65,7 @@ public class DCollateral extends Model {
     }
 
     @Nullable
-    public Instant getReturnedDate() {
+    public Instant getEndDate() {
         if (returnedDate == null) return null;
         return returnedDate.toInstant();
     }
@@ -100,31 +101,27 @@ public class DCollateral extends Model {
     }
 
     public DCollateralStatus getStatus() {
-        return returned;
+        return status;
     }
 
-    public DCollateral setCollected() {
-        this.returnedDate = null;
-        this.returned = DCollateralStatus.COLLECTED;
-        return this;
-    }
-
-    public DCollateral setReturned(Instant endDate) {
-        this.returnedDate = Timestamp.from(endDate);
-        this.returned = DCollateralStatus.RETURNED;
-        return this;
-    }
-
-    public DCollateral setSold(Instant endDate) {
-        this.returnedDate = Timestamp.from(endDate);
-        this.returned = DCollateralStatus.SOLD;
+    public DCollateral setStatus(DCollateralStatus status, @Nullable Instant endDate, @Nullable Emeralds soldForAmount) {
+        this.returnedDate = endDate == null ? null : Timestamp.from(endDate);
+        this.status = status;
+        this.soldForAmount = soldForAmount == null ? null : soldForAmount.amount();
         return this;
     }
 
     @NotNull
     public Instant getLastActionDate() {
-        Instant returnedDate = this.getReturnedDate();
+        Instant returnedDate = this.getEndDate();
         if (returnedDate == null) return this.getCollectionDate();
         return returnedDate;
     }
+
+    @Nullable
+    public Emeralds getSoldForAmount() {
+        if (soldForAmount == null) return null;
+        return Emeralds.of(this.soldForAmount);
+    }
+
 }

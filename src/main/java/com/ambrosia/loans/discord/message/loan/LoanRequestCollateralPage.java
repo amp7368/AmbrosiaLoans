@@ -77,8 +77,6 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
             description,
             image,
             DCollateralStatus.NOT_COLLECTED,
-            null,
-            null,
             actionRow
         );
     }

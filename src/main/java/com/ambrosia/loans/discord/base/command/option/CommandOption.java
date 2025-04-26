@@ -28,6 +28,7 @@ import discord.util.dcf.gui.stored.DCFStoredGui;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -66,14 +67,15 @@ public interface CommandOption<R> {
     // request
     CommandOptionMulti<Long, DCFStoredGui<?>> REQUEST = multi("request_id", "The id of the request", OptionType.INTEGER,
         OptionMapping::getAsLong, ActiveRequestDatabase.get()::getRequest);
-    CommandOptionMulti<String, Emeralds> PAYMENT_AMOUNT = emeraldsAmount("pay back");
-    CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount("invest");
-    CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount("withdrawal");
-    CommandOptionMulti<String, Emeralds> LOAN_INTEREST_CAP = emeraldsAmount("interest_cap");
+    CommandOptionMulti<String, Emeralds> PAYMENT_AMOUNT = emeraldsAmount(null, "pay back");
+    CommandOptionMulti<String, Emeralds> COLLATERAL_SOLD_AMOUNT = emeraldsAmount("sold_for", "sell the collateral for");
+    CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount(null, "invest");
+    CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount(null, "withdrawal");
+    CommandOptionMulti<String, Emeralds> LOAN_INTEREST_CAP = emeraldsAmount("interest_cap", "cap interest to");
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
     // loan request
-    CommandOptionMulti<String, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount("initial_amount");
+    CommandOptionMulti<String, Emeralds> LOAN_INITIAL_AMOUNT = emeraldsAmount(null, "initial_amount");
     CommandOption<Attachment> LOAN_COLLATERAL_IMAGE = basic("image", "Image of the collateral to add to the request",
         OptionType.ATTACHMENT, OptionMapping::getAsAttachment);
     CommandOption<String> LOAN_COLLATERAL_DESCRIPTION = basic("description", "Description for the collateral",
@@ -162,9 +164,10 @@ public interface CommandOption<R> {
     }
 
     @NotNull
-    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String type) {
+    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String name, String type) {
         String desc = "The amount to %s. %s".formatted(type, ErrorMessages.emeraldsFormat());
-        return new CommandOptionEmeralds("amount", desc, OptionType.STRING);
+        name = Objects.requireNonNullElse(name, "amount");
+        return new CommandOptionEmeralds(name, desc, OptionType.STRING);
     }
 
 
@@ -227,7 +230,7 @@ public interface CommandOption<R> {
 
         private static <E extends Enum<E>> E parseCollateral(Class<E> type, String s) {
             try {
-                return Enum.valueOf(type, s.toUpperCase());
+                return Enum.valueOf(type, s.replace(' ', '_').toUpperCase());
             } catch (IllegalArgumentException e) {
                 return null;
             }

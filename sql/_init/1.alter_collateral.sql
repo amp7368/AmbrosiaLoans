@@ -22,9 +22,9 @@ ALTER TABLE collateral_history
 ALTER TABLE collateral
     ALTER COLUMN returned DROP NOT NULL;
 ALTER TABLE collateral
-    ADD COLUMN returned_date TIMESTAMPTZ;
+    ADD COLUMN returned_date timestamptz;
 ALTER TABLE collateral
-    ADD COLUMN collection_date TIMESTAMPTZ;
+    ADD COLUMN collection_date timestamptz;
 ALTER TABLE collateral
     ADD COLUMN name TEXT;
 ALTER TABLE collateral
@@ -36,9 +36,9 @@ ALTER TABLE collateral_history
 ALTER TABLE collateral_history
     ALTER COLUMN returned DROP NOT NULL;
 ALTER TABLE collateral_history
-    ADD COLUMN returned_date TIMESTAMPTZ;
+    ADD COLUMN returned_date timestamptz;
 ALTER TABLE collateral_history
-    ADD COLUMN collection_date TIMESTAMPTZ;
+    ADD COLUMN collection_date timestamptz;
 ALTER TABLE collateral_history
     ADD COLUMN name TEXT;
 ALTER TABLE collateral_history
@@ -59,8 +59,8 @@ FROM collateral_history;
 CREATE OR REPLACE FUNCTION collateral_history_version() RETURNS TRIGGER AS
 $$
 DECLARE
-    lowerts TIMESTAMPTZ;
-    upperts TIMESTAMPTZ;
+    lowerts timestamptz;
+    upperts timestamptz;
 BEGIN
     lowerts = LOWER(old.sys_period);
     upperts = GREATEST(lowerts + '1 microsecond', CURRENT_TIMESTAMP);
