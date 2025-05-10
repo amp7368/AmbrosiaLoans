@@ -77,7 +77,7 @@ public interface LoanMessage {
         if (meta.getVouch() != null)
             embed.appendDescription("%s **Vouch:** %s\n".formatted(AmbrosiaEmoji.CLIENT_MINECRAFT, meta.getVouch()));
         if (meta.getDiscount() != null)
-            embed.appendDescription("%s **Discount:** %s\n".formatted(AmbrosiaEmoji.LOAN_DISCOUNT, meta.getVouch()));
+            embed.appendDescription("%s **Discount:** %s\n".formatted(AmbrosiaEmoji.LOAN_DISCOUNT, meta.getDiscount()));
     }
 
     private void addHistoryMsg(EmbedBuilder embed, DLoan loan) {

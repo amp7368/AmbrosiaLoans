@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 @Embeddable
 public class DLoanMeta {
 
+    private static final String DEFAULT_VALUE = "N/A";
     @Column(columnDefinition = "text")
     private String reason;
     @Column(columnDefinition = "text")
@@ -25,6 +26,9 @@ public class DLoanMeta {
     private Timestamp unfreezeDate;
 
     public DLoanMeta() {
+        reason = DEFAULT_VALUE;
+        repayment = DEFAULT_VALUE;
+        discount = DEFAULT_VALUE;
     }
 
     public DLoanMeta(LoanBuilder request) {
@@ -71,5 +75,11 @@ public class DLoanMeta {
 
     public Double getUnfreezeToRate() {
         return this.unfreezeToRate;
+    }
+
+    public void verifyInitialized() {
+        if (this.reason == null) this.reason = "N/A";
+        if (this.repayment == null) this.repayment = "N/A";
+        if (this.discount == null) this.discount = "N/A";
     }
 }

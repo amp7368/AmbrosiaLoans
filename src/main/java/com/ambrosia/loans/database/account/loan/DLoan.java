@@ -373,9 +373,16 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.interest = interest;
     }
 
+    @NotNull
     public DLoanMeta getMeta() {
-        if (this.meta == null) this.meta = new DLoanMeta(); // todo why is this needed?
+        if (this.meta == null) throw new IllegalStateException("loan.meta is null");
         return this.meta;
+    }
+
+    public DLoan verifyMeta() {
+        if (this.meta == null) this.meta = new DLoanMeta();
+        this.meta.verifyInitialized();
+        return this;
     }
 
     public DApiVersion getVersion() {

@@ -9,12 +9,12 @@ import java.util.List;
 
 public class InitAlterCreateCollateral {
 
-    public static void verify() {
+    public static void initCreations() {
         List<Long> collateralIds = new QDCollateral().findIds();
-        collateralIds.forEach(InitAlterCreateCollateral::verify);
+        collateralIds.forEach(InitAlterCreateCollateral::initCreations);
     }
 
-    private static void verify(long collateralId) {
+    private static void initCreations(long collateralId) {
         boolean exists = new QDAlterCreate().where()
             .entityType.eq(AlterCreateType.COLLATERAL.getTypeId())
             .entityId.eq(collateralId)
