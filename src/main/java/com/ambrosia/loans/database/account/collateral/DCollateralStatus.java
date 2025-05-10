@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.account.loan.collateral;
+package com.ambrosia.loans.database.account.collateral;
 
 import apple.utilities.util.Pretty;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;

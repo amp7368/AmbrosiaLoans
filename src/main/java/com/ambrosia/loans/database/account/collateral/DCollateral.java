@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.account.loan.collateral;
+package com.ambrosia.loans.database.account.collateral;
 
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;

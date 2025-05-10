@@ -2,9 +2,9 @@ package com.ambrosia.loans.discord.message.loan;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.DLoan;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import java.time.Instant;
 import net.dv8tion.jda.api.EmbedBuilder;

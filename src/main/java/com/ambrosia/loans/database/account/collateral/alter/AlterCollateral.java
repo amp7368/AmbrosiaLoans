@@ -1,7 +1,7 @@
-package com.ambrosia.loans.database.account.loan.alter;
+package com.ambrosia.loans.database.account.collateral.alter;
 
-import com.ambrosia.loans.database.account.loan.collateral.CollateralApi;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.CollateralApi;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
 import com.ambrosia.loans.database.alter.change.AlterDBChange;
 import com.ambrosia.loans.database.alter.type.AlterChangeType;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;

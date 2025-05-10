@@ -1,6 +1,6 @@
-package com.ambrosia.loans.database.account.loan.collateral;
+package com.ambrosia.loans.database.account.collateral;
 
-import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
+import com.ambrosia.loans.database.account.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import io.ebean.DB;

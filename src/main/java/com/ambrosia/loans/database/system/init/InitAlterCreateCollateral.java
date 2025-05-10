@@ -1,6 +1,6 @@
 package com.ambrosia.loans.database.system.init;
 
-import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
+import com.ambrosia.loans.database.account.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.create.query.QDAlterCreate;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;

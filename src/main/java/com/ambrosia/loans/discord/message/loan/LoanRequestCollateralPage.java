@@ -2,7 +2,7 @@ package com.ambrosia.loans.discord.message.loan;
 
 import static com.ambrosia.loans.discord.message.loan.LoanCollateralPage.btnBackToMain;
 
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.system.collateral.RequestCollateral;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.message.client.ClientMessage;

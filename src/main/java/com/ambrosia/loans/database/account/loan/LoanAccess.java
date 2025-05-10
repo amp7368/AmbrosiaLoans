@@ -4,9 +4,9 @@ import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDat
 
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.account.adjust.AdjustApi;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanAlterApi;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;

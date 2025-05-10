@@ -6,12 +6,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.ambrosia.loans.database.account.adjust.query.QDAdjustBalance;
 import com.ambrosia.loans.database.account.adjust.query.QDAdjustLoan;
+import com.ambrosia.loans.database.account.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi;
 import com.ambrosia.loans.database.account.investment.query.QDInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanCreateApi;
-import com.ambrosia.loans.database.account.loan.collateral.query.QDCollateral;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.loan.section.query.QDLoanSection;
 import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;

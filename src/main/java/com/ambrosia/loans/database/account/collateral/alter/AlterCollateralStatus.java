@@ -1,8 +1,7 @@
-package com.ambrosia.loans.database.account.loan.alter.variant;
+package com.ambrosia.loans.database.account.collateral.alter;
 
-import com.ambrosia.loans.database.account.loan.alter.AlterCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.alter.change.AlterImpactedField;
 import com.ambrosia.loans.database.alter.type.AlterChangeType;
 import com.ambrosia.loans.util.emerald.Emeralds;

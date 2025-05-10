@@ -2,7 +2,7 @@ package com.ambrosia.loans.database.system.collateral;
 
 import apple.utilities.util.FileFormatting;
 import com.ambrosia.loans.database.DatabaseModule;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

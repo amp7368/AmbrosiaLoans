@@ -1,9 +1,9 @@
 package com.ambrosia.loans.discord.command.player.collateral;
 
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanCreateApi;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
