@@ -10,7 +10,8 @@ public class InitDatabase {
         DStaffConductor.insertDefaultConductors();
         DApiVersion.initVersions();
         DVersionInvestorCap.initVersions();
-        
+
         InitAlterCreateCollateral.verify();
+        InitLoanInterest.verify();
     }
 }

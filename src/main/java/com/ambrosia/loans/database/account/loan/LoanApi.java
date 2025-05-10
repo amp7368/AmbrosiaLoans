@@ -1,6 +1,7 @@
 package com.ambrosia.loans.database.account.loan;
 
 import com.ambrosia.loans.database.DatabaseModule;
+import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterCollateralStatus;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanDefaulted;
 import com.ambrosia.loans.database.account.loan.alter.variant.AlterLoanFreeze;
@@ -14,6 +15,7 @@ import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.query.QDLoan;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.payment.query.QDLoanPayment;
+import com.ambrosia.loans.database.account.query.QDClientLoanSnapshot;
 import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
@@ -90,6 +92,18 @@ public interface LoanApi {
                 );
 
             return activity;
+        }
+
+        @Nullable
+        static DClientLoanSnapshot findLastLoanSnapshot(long loanId) {
+            return new QDClientLoanSnapshot().where()
+                .loan.id.eq(loanId)
+                .orderBy()
+                .date.desc()
+                .event.desc()
+                .id.desc()
+                .setMaxRows(1)
+                .findOne();
         }
     }
 

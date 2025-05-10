@@ -148,6 +148,7 @@ public abstract class BaseMessageService<M extends ScheduledClientMessage<?>> {
             List<M> dispatch = getMessagesToDispatch();
             messages.removeAll(dispatch);
             try {
+                // todo maybe clean this up better with a new single thread executor
                 // use a different thread to verify nothing messes with messages while this thread uses it.
                 Ambrosia.get().submit(() -> runDispatch(dispatch)).get();
             } catch (InterruptedException | ExecutionException e) {

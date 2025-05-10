@@ -31,6 +31,11 @@ import com.ambrosia.loans.database.message.log.DCommandLog;
 import com.ambrosia.loans.database.message.log.DLog;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.ebean.DB;
 import io.ebean.config.AutoTuneConfig;
 import io.ebean.config.AutoTuneMode;
@@ -80,6 +85,16 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected boolean isDefault() {
         return true;
+    }
+
+    @Override
+    protected Object getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        return mapper;
     }
 
     @Override

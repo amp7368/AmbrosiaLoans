@@ -1,4 +1,4 @@
-package com.ambrosia.loans.database.account.loan;
+package com.ambrosia.loans.database.account.base;
 
 import java.time.Duration;
 import java.time.Instant;
