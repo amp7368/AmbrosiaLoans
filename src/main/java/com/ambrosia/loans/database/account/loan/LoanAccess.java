@@ -182,8 +182,12 @@ public interface LoanAccess {
     }
 
     default Emeralds getAccumulatedInterest() {
+        return getAccumulatedInterest(Instant.now());
+    }
+
+    default Emeralds getAccumulatedInterest(Instant endDate) {
         DLoan loan = getEntity();
-        return loan.getTotalOwed()
+        return loan.getTotalOwed(endDate)
             .minus(loan.getInitialAmount())
             .add(loan.getTotalPaid());
     }

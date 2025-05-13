@@ -9,8 +9,10 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class LoanInterestCalculator<Settings extends DLoanInterest<?>, Checkpoint extends InterestCheckpoint> {
@@ -18,6 +20,7 @@ public abstract class LoanInterestCalculator<Settings extends DLoanInterest<?>, 
     protected final Settings settings;
     protected final Checkpoint checkpoint;
     protected final Instant end;
+    protected final DLoan loan;
     protected final IndexedList<DLoanSection> sections;
     protected final IndexedList<DLoanPayment> payments;
     protected final IndexedList<DAdjustLoan> adjustments;
@@ -25,25 +28,38 @@ public abstract class LoanInterestCalculator<Settings extends DLoanInterest<?>, 
     protected Instant nextStepDate;
 
     public LoanInterestCalculator(Settings settings, Checkpoint checkpoint, Instant end) {
-        DLoan loan = checkpoint.getLoan();
+        this.loan = checkpoint.getLoan();
         this.settings = settings;
         this.checkpoint = checkpoint;
         this.end = end;
 
         List<DLoanSection> sections = loan.getSections().stream()
-            .filter(s -> s.getStartDate().isBefore(end))
-            .filter(s -> s.getEarliestOfEnd(end).isAfter(checkpoint.lastUpdated()))
+            .filter(this::filterSection)
             .toList();
         List<DLoanPayment> payments = loan.getPayments().stream()
-            .filter(p -> p.getDate().isAfter(checkpoint.lastUpdated()))
+            .filter(this::filterPayment)
             .toList();
         List<DAdjustLoan> adjustments = loan.getAdjustments().stream()
-            .filter(a -> a.getDate().isAfter(checkpoint.lastUpdated()))
+            .filter(this::filterAdjustment)
             .toList();
 
         this.sections = new IndexedList<>(sections, DLoanSection::getStartDate, DLoanSection::getId, s -> Emeralds.zero());
         this.payments = new IndexedList<>(payments, DLoanPayment::getDate, DLoanPayment::getId, DLoanPayment::getAmount);
         this.adjustments = new IndexedList<>(adjustments, DAdjustLoan::getDate, DAdjustLoan::getId, DAdjustLoan::getAmount);
+    }
+
+    protected boolean filterSection(DLoanSection section) {
+        Instant start = checkpoint.lastUpdated();
+        return section.getStartDate().isBefore(end) &&
+            section.getEarliestOfEnd(end).isAfter(start);
+    }
+
+    protected boolean filterPayment(DLoanPayment payment) {
+        return payment.getDate().isAfter(checkpoint.lastUpdated());
+    }
+
+    protected boolean filterAdjustment(DAdjustLoan adjustment) {
+        return adjustment.getDate().isAfter(checkpoint.lastUpdated());
     }
 
     protected void nextStep() {
@@ -118,7 +134,7 @@ public abstract class LoanInterestCalculator<Settings extends DLoanInterest<?>, 
     @NotNull
     public abstract InterestCheckpoint getInterest();
 
-    protected static class IndexedList<T> {
+    protected static class IndexedList<T> implements Iterable<T> {
 
         public final List<T> elements;
         private final Function<T, Instant> toDate;
@@ -169,6 +185,17 @@ public abstract class LoanInterestCalculator<Settings extends DLoanInterest<?>, 
 
         private Instant getDate() {
             return toDate.apply(elements.get(currentIndex));
+        }
+
+        @NotNull
+        @Override
+        public Iterator<T> iterator() {
+            return elements.iterator();
+        }
+
+        @NotNull
+        public Stream<T> stream() {
+            return elements.stream();
         }
     }
 }

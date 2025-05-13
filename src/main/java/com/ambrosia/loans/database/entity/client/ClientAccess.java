@@ -5,6 +5,7 @@ import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.DClientSnapshot;
 import com.ambrosia.loans.database.account.base.AccountEventType;
 import com.ambrosia.loans.database.account.loan.DLoan;
+import com.ambrosia.loans.database.account.loan.LoanAccess;
 import com.ambrosia.loans.database.account.loan.interest.base.InterestCheckpoint;
 import com.ambrosia.loans.database.account.loan.interest.legacy.DLegacyInterestCheckpoint;
 import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
@@ -20,6 +21,7 @@ import discord.util.dcf.gui.base.GuiReplyFirstMessage;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -96,48 +98,48 @@ public interface ClientAccess {
 
     default void updateBalance(DLoan associatedLoan, long delta, Instant timestamp, AccountEventType eventType,
         Transaction transaction) {
-        DClient client = getEntity();
-        client.refresh();
+        getEntity().refresh();
+        if (associatedLoan == null) {
+            newInvestSnapshot(timestamp, delta, eventType, transaction);
+            return;
+        }
+        associatedLoan.refresh();
 
-        if (associatedLoan != null) {
-            InterestCheckpoint nextCheckpoint;
-            if (associatedLoan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
-                nextCheckpoint = new DLegacyInterestCheckpoint(associatedLoan);
-            } else {
-                InterestCheckpoint prevCheckpoint = associatedLoan.getLastCheckpoint();
-                nextCheckpoint = associatedLoan.getInterest(prevCheckpoint, timestamp);
-                long interest = nextCheckpoint.getInterest();
-                nextCheckpoint.resetInterest();
-                if (interest != 0) {
-                    prevCheckpoint.accumulateInterest(interest, timestamp);
-                    long interestAsNegative = -interest;
-                    newLoanSnapshot(prevCheckpoint, timestamp, interestAsNegative, AccountEventType.INTEREST, transaction);
-                }
-            }
-            // todo idk why checkLoansPaid has to go before newLoanSnapshot, but it does
-            checkLoansPaid(timestamp, transaction);
+        boolean isLegacy = associatedLoan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY);
+        if (isLegacy) {
+            if (checkIsLoanPaid(timestamp, associatedLoan, transaction))
+                accumulateInterest(associatedLoan, timestamp, transaction);
+            InterestCheckpoint nextCheckpoint = new DLegacyInterestCheckpoint(associatedLoan);
             newLoanSnapshot(nextCheckpoint, timestamp, delta, eventType, transaction);
         } else {
-            newInvestSnapshot(timestamp, delta, eventType, transaction);
+            InterestCheckpoint nextCheckpoint = accumulateInterest(associatedLoan, timestamp, transaction);
+            newLoanSnapshot(nextCheckpoint, timestamp, delta, eventType, transaction);
+            checkIsLoanPaid(timestamp, associatedLoan, transaction);
         }
     }
 
-    private void checkLoansPaid(Instant timestamp, Transaction transaction) {
-        // actually marks loans as paid
-        List<DLoan> paidLoans = getEntity().getLoans().stream()
-            .filter(DLoan::isActive)
-            .filter(loan -> loan.getStartDate().isBefore(timestamp))
-            .filter(loan -> loan.getEndDate() == null)
-            .filter(loan -> loan.checkIsPaid(timestamp, transaction)).toList();
+    private InterestCheckpoint accumulateInterest(DLoan associatedLoan, Instant timestamp, Transaction transaction) {
+        InterestCheckpoint prevCheckpoint = associatedLoan.getLastCheckpoint();
+        InterestCheckpoint nextCheckpoint = associatedLoan.getInterest(prevCheckpoint, timestamp);
+        long interest = nextCheckpoint.getInterest();
+        nextCheckpoint.resetInterest();
+        if (interest != 0) {
+            prevCheckpoint.accumulateInterest(interest, timestamp);
+            newLoanSnapshot(prevCheckpoint, timestamp, -interest, AccountEventType.INTEREST, transaction);
+        }
+        return nextCheckpoint;
 
-        paidLoans.stream()
-            .filter(loan -> loan.getVersion().is(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
-            .forEach(loan -> {
-                InterestCheckpoint checkpoint = loan.getInterest(null, timestamp);
-                long interestAsNegative = -checkpoint.getInterest();
-                if (interestAsNegative != 0)
-                    newLoanSnapshot(checkpoint, timestamp, interestAsNegative, AccountEventType.INTEREST, transaction);
-            });
+    }
+
+    private boolean checkIsLoanPaid(Instant timestamp, DLoan loan, Transaction transaction) {
+        if (!loan.isActive()) return false;
+        if (!loan.getStartDate().isBefore(timestamp)) return false;
+        if (loan.getEndDate() != null) return false;
+        if (!loan.checkIsPaid(timestamp)) return false;
+
+        // loan is paid
+        loan.markPaid(timestamp, transaction);
+        return true;
     }
 
     default ClientGui profile(GuiReplyFirstMessage createFirstMessage) {
@@ -152,7 +154,7 @@ public interface ClientAccess {
     default Optional<DLoan> getActiveLoan() {
         return getLoans().stream()
             .filter(loan -> loan.getStatus().isActive())
-            .findFirst();
+            .max(Comparator.comparing(LoanAccess::getCurrentRate));
     }
 
     default List<DClientInvestSnapshot> getProfits() {

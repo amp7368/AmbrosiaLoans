@@ -3,7 +3,6 @@ package com.ambrosia.loans.database.account.loan;
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
 import com.ambrosia.loans.Ambrosia;
-import com.ambrosia.loans.Bank;
 import com.ambrosia.loans.database.account.DClientLoanSnapshot;
 import com.ambrosia.loans.database.account.adjust.DAdjustLoan;
 import com.ambrosia.loans.database.account.base.AccountEventType;
@@ -13,7 +12,6 @@ import com.ambrosia.loans.database.account.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.account.loan.interest.base.DLoanInterest;
 import com.ambrosia.loans.database.account.loan.interest.base.InterestCheckpoint;
-import com.ambrosia.loans.database.account.loan.interest.legacy.DLegacyInterestCheckpoint;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.actor.UserActor;
@@ -24,7 +22,6 @@ import com.ambrosia.loans.database.message.comment.Commentable;
 import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.database.system.exception.InvalidStaffConductorException;
-import com.ambrosia.loans.database.version.ApiVersionList.ApiVersionListLoan;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.VersionEntityType;
 import com.ambrosia.loans.discord.message.loan.LoanMessage;
@@ -41,7 +38,6 @@ import io.ebean.annotation.History;
 import io.ebean.annotation.Identity;
 import io.ebean.annotation.Index;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -138,15 +134,6 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     public InterestCheckpoint getLastCheckpoint() {
         @Nullable DClientLoanSnapshot snapshot = LoanQueryApi.findLastLoanSnapshot(this.getId());
         if (snapshot != null) return snapshot.toCheckpoint();
-        return createInitialCheckpoint();
-    }
-
-    @NotNull
-    public InterestCheckpoint createInitialCheckpoint() {
-        // todo replace with LegacyInterest when it's implemented
-        ApiVersionListLoan version = this.version.getLoan();
-        if (version.equals(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY))
-            return new DLegacyInterestCheckpoint(this);
         return interest.createInitialCheckpoint(this);
     }
 
@@ -226,61 +213,19 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
     }
 
     public Emeralds getTotalOwed() {
-        return getInterest(getLastCheckpoint(), Instant.now()).balanceEmeralds();
+        return getInterest(null, Instant.now()).balanceEmeralds();
     }
 
     public Emeralds getTotalOwed(Instant endDate) {
-        return getInterest(getLastCheckpoint(), endDate).balanceEmeralds();
+        return getInterest(null, endDate).balanceEmeralds();
     }
 
     public InterestCheckpoint getInterest(@Nullable InterestCheckpoint checkpoint, @NotNull Instant end) {
-        if (checkpoint == null) // todo maybe can be getLastCheckpoint()
-            checkpoint = this.createInitialCheckpoint();
+        if (checkpoint == null)
+            checkpoint = this.getLastCheckpoint();
         else checkpoint = checkpoint.copy();
 
-        ApiVersionListLoan version = this.getVersion().getLoan();
-        if (version.equals(ApiVersionListLoan.SIMPLE_INTEREST_WEEKLY)) {
-            checkpoint.resetInterest();
-            return getSimpleInterest(end);
-        }
-        if (interest == null) {
-            String msg = "DLoan.interest {%d} is null, but the version is a newer format".formatted(id);
-            throw new IllegalStateException(msg);
-        }
         return interest.getInterest(checkpoint, end);
-    }
-
-    private InterestCheckpoint getSimpleInterest(Instant end) {
-        DLegacyInterestCheckpoint checkpoint = new DLegacyInterestCheckpoint(this);
-        Instant start = checkpoint.lastUpdated();
-
-        for (DLoanSection section : getSections()) {
-            Instant estimatedCheckpoint = section.getEarliestOfEnd(end);
-            Duration duration = Bank.legacySimpleWeeksDuration(Duration.between(checkpoint.lastUpdated(), estimatedCheckpoint));
-            Instant nextCheckpoint = checkpoint.lastUpdated().plus(duration);
-            section.accumulateInterest(checkpoint, nextCheckpoint);
-        }
-
-        List<DLoanPayment> payments = getPayments().stream()
-            .filter(p -> !p.getDate().isBefore(start))
-            .filter(p -> !p.getDate().isAfter(end))
-            .toList();
-        List<DAdjustLoan> adjustments = this.getAdjustments().stream()
-            .filter(a -> !a.getDate().isBefore(start))
-            .filter(a -> !a.getDate().isAfter(end))
-            .sorted(Comparator.comparing(DAdjustLoan::getDate))
-            .toList();
-
-        long paymentsDelta = payments.stream()
-            .mapToLong(payment -> payment.getAmount().amount())
-            .sum();
-        long adjustmentsDelta = adjustments.stream()
-            .mapToLong(adjustment -> adjustment.getAmount().amount())
-            .sum();
-
-        long totalDelta = -paymentsDelta - adjustmentsDelta;
-        checkpoint.updateBalance(totalDelta, end);
-        return checkpoint;
     }
 
     public void makePayment(DLoanPayment payment, Transaction transaction) {
@@ -394,13 +339,9 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         return this;
     }
 
-    public boolean checkIsPaid(Instant endDate, Transaction transaction) {
+    public boolean checkIsPaid(Instant endDate) {
         Emeralds totalOwed = getTotalOwed(endDate);
-        if (isWithinPaidBounds(totalOwed.amount())) {
-            markPaid(endDate, transaction);
-            return true;
-        }
-        return false;
+        return isWithinPaidBounds(totalOwed.amount());
     }
 
     public DLoan setDefaulted(@Nullable Instant endDate, boolean defaulted) {
