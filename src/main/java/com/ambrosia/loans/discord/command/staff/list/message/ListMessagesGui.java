@@ -20,28 +20,18 @@ public class ListMessagesGui<Entry extends ScheduledClientMessage<?>> extends DC
     private static final Comparator<ScheduledMessage> COMPARATOR = ScheduledMessage.COMPARATOR_BY_TIME;
 
     public ListMessagesGui(DCFGui dcfGui, List<Entry> messages) {
-        super(dcfGui);
+        super(dcfGui, COMPARATOR::compare);
         setEntries(messages);
-        sort();
-    }
-
-    @Override
-    protected Comparator<? super ScheduledClientMessage<?>> entriesComparator() {
-        return isComparatorReversed ? COMPARATOR.reversed() : COMPARATOR;
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 10;
+        setEntriesPerPage(10);
     }
 
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
-        String title = title("# Messages", getPageNum(), getMaxPage());
+        String title = title("# Messages", getPageNum(), getEntryMaxPage());
         embed.appendDescription(title + "\n");
-        for (DCFEntry<Entry> entry : getCurrentPageEntries()) {
+        for (DCFEntry<Entry> entry : getPagedIndexEntries()) {
             Entry message = entry.entry();
 
             String reason = message.getReason().display();

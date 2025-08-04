@@ -31,16 +31,16 @@ public class WithdrawalMakeCommand extends BaseStaffSubCommand {
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
+        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
+        if (date == null) return;
         Boolean isFull = CommandOption.WITHDRAWAL_FULL.getOptional(event);
         Emeralds amount;
-        if (isFull != null && isFull) amount = client.getInvestBalanceNow();
+        if (isFull != null && isFull) amount = client.getBalance(date);
         else amount = CommandOption.WITHDRAWAL_AMOUNT.getOptional(event);
         if (amount == null) {
             replyError(event, "Either 'full' or 'amount' must be entered to specify the withdrawal amount");
             return;
         }
-        Instant date = CommandOption.DATE.getOrParseError(event, Instant.now());
-        if (date == null) return;
 
         if (client.willBalanceFailAtTimestamp(date)) {
             String msg = "Cannot make withdrawal at %s. Balance has been updated since then"

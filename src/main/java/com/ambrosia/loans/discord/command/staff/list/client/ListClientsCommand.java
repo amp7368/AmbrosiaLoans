@@ -12,15 +12,15 @@ public class ListClientsCommand extends BaseSubCommand {
     }
 
     @Override
-    public SubcommandData getData() {
-        return new SubcommandData("clients", "[Staff] List all clients");
-    }
-
-    @Override
     public void onCommand(SlashCommandInteractionEvent event) {
         ListClientsGui gui = new ListClientsGui(dcf, event::reply);
         gui.addPage(new ListClientsPage(gui));
         gui.send();
+    }
+
+    @Override
+    public SubcommandData getData() {
+        return new SubcommandData("clients", "[Staff] List all clients");
     }
 
 }

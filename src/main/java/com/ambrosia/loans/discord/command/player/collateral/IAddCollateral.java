@@ -122,7 +122,7 @@ public abstract class IAddCollateral {
 
             ClientGui gui = new ClientGui(client, dcf, DCFEditMessage.ofHook(hook));
             new ShowCollateralMessage(gui, client, collateral.collateral())
-                .setPageTo(collateral.showCollateral())
+                .setTarget(collateral.showCollateral())
                 .addPageToGui()
                 .send();
         };

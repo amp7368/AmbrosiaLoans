@@ -56,7 +56,7 @@ dependencies {
     // rate limiting client
     implementation 'com.bucket4j:bucket4j_jdk17-core:8.13.1'
     // discord
-    implementation 'net.dv8tion:JDA:5.1.2'
+    implementation 'net.dv8tion:JDA:5.5.1'
     // fuzzy string matching
     implementation 'me.xdrop:fuzzywuzzy:1.4.0'
     // charts
@@ -64,7 +64,7 @@ dependencies {
 
     // apple
     implementation 'discord.util:discorddcf:2.0-SNAPSHOT'
-    implementation 'apple.lib:applemodules:2.0-SNAPSHOT'
+    implementation 'apple.lib:AppleModules:2.0-SNAPSHOT'
     implementation "apple.utilities:AppleUtilities:1.4-SNAPSHOT"
     implementation 'apple.lib:AppleEbeanDatabase:1.1-SNAPSHOT'
 }

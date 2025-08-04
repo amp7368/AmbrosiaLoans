@@ -1,18 +1,13 @@
 package com.ambrosia.loans.discord.base.command;
 
 import discord.util.dcf.slash.DCFSlashSubCommand;
+import discord.util.dcf.slash.context.DCFListenerContext;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public abstract class BaseSubCommand extends DCFSlashSubCommand implements CommandCheckPermission, SendMessage {
 
     private boolean isOnlyEmployee = false;
     private boolean isOnlyManager = false;
-
-    @Override
-    public boolean checkRunPermission(SlashCommandInteractionEvent event) {
-        if (!super.checkRunPermission(event)) return false;
-        return this.hasPermission(event);
-    }
 
     public void setOnlyEmployee() {
         this.isOnlyEmployee = true;
@@ -31,4 +26,11 @@ public abstract class BaseSubCommand extends DCFSlashSubCommand implements Comma
     public boolean isOnlyManager() {
         return isOnlyManager;
     }
+
+    @Override
+    protected void onCommand(SlashCommandInteractionEvent event, DCFListenerContext context) {
+        onCommand(event);
+    }
+
+    protected abstract void onCommand(SlashCommandInteractionEvent event);
 }

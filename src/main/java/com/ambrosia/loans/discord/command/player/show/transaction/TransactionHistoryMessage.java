@@ -27,20 +27,9 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, Clie
     private static final Comparator<ClientMergedSnapshot> COMPARATOR = Comparator.naturalOrder();
 
     public TransactionHistoryMessage(ClientGui gui) {
-        super(gui);
+        super(gui, COMPARATOR);
         setEntries(getClient().getMergedSnapshots());
-        sort();
-    }
-
-    @Override
-    protected Comparator<? super ClientMergedSnapshot> entriesComparator() {
-        if (isComparatorReversed) return COMPARATOR.reversed();
-        return COMPARATOR;
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 10;
+        setEntriesPerPage(10);
     }
 
     @Override
@@ -54,10 +43,10 @@ public class TransactionHistoryMessage extends DCFScrollGuiFixed<ClientGui, Clie
         clientAuthor(embed);
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
 
-        String title = title("Transactions History", entryPage, Math.max(getMaxPage(), 0));
+        String title = title("Transactions History", getEntryPage(), getEntryMaxPage());
         embed.appendDescription("# %s\n".formatted(title));
 
-        List<DCFEntry<ClientMergedSnapshot>> page = getCurrentPageEntries();
+        List<DCFEntry<ClientMergedSnapshot>> page = getPagedIndexEntries();
         if (page.isEmpty()) {
             embed.appendDescription("## No Transaction History");
             return makeMessage(embed.build());

@@ -21,7 +21,7 @@ public class LoadingClient {
         return client -> !client.isLoaded() || filter.test(client);
     }
 
-    public static Comparator<? super LoadingClient> sortBy(Comparator<? super LoadingClient> comparator) {
+    public static Comparator<LoadingClient> sortBy(Comparator<? super LoadingClient> comparator) {
         return (o1, o2) -> {
             boolean o1Loaded = o1.isLoaded();
             boolean o2Loaded = o2.isLoaded();

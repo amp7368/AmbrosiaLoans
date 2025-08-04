@@ -33,8 +33,13 @@ public class LoanAlterCommand extends BaseAlterCommand {
             List.of(loan, client),
             List.of(initialAmount, startDate));
         if (errors.hasError()) return;
+
         long loanId = loan.get().getId();
-        if (client.get().getId() != loanId) {
+        boolean clientOwnsLoan = client.get()
+            .getLoans().stream()
+            .map(DLoan::getId)
+            .anyMatch(l -> l == loanId);
+        if (!clientOwnsLoan) {
             String msg = "Client %s, does not have a loan with id %d"
                 .formatted(client.get().getEffectiveName(), loanId);
             replyError(event, msg);
