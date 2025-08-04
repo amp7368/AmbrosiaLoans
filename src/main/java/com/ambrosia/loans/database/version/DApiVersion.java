@@ -22,15 +22,15 @@ public class DApiVersion extends Model {
 
     private static final Map<VersionEntityType, DApiVersion> CURRENT_VERSIONS = new HashMap<>();
     @Column(nullable = false)
-    private final VersionEntityType entityType;
+    protected final VersionEntityType entityType;
     @Column(nullable = false)
-    private final String revision;
+    protected final String revision;
     @Column(nullable = false)
-    private final String description;
+    protected final String description;
     @Column(nullable = false)
-    private final Timestamp created;
+    protected final Timestamp created;
     @Id
-    private long id;
+    protected long id;
 
     public DApiVersion(ApiVersionList revision) {
         this.entityType = revision.getEntityType();

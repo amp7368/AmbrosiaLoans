@@ -2,9 +2,9 @@ package com.ambrosia.loans.discord.command.staff.alter.collateral;
 
 import static com.ambrosia.loans.discord.system.theme.AmbrosiaMessages.formatDate;
 
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanAlterApi;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.alter.change.DAlterChange;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;

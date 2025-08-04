@@ -7,7 +7,7 @@ import com.ambrosia.loans.database.account.adjust.DAdjustBalance;
 import com.ambrosia.loans.database.account.base.AccountEvent;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.loan.DLoan;
-import com.ambrosia.loans.database.account.loan.InterestCheckpoint;
+import com.ambrosia.loans.database.account.loan.interest.base.InterestCheckpoint;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.entity.actor.UserActor;
 import com.ambrosia.loans.database.entity.client.balance.BalanceWithInterest;
@@ -76,7 +76,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
     private final List<DAdjustBalance> adjustments = new ArrayList<>();
     @OneToMany
     private final List<DNameHistory> nameHistory = new ArrayList<>();
-
     @Id
     @Column
     @Identity(start = 100)

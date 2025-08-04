@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.command.player.show.collateral;
 
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.message.client.ClientMessage;

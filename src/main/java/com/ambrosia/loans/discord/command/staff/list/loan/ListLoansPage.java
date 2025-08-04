@@ -9,6 +9,7 @@ import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import com.ambrosia.loans.util.AmbrosiaTimeZone;
+import com.ambrosia.loans.util.emerald.Emeralds;
 import com.ambrosia.loans.util.emerald.EmeraldsFormatter;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
             case "rate" -> Comparator.comparingDouble(DLoan::getCurrentRate).reversed();
             case "duration" -> Comparator.comparing(DLoan::getTotalDuration).reversed();
             case "initial_amount" -> Comparator.comparing(DLoan::getInitialAmount).reversed();
-            case "interest" -> Comparator.comparing(DLoan::getAccumulatedInterest).reversed();
+            case "interest" -> Comparator.<DLoan, Emeralds>comparing(DLoan::getAccumulatedInterest).reversed();
             default -> COMPARE_START_DATE;
         };
         this.entryPage = 0;

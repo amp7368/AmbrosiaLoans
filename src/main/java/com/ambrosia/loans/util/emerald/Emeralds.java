@@ -21,7 +21,7 @@ public final class Emeralds implements Comparable<Emeralds> {
     }
 
     public static Emeralds of(BigDecimal amount) {
-        return of(amount.longValue());
+        return new Emeralds(amount.longValue());
     }
 
     public static Emeralds zero() {
@@ -29,24 +29,15 @@ public final class Emeralds implements Comparable<Emeralds> {
     }
 
     public static Emeralds leToEmeralds(double le) {
-        return of((long) (LIQUID * le));
+        return new Emeralds((long) (LIQUID * le));
     }
 
     public static Emeralds stxToEmeralds(double stx) {
-        BigDecimal emeralds = BigDecimal.valueOf(stx)
-            .multiply(BigDecimal.valueOf(STACK));
-        return of(emeralds);
+        return of((long) (STACK * stx));
     }
-
 
     public long amount() {
         return amount;
-    }
-
-    @Override
-    public String toString() {
-        return EmeraldsFormatter.of()
-            .format(this);
     }
 
     public Emeralds negative() {
@@ -88,13 +79,19 @@ public final class Emeralds implements Comparable<Emeralds> {
     }
 
     @Override
+    public int hashCode() {
+        return (int) (this.amount % Integer.MAX_VALUE);
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof Emeralds other && this.amount == other.amount;
     }
 
     @Override
-    public int hashCode() {
-        return (int) (this.amount % Integer.MAX_VALUE);
+    public String toString() {
+        return EmeraldsFormatter.of()
+            .format(this);
     }
 
     public boolean lte(long compareAmount) {

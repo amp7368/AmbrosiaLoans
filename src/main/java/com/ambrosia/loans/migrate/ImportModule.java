@@ -22,7 +22,6 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.query.QDClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.database.system.exception.NotEnoughFundsException;
-import com.ambrosia.loans.database.system.init.ExampleData;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.discord.command.player.profile.page.ProfileTransactionsPage;
 import com.ambrosia.loans.migrate.client.ImportedClient;
@@ -94,44 +93,6 @@ public class ImportModule extends AppleModule {
         return confirms;
     }
 
-    @Override
-    public void onEnable() {
-        if (!shouldEnable()) return;
-        if (shouldReset()) ExampleData.resetData();
-
-        ImportRawData rawData = ImportRawData.loadData();
-        toDBClients(rawData);
-
-        List<ImportedLoan> loans = toDBLoans(rawData);
-        List<DLoan> loansDB = loans.stream().map(ImportedLoan::toDB).toList();
-
-        List<RawMakeAdjustment> confirms = toDBInvestments(rawData);
-
-        for (ImportedLoan loan : loans) {
-            if (loan.getConfirm() != null)
-                confirms.add(loan.getConfirm());
-        }
-        Instant lastDate = Instant.EPOCH;
-        Instant lastLastDate = Instant.EPOCH;
-        confirms.sort(Comparator.comparing(RawMakeAdjustment::date));
-        for (int i = 0, size = confirms.size(); i < size; i++) {
-            RawMakeAdjustment confirm = confirms.get(i);
-            confirm.confirm(lastLastDate);
-            lastLastDate = lastDate;
-            lastDate = confirm.date();
-            logger().info("confirm %d/%d %d %s".formatted(i + 1, size, confirm.getId(), confirm.date()));
-        }
-        manualAdditions();
-        logger().info("Running final simulation");
-        RunBankSimulation.simulate(Instant.EPOCH);
-
-        printLoans(loansDB, rawData, false);
-
-        logger().info("Inserting DAlterCreates");
-        insertCreationRecords();
-        logger().info("Migration complete!");
-    }
-
     private void manualAdditions() {
         DClient client = ClientQueryApi.findById(250);
         Instant date = Instant.from(ImportedLoan.UTC_DATE.parse("2024-06-08"));
@@ -192,6 +153,19 @@ public class ImportModule extends AppleModule {
         }
     }
 
+    private boolean shouldEnable() {
+        return false;
+    }
+
+    public boolean isProduction() {
+        return AmbrosiaConfig.get().isProduction();
+    }
+
+    @Override
+    public String getName() {
+        return "Import";
+    }
+
     @Override
     public void onEnablePost() {
         Ambrosia.get().getFile("Graphs").mkdirs();
@@ -217,20 +191,40 @@ public class ImportModule extends AppleModule {
         logger().info("Completed making graphs!");
     }
 
-    private boolean shouldReset() {
-        return true;
-    }
-
-    private boolean shouldEnable() {
-        return false;
-    }
-
-    public boolean isProduction() {
-        return AmbrosiaConfig.get().isProduction();
-    }
-
     @Override
-    public String getName() {
-        return "Import";
+    public void onEnable() {
+        if (!shouldEnable()) return;
+
+        ImportRawData rawData = ImportRawData.loadData();
+        toDBClients(rawData);
+
+        List<ImportedLoan> loans = toDBLoans(rawData);
+        List<DLoan> loansDB = loans.stream().map(ImportedLoan::toDB).toList();
+
+        List<RawMakeAdjustment> confirms = toDBInvestments(rawData);
+
+        for (ImportedLoan loan : loans) {
+            if (loan.getConfirm() != null)
+                confirms.add(loan.getConfirm());
+        }
+        Instant lastDate = Instant.EPOCH;
+        Instant lastLastDate = Instant.EPOCH;
+        confirms.sort(Comparator.comparing(RawMakeAdjustment::date));
+        for (int i = 0, size = confirms.size(); i < size; i++) {
+            RawMakeAdjustment confirm = confirms.get(i);
+            confirm.confirm(lastLastDate);
+            lastLastDate = lastDate;
+            lastDate = confirm.date();
+            logger().info("confirm %d/%d %d %s".formatted(i + 1, size, confirm.getId(), confirm.date()));
+        }
+        manualAdditions();
+        logger().info("Running final simulation");
+        RunBankSimulation.simulate(Instant.EPOCH);
+
+        printLoans(loansDB, rawData, false);
+
+        logger().info("Inserting DAlterCreates");
+        insertCreationRecords();
+        logger().info("Migration complete!");
     }
 }

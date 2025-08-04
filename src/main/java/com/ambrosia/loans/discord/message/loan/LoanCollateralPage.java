@@ -1,7 +1,7 @@
 package com.ambrosia.loans.discord.message.loan;
 
+import com.ambrosia.loans.database.account.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.DLoan;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;

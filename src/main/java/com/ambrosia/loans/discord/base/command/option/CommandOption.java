@@ -1,13 +1,13 @@
 package com.ambrosia.loans.discord.base.command.option;
 
 import apple.utilities.util.Pretty;
+import com.ambrosia.loans.database.account.collateral.CollateralApi;
+import com.ambrosia.loans.database.account.collateral.DCollateral;
+import com.ambrosia.loans.database.account.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.investment.DInvestment;
 import com.ambrosia.loans.database.account.investment.InvestApi.InvestQueryApi;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
-import com.ambrosia.loans.database.account.loan.collateral.CollateralApi;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateral;
-import com.ambrosia.loans.database.account.loan.collateral.DCollateralStatus;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.account.withdrawal.DWithdrawal;
 import com.ambrosia.loans.database.account.withdrawal.WithdrawalApi.WithdrawalQueryApi;
