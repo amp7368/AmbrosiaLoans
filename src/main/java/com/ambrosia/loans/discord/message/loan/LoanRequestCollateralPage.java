@@ -12,7 +12,6 @@ import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
 import java.time.Duration;
 import java.util.Comparator;
-import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
@@ -22,27 +21,18 @@ import org.jetbrains.annotations.Nullable;
 
 public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, RequestCollateral> implements CollateralMessage {
 
+    private static final Comparator<RequestCollateral> COMPARATOR = Comparator.comparing(RequestCollateral::getIndex);
     private final ActiveRequestLoan loanData;
     private final boolean includeBackToMainBtn;
 
     public LoanRequestCollateralPage(DCFGui parent, ActiveRequestLoan loanData, boolean includeBackToMainBtn) {
-        super(parent);
+        super(parent, COMPARATOR);
         this.loanData = loanData;
         this.includeBackToMainBtn = includeBackToMainBtn;
         registerButton(btnBackToMain().getId(), e -> this.parent.popSubPage());
         setEntries(this.loanData.getCollateral());
-        sort();
+        setEntriesPerPage(1);
         parent.setTimeToOld(Duration.ofHours(2));
-    }
-
-    @Override
-    protected Comparator<? super RequestCollateral> entriesComparator() {
-        return Comparator.comparing(RequestCollateral::getIndex);
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 1;
     }
 
     @Override
@@ -57,12 +47,11 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         embed.appendDescription("## Loan Request %s %d\n"
             .formatted(AmbrosiaEmoji.KEY_ID_CHANGES, loanData.getRequestId()));
 
-        List<DCFEntry<RequestCollateral>> entries = getCurrentPageEntries();
-        if (entries.isEmpty()) {
+        if (isEmpty()) {
             embed.appendDescription("## No Collateral");
             return build(embed, null, actionRow);
         }
-        DCFEntry<RequestCollateral> entry = entries.get(0);
+        DCFEntry<RequestCollateral> entry = getPagedIndexEntries().get(0);
         RequestCollateral collateral = entry.entry();
 
         @Nullable String filename = collateral.getName();
@@ -70,7 +59,7 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         @Nullable FileUpload image = collateral.getImage();
 
         String header = "## Collateral (%d/%d) %s %d\n"
-            .formatted(entry.indexInAll() + 1, getMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
+            .formatted(entry.indexInAll() + 1, getEntryMaxPage() + 1, AmbrosiaEmoji.KEY_ID, collateral.getIndex());
         return collateralDescription(embed,
             header,
             filename,
@@ -94,8 +83,8 @@ public class LoanRequestCollateralPage extends DCFScrollGuiFixed<DCFGui, Request
         if (delete != null) delete.queue(null, null);
     }
 
-    public void toLast() {
-        this.entryPage = this.getMaxPage();
-        this.verifyPageNumber();
+    public LoanRequestCollateralPage setTarget(RequestCollateral collateral) {
+        setEntryPage(collateral, RequestCollateral::getId);
+        return this;
     }
 }

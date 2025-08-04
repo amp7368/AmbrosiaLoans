@@ -36,14 +36,13 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
 
     private final DClient client;
     private final Collection<DCollateral> allCollateral;
-    private Comparator<DCollateral> comparator = BY_LOAN.reversed().thenComparing(BY_NAME);
 
     public ShowCollateralMessage(DCFGui gui, DClient client, Collection<DCollateral> collateral) {
-        super(gui);
+        super(gui, BY_LOAN.reversed().thenComparing(BY_NAME));
         this.client = client;
         this.allCollateral = collateral;
         setEntries(collateral);
-        sort();
+        setEntriesPerPage(1);
         registerSelectString("filter", this::onFilter);
         registerSelectString("sort", this::onSort);
     }
@@ -65,17 +64,10 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
             .toList();
 
         setEntries(entries);
-        sort();
     }
 
-    public ShowCollateralMessage setPageTo(DCollateral collateral) {
-        List<DCollateral> entries = getEntriesCopy();
-        for (int i = 0; i < entries.size(); i++) {
-            if (collateral.equals(entries.get(i))) {
-                entryPage = i;
-                verifyPageNumber();
-            }
-        }
+    public ShowCollateralMessage setTarget(DCollateral collateral) {
+        super.setEntryPage(collateral, DCollateral::getId);
         return this;
     }
 
@@ -105,27 +97,18 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
 
     private void onSort(StringSelectInteractionEvent event) {
         String selected = event.getValues().get(0);
-        comparator = switch (selected) {
+        Comparator<DCollateral> comparator = switch (selected) {
             case "date_returned" -> BY_RETURNED.thenComparing(BY_NAME);
             case "date_collected" -> BY_COLLECTION.thenComparing(BY_NAME);
             case "alphabetical" -> BY_NAME;
             default -> BY_LOAN.thenComparing(BY_NAME);
         };
-    }
-
-    @Override
-    protected Comparator<DCollateral> entriesComparator() {
-        return isComparatorReversed ? comparator.reversed() : comparator;
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 1;
+        resetComparator(comparator);
     }
 
     @Override
     public MessageCreateData makeMessage() {
-        List<DCFEntry<DCollateral>> page = getCurrentPageEntries();
+        List<DCFEntry<DCollateral>> page = getPagedIndexEntries();
         EmbedBuilder embed = new EmbedBuilder();
         if (page.isEmpty()) {
             embed.appendDescription("## No Collateral");
@@ -136,7 +119,7 @@ public class ShowCollateralMessage extends DCFScrollGuiFixed<DCFGui, DCollateral
         DCollateral collateral = entry.entry();
         clientAuthor(embed, collateral);
         String header = "## Collateral %s %d (%d/%d)\n"
-            .formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getMaxPage() + 1);
+            .formatted(AmbrosiaEmoji.KEY_ID, collateral.getId(), entry.indexInAll() + 1, getEntryMaxPage() + 1);
 
         return collateralDescription(
             embed,

@@ -5,9 +5,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public abstract class BaseManagerSubCommand extends BaseStaffSubCommand {
 
     @Override
-    public boolean checkRunPermission(SlashCommandInteractionEvent event) {
-        if (!super.checkRunPermission(event)) return true;
-        return BaseManagerCommand.isManagerCorrectChannel(event);
+    public boolean hasPermission(SlashCommandInteractionEvent event) {
+        return super.hasPermission(event) && BaseManagerCommand.isManagerCorrectChannel(event);
     }
 
     @Override

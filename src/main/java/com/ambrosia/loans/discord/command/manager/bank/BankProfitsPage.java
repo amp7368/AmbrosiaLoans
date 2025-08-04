@@ -7,8 +7,9 @@ import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.base.gui.DCFScrollGuiFixed;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
-import discord.util.dcf.gui.scroll.DCFEntry;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -18,21 +19,13 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class BankProfitsPage extends DCFScrollGuiFixed<BankGui, BankMonthlySnapshot> implements SendMessage, IBankPage {
 
+    public static final Comparator<BankMonthlySnapshot> COMPARATOR = Comparator.comparing(BankMonthlySnapshot::getMonth).reversed();
+
     public BankProfitsPage(BankGui bankProfileGui) {
-        super(bankProfileGui);
+        super(bankProfileGui, COMPARATOR);
         registerButtons();
+        setEntriesPerPage(24);
         setEntries(parent.queryMonthlyProfits().getBankProfits());
-        sort();
-    }
-
-    @Override
-    protected Comparator<? super BankMonthlySnapshot> entriesComparator() {
-        return Comparator.comparing(BankMonthlySnapshot::getMonth).reversed();
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 24;
     }
 
     @Override
@@ -56,10 +49,8 @@ public class BankProfitsPage extends DCFScrollGuiFixed<BankGui, BankMonthlySnaps
 
 
     public void addProfits(EmbedBuilder embed) {
-        List<BankMonthlySnapshot> bankProfits = getCurrentPageEntries().stream()
-            .map(DCFEntry::entry)
-            .sorted(entriesComparator().reversed())
-            .toList();
+        List<BankMonthlySnapshot> bankProfits = new ArrayList<>(getPagedEntries());
+        Collections.reverse(bankProfits);
 
         embed.appendDescription("\n## Profits by month\n");
         int lastYear = -1;

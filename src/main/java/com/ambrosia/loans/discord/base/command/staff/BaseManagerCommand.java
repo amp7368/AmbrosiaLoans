@@ -17,13 +17,12 @@ public abstract class BaseManagerCommand extends BaseStaffCommand {
     }
 
     @Override
-    public boolean isOnlyManager() {
-        return true;
+    public boolean hasPermission(SlashCommandInteractionEvent event) {
+        return super.hasPermission(event) && isManagerCorrectChannel(event);
     }
 
     @Override
-    public boolean checkRunPermission(SlashCommandInteractionEvent event) {
-        if (!super.checkRunPermission(event)) return true;
-        return BaseManagerCommand.isManagerCorrectChannel(event);
+    public boolean isOnlyManager() {
+        return true;
     }
 }

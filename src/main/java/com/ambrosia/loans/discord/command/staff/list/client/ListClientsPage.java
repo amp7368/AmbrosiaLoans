@@ -60,14 +60,14 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
     private String sortByLabel = "Loan Balance";
     private String filterLabel = "Current Clients";
     private Predicate<LoadingClient> filter = LoadingClient.filter(Predicate.not(LoadingClient::isZero));
-    private Comparator<? super LoadingClient> comparator = LoadingClient.sortBy(FALLBACK_COMPARE);
 
     public ListClientsPage(ListClientsGui parent) {
-        super(parent);
+        super(parent, LoadingClient.sortBy(FALLBACK_COMPARE));
+        setEntriesPerPage(5);
+        filterMessages();
+
         registerSelectString("filter", this::onSelectFilter);
         registerSelectString("sort", this::onSelectSort);
-
-        filterMessages();
 
         EditOnTimer editOnTimer = new EditOnTimer(() -> {
             filterMessages();
@@ -80,9 +80,8 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
         List<LoadingClient> filteredClients = parent.getClients().stream()
             .filter(filter)
             .toList();
-        entryPage = 0;
+        setEntryPage(0);
         setEntries(filteredClients);
-        sort();
     }
 
     private void onSelectSort(StringSelectInteractionEvent event) {
@@ -95,7 +94,7 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
             case "alphabetical" -> CLIENT_ALPHABETICAL_COMPARE;
             default -> LOAN_BALANCE_COMPARE.thenComparing(FALLBACK_COMPARE);
         };
-        this.comparator = LoadingClient.sortBy(clientSortBy);
+        resetComparator(LoadingClient.sortBy(clientSortBy));
         this.filterMessages();
     }
 
@@ -120,27 +119,17 @@ public class ListClientsPage extends DCFScrollGuiFixed<ListClientsGui, LoadingCl
     }
 
     @Override
-    protected Comparator<? super LoadingClient> entriesComparator() {
-        return isComparatorReversed ? comparator.reversed() : comparator;
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 5;
-    }
-
-    @Override
     public synchronized MessageCreateData makeMessage() {
-        List<DCFEntry<LoadingClient>> clients = getCurrentPageEntries();
+        List<DCFEntry<LoadingClient>> clients = getPagedIndexEntries();
         String description = clients.stream()
             .map(this::clientToString)
             .collect(Collectors.joining("\n"));
         EmbedBuilder embed = new EmbedBuilder();
 
-        String title = title("Ambrosia Client Listing", entryPage, getMaxPage());
+        String title = title("Ambrosia Client Listing", getEntryPage(), getEntryMaxPage());
         embed.appendDescription("# %s\n".formatted(title))
             .appendDescription("**%s** sorted by **%s**\n".formatted(filterLabel, sortByLabel))
-            .appendDescription("`%d clients found!`\n".formatted(getEntriesSize()) + description)
+            .appendDescription("`%d clients found!`\n".formatted(size()) + description)
             .setColor(AmbrosiaColor.YELLOW);
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())

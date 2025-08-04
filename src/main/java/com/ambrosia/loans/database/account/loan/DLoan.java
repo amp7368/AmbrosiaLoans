@@ -12,6 +12,7 @@ import com.ambrosia.loans.database.account.collateral.DCollateral;
 import com.ambrosia.loans.database.account.loan.LoanApi.LoanQueryApi;
 import com.ambrosia.loans.database.account.loan.interest.base.DLoanInterest;
 import com.ambrosia.loans.database.account.loan.interest.base.InterestCheckpoint;
+import com.ambrosia.loans.database.account.loan.interest.standard.DStandardInterest;
 import com.ambrosia.loans.database.account.loan.section.DLoanSection;
 import com.ambrosia.loans.database.account.payment.DLoanPayment;
 import com.ambrosia.loans.database.entity.actor.UserActor;
@@ -116,6 +117,7 @@ public class DLoan extends Model implements IAccountChange, LoanAccess, HasDateR
         this.client = request.getClient();
         this.initialAmount = request.getAmount().amount();
         this.conductor = request.getConductor();
+        this.interest = new DStandardInterest();
         this.meta = new DLoanMeta(request);
         this.startDate = Timestamp.from(request.getStartDateOrNow());
         Double rate = request.getRate();

@@ -38,10 +38,10 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
                     downloadError(gui, downloadAction, collateral);
                 } else {
                     request.addCollateral(collateral);
-                    LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request, false);
-                    page.toLast();
-                    gui.addSubPage(page);
-                    gui.editMessage();
+                    new LoanRequestCollateralPage(gui, request, false)
+                        .setTarget(collateral)
+                        .addPageToGui()
+                        .editMessage();
                 }
             } catch (InterruptedException | ExecutionException | TimeoutException ex) {
                 downloadError(gui, downloadAction, collateral);
@@ -99,10 +99,10 @@ public class CollateralAddCommand extends BaseSubCommand implements BaseModifyRe
             request.getData().addCollateral(collateral);
             DCFEditMessage editMessage = DCFEditMessageCreate.ofReply(event::reply);
             ClientGui gui = request.guiClient(editMessage, msgOverride);
-            LoanRequestCollateralPage page = new LoanRequestCollateralPage(gui, request.getData(), false);
-            page.toLast();
-            gui.addSubPage(page);
-            gui.send();
+            new LoanRequestCollateralPage(gui, request.getData(), false)
+                .setTarget(collateral)
+                .addPageToGui()
+                .send();
         } else {
             File imageFile = collateral.getImageFile();
             if (imageFile == null) throw new IllegalStateException("imageFile is null, while attachment exists");

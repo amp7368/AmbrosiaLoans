@@ -50,22 +50,20 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
         .addOption("Interest Accumulated", "interest", "Sort by interest accumulated", AmbrosiaEmoji.INVESTMENT_PROFITS.getEmoji())
         .build();
 
-    private Comparator<? super DLoan> comparator = COMPARE_START_DATE;
-
     public ListLoansPage(ListLoansGui parent) {
-        super(parent);
+        super(parent, COMPARE_START_DATE);
         registerSelectString("filter", this::onSelectFilter);
         registerSelectString("sort", this::onSelectSort);
         List<DLoan> loans = parent.getLoans().stream()
             .filter(LoanAccess::isActive)
             .toList();
+        setEntriesPerPage(5);
         setEntries(loans);
-        sort();
     }
 
     private void onSelectSort(StringSelectInteractionEvent event) {
         String sortType = event.getValues().get(0);
-        this.comparator = switch (sortType) {
+        Comparator<DLoan> comparator = switch (sortType) {
             case "end_date" -> Comparator.comparing(DLoan::getEndDateOrNow).reversed();
             case "rate" -> Comparator.comparingDouble(DLoan::getCurrentRate).reversed();
             case "duration" -> Comparator.comparing(DLoan::getTotalDuration).reversed();
@@ -73,8 +71,8 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
             case "interest" -> Comparator.<DLoan, Emeralds>comparing(DLoan::getAccumulatedInterest).reversed();
             default -> COMPARE_START_DATE;
         };
-        this.entryPage = 0;
-        this.sort();
+        resetComparator(comparator);
+        setEntryPage(0);
     }
 
     private void onSelectFilter(StringSelectInteractionEvent event) {
@@ -90,30 +88,18 @@ public class ListLoansPage extends DCFScrollGuiFixed<ListLoansGui, DLoan> {
             .filter(filter)
             .toList();
         setEntries(filteredLoans);
-        this.entryPage = 0;
-        this.sort();
-    }
-
-
-    @Override
-    protected Comparator<? super DLoan> entriesComparator() {
-        return isComparatorReversed ? comparator.reversed() : comparator;
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 5;
+        setEntryPage(0);
     }
 
     @Override
     public MessageCreateData makeMessage() {
-        List<DCFEntry<DLoan>> loans = getCurrentPageEntries();
+        List<DCFEntry<DLoan>> loans = getPagedIndexEntries();
         String description = loans.stream()
             .map(this::loanToString)
             .collect(Collectors.joining("\n"));
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setTitle(title("Ambrosia Loan Listing", entryPage, getMaxPage()))
-            .setDescription("`%d loans found!\n`".formatted(getEntriesSize()) + description)
+        embed.setTitle(title("Ambrosia Loan Listing", getEntryPage(), getEntryMaxPage()))
+            .setDescription("`%d loans found!\n`".formatted(size()) + description)
             .setColor(AmbrosiaColor.YELLOW);
         return new MessageCreateBuilder()
             .setEmbeds(embed.build())

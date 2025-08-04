@@ -7,7 +7,6 @@ import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import discord.util.dcf.gui.base.gui.DCFGui;
 import discord.util.dcf.gui.scroll.DCFEntry;
-import java.util.Comparator;
 import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -22,12 +21,12 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
     private final boolean includeBackToMainBtn;
 
     public LoanCollateralPage(DCFGui parent, DLoan loan, boolean includeBackToMainBtn) {
-        super(parent);
+        super(parent, DCollateral::getId);
         this.loan = loan;
         this.includeBackToMainBtn = includeBackToMainBtn;
+        setEntriesPerPage(1);
         registerButton(btnBackToMain().getId(), e -> parent.popSubPage());
         setEntries(loan.getCollateral());
-        sort();
     }
 
     public static String showCollateralBtnId() {
@@ -41,16 +40,6 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
 
     public static Button btnBackToMain() {
         return Button.danger("back_page", "Back to Main");
-    }
-
-    @Override
-    protected Comparator<? super DCollateral> entriesComparator() {
-        return Comparator.comparing(DCollateral::getId);
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 1;
     }
 
     @Override
@@ -78,7 +67,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
         embed.appendDescription("## Loan %s %d\n"
             .formatted(AmbrosiaEmoji.KEY_ID, loan.getId()));
 
-        List<DCFEntry<DCollateral>> entries = getCurrentPageEntries();
+        List<DCFEntry<DCollateral>> entries = getPagedIndexEntries();
         if (entries.isEmpty()) {
             embed.appendDescription("## No Collateral");
             return build(embed, null, actionRow);
@@ -88,7 +77,7 @@ public class LoanCollateralPage extends DCFScrollGuiFixed<DCFGui, DCollateral> i
 
         long id = collateral.getId();
         int index = entry.indexInAll() + 1;
-        String collateralMsg = "## Collateral %s %d (%d/%d)\n".formatted(AmbrosiaEmoji.KEY_ID, id, index, getMaxPage() + 1);
+        String collateralMsg = "## Collateral %s %d (%d/%d)\n".formatted(AmbrosiaEmoji.KEY_ID, id, index, getEntryMaxPage() + 1);
         return collateralDescription(
             embed,
             collateralMsg,

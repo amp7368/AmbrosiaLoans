@@ -14,26 +14,18 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class BlacklistMessage extends DCFScrollGuiFixed<DCFGui, DClient> {
 
+    private static final Comparator<DClient> COMPARATOR = Comparator.comparing(DClient::getEffectiveName);
+
     public BlacklistMessage(DCFGui dcfGui, List<DClient> blacklisted) {
-        super(dcfGui);
+        super(dcfGui, COMPARATOR);
         setEntries(blacklisted);
+        setEntriesPerPage(10);
     }
-
-    @Override
-    protected Comparator<? super DClient> entriesComparator() {
-        return Comparator.comparing(DClient::getEffectiveName);
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 10;
-    }
-
 
     @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
-        List<DCFEntry<DClient>> entries = getCurrentPageEntries();
+        List<DCFEntry<DClient>> entries = getPagedIndexEntries();
         String message = entries.stream()
             .map(this::entryString)
             .collect(Collectors.joining("\n"));

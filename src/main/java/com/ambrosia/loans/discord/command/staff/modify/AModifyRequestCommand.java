@@ -18,7 +18,8 @@ public class AModifyRequestCommand extends BaseStaffCommand {
         return List.of(
             new AModifyLoanCommand(),
             new AModifyPaymentCommand(),
-            new AModifyInvestmentCommand()
+            new AModifyInvestmentCommand(),
+            new AModifyWithdrawalCommand()
         );
     }
 }

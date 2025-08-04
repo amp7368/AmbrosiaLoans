@@ -8,9 +8,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class DStandardInterest extends DLoanInterest<StandardCalculator> {
 
-    public DStandardInterest() {
-    }
-
     @Override
     public StandardCalculator createCalculator(InterestCheckpoint checkpoint, Instant end) {
         return new StandardCalculator(this, (DStandardInterestCheckpoint) checkpoint, end);

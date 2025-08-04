@@ -198,7 +198,6 @@ public class DClient extends Model implements ClientAccess, Commentable {
     }
 
     public BalanceWithInterest getBalanceWithRecentInterest(Instant currentTime) throws IllegalArgumentException {
-        Emeralds investAmount = this.balance.getInvestAmount();
         Emeralds loanAmount = this.balance.getLoanAmount();
 
         List<DLoan> legacyLoans = getLoans().stream()
@@ -212,7 +211,8 @@ public class DClient extends Model implements ClientAccess, Commentable {
             .negative();
 
         Emeralds interestAsNegative = getInterest(currentTime).negative();
-        return new BalanceWithInterest(investAmount, loanAmount, interestAsNegative, legacyInterest);
+
+        return new BalanceWithInterest(this, currentTime, loanAmount, interestAsNegative, legacyInterest);
     }
 
     Emeralds addLoanBalance(long loanDelta, Instant date) {

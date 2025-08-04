@@ -42,6 +42,7 @@ import com.ambrosia.loans.discord.system.help.HelpCommandListManager;
 import com.ambrosia.loans.discord.system.log.LogCommandListener;
 import com.ambrosia.loans.discord.system.log.SendDiscordLog;
 import discord.util.dcf.DCF;
+import discord.util.dcf.DCFBuilder;
 import discord.util.dcf.DCFCommandManager;
 import discord.util.dcf.slash.DCFAbstractCommand;
 import discord.util.dcf.slash.DCFSlashCommand;
@@ -52,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -99,8 +101,9 @@ public class DiscordModule extends AppleModule {
         return jda;
     }
 
-    private void updateCommandsCallback() {
-        for (DCFSlashCommand baseCommand : DiscordBot.dcf.commands().getDCFBaseCommands()) {
+    private void updateCommandsCallback(List<Command> commands) {
+        for (Command discordCommand : commands) {
+            DCFAbstractCommand<?> baseCommand = DiscordBot.dcf.commands().getCommand(discordCommand.getFullCommandName());
             boolean isStaffCommand = isStaffCommand(baseCommand);
             boolean isManagerCommand = isMangerCommand(baseCommand);
             for (DCFAbstractCommand<?> dcfSub : baseCommand.peekAllSubCommands()) {
@@ -112,7 +115,8 @@ public class DiscordModule extends AppleModule {
                     subCommand.setOnlyManager();
             }
 
-            HelpCommandListManager.addCommand(baseCommand, isStaffCommand, isManagerCommand);
+            if (baseCommand instanceof DCFSlashCommand slash)
+                HelpCommandListManager.addCommand(slash, isStaffCommand, isManagerCommand);
         }
         HelpCommandListManager.finishSetup();
     }
@@ -150,15 +154,15 @@ public class DiscordModule extends AppleModule {
     public void onEnablePost() {
         DiscordConfig.get().load();
         SendDiscordLog.load();
-        DiscordBot.dcf.commands().updateCommands()
-            .thenRun(this::updateCommandsCallback);
+        DiscordBot.dcf.commands().updateCommands().thenAccept(this::updateCommandsCallback);
     }
+
 
     @Override
     public void onEnable() {
         JDA jda = createJDA();
 
-        DCF dcf = new DCF(jda);
+        DCF dcf = DCFBuilder.createDefault(jda);
         DiscordBot.ready(dcf);
 
         jda.addEventListener(new AutoCompleteListener());

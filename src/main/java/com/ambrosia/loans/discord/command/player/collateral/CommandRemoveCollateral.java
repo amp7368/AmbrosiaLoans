@@ -29,7 +29,7 @@ public class CommandRemoveCollateral extends BaseSubCommand implements BaseModif
 
     @Override
     public void onCommand(SlashCommandInteractionEvent event) {
-        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", false);
+        ActiveRequestLoanGui request = findRequest(event, ActiveRequestLoanGui.class, "request", true);
         if (request == null) return;
         if (isBadUser(event, request.getData())) return;
 

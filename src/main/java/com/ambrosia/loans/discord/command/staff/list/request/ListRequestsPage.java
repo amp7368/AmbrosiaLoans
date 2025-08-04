@@ -8,9 +8,7 @@ import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.gui.DCFGui;
-import discord.util.dcf.gui.scroll.DCFEntry;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -21,9 +19,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class ListRequestsPage extends DCFScrollGuiFixed<DCFGui, ActiveRequest<?>> {
 
+    private static final Comparator<ActiveRequest<?>> COMPARATOR = Comparator.comparing(ActiveRequest::getRequestId);
+
     public ListRequestsPage(DCFGui dcfGui) {
-        super(dcfGui);
+        super(dcfGui, COMPARATOR);
         refresh();
+        setEntriesPerPage(10);
         registerButton(btnRefresh().getId(), e -> this.refresh());
     }
 
@@ -32,25 +33,12 @@ public class ListRequestsPage extends DCFScrollGuiFixed<DCFGui, ActiveRequest<?>
     }
 
     @Override
-    protected Comparator<? super ActiveRequest<?>> entriesComparator() {
-        return Comparator.comparing(ActiveRequest::getRequestId);
-    }
-
-    @Override
-    protected int entriesPerPage() {
-        return 10;
-    }
-
-    @Override
     public MessageCreateData makeMessage() {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(AmbrosiaColor.BLUE_NORMAL);
         embed.appendDescription(getTitle());
 
-        List<DCFEntry<ActiveRequest<?>>> entries = getCurrentPageEntries();
-        for (DCFEntry<ActiveRequest<?>> entry : entries) {
-            ActiveRequest<?> request = entry.entry();
-
+        for (ActiveRequest<?> request : getAllEntries()) {
             String type = Optional.ofNullable(request.getType())
                 .map(ActiveRequestType::getDisplayName)
                 .orElse("Unknown");
@@ -70,12 +58,12 @@ public class ListRequestsPage extends DCFScrollGuiFixed<DCFGui, ActiveRequest<?>
     }
 
     private String getTitle() {
-        if (getMaxPage() == 0) return "# Active Requests\n";
-        return title("# Active Requests", entryPage, getMaxPage()) + "\n";
+        if (isEmpty()) return "# No Active Requests\n";
+        return title("# Active Requests", getEntryPage(), getEntryMaxPage()) + "\n";
     }
 
     public @NotNull ActionRow actionRow() {
-        if (this.getMaxPage() == 0) return ActionRow.of(btnRefresh());
+        if (this.isEmpty()) return ActionRow.of(btnRefresh());
         return ActionRow.of(btnRefresh(), btnPrev(), btnNext());
     }
 
