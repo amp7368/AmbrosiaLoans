@@ -76,10 +76,10 @@ public class AmbrosiaMessages {
         public static AmbrosiaMessage badRole(String requiredRole, CommandInteraction event) {
             String commandName = event.getFullCommandName();
             String article;
-            if (requiredRole.startsWith("e"))
-                article = "an";
-            else article = "a";
-            return error(String.format("You must be %s %s to run '/%s'", article, requiredRole, commandName));
+            if (requiredRole.toLowerCase().startsWith("s"))
+                article = requiredRole;
+            else article = "a " + requiredRole;
+            return error(String.format("You must be %s to run '/%s'", article, commandName));
         }
 
 

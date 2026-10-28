@@ -6,16 +6,15 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 
 public abstract class BaseStaffSubCommand extends BaseSubCommand {
 
+    public BaseStaffSubCommand() {
+        setOnlyEmployee();
+    }
+
     @Override
     public void onCommand(SlashCommandInteractionEvent event) {
         DStaffConductor staff = StaffCommandUtil.getOrMakeStaff(event);
         if (staff == null) return;
         this.onStaffCommand(event, staff);
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     protected abstract void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff);

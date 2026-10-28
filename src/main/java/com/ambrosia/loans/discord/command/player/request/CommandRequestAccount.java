@@ -6,6 +6,7 @@ import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.system.exception.CreateEntityException;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.discord.base.command.DiscordRestrictions.DiscordGuildRestriction;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.request.ActiveRequestDatabase;
 import com.ambrosia.loans.discord.request.account.ActiveRequestAccount;
@@ -26,8 +27,18 @@ public class CommandRequestAccount extends BaseSubCommand {
     private static final String OPTION_DISPLAY_NAME = "display_name";
 
     @Override
-    public boolean requiresMember() {
-        return true;
+    protected DiscordGuildRestriction getGuildRestriction() {
+        return DiscordGuildRestriction.IN_AMBROSIA;
+    }
+
+    @Override
+    public void onCommand(SlashCommandInteractionEvent event) {
+        if (event.getMember() == null) return;
+        DCFUtils.get().builderDefer(
+            event,
+            (defer, client) -> handleClient(event, defer, client),
+            () -> ClientQueryApi.findByDiscord(event.getUser().getIdLong())
+        ).startDefer();
     }
 
     private void handleClient(SlashCommandInteractionEvent event, InteractionHook defer, DClient client) {
@@ -69,15 +80,5 @@ public class CommandRequestAccount extends BaseSubCommand {
         command.addOption(OptionType.STRING, OPTION_MINECRAFT, "Your minecraft in-game name", true);
         command.addOption(OptionType.STRING, OPTION_DISPLAY_NAME, "Your profile display name");
         return command;
-    }
-
-    @Override
-    public void onCommand(SlashCommandInteractionEvent event) {
-        if (event.getMember() == null) return;
-        DCFUtils.get().builderDefer(
-            event,
-            (defer, client) -> handleClient(event, defer, client),
-            () -> ClientQueryApi.findByDiscord(event.getUser().getIdLong())
-        ).startDefer();
     }
 }

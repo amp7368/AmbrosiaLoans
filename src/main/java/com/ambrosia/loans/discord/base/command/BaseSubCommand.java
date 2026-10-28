@@ -1,30 +1,45 @@
 package com.ambrosia.loans.discord.base.command;
 
+import com.ambrosia.loans.discord.base.command.DiscordRestrictions.DiscordGuildRestriction;
+import com.ambrosia.loans.discord.base.command.DiscordRestrictions.DiscordRestrictionLevel;
 import discord.util.dcf.slash.DCFSlashSubCommand;
 import discord.util.dcf.slash.context.DCFListenerContext;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public abstract class BaseSubCommand extends DCFSlashSubCommand implements CommandCheckPermission, SendMessage {
 
-    private boolean isOnlyEmployee = false;
-    private boolean isOnlyManager = false;
+    private DiscordRestrictionLevel restrictionLevel = DiscordRestrictionLevel.PUBLIC;
 
     public void setOnlyEmployee() {
-        this.isOnlyEmployee = true;
+        restrictionLevel = switch (restrictionLevel) {
+            case PUBLIC, STAFF -> DiscordRestrictionLevel.STAFF;
+            case MANAGER -> DiscordRestrictionLevel.MANAGER;
+        };
     }
 
     public void setOnlyManager() {
-        this.isOnlyManager = true;
+        restrictionLevel = DiscordRestrictionLevel.MANAGER;
     }
 
     @Override
     public boolean isOnlyEmployee() {
-        return isOnlyEmployee;
+        return restrictionLevel == DiscordRestrictionLevel.STAFF || restrictionLevel == DiscordRestrictionLevel.MANAGER;
     }
 
     @Override
     public boolean isOnlyManager() {
-        return isOnlyManager;
+        return restrictionLevel == DiscordRestrictionLevel.MANAGER;
+    }
+
+    @Override
+    public DiscordRestrictions getRestrictions() {
+        return new DiscordRestrictions(restrictionLevel, getGuildRestriction());
+    }
+
+    protected DiscordGuildRestriction getGuildRestriction() {
+        if (restrictionLevel == DiscordRestrictionLevel.PUBLIC)
+            return DiscordGuildRestriction.ANYWHERE;
+        return DiscordGuildRestriction.IN_AMBROSIA;
     }
 
     @Override

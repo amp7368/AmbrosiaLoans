@@ -106,6 +106,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
             return false;
         }
         this.error = null;
+        this.data.saveArchive();
         return true;
     }
 

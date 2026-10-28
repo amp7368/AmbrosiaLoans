@@ -10,16 +10,15 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 public class AProfileCommand extends BaseCommand {
 
+    public AProfileCommand() {
+        setOnlyEmployee();
+    }
+
     @Override
     public void onCommand(SlashCommandInteractionEvent event) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
         client.profile(event::reply).send();
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     @Override

@@ -1,22 +1,18 @@
 package com.ambrosia.loans.discord.command.staff.history;
 
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.discord.base.command.BaseSubCommand;
+import com.ambrosia.loans.database.entity.staff.DStaffConductor;
 import com.ambrosia.loans.discord.base.command.option.CommandOption;
 import com.ambrosia.loans.discord.base.command.option.CommandOptionList;
+import com.ambrosia.loans.discord.base.command.staff.BaseStaffSubCommand;
 import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.command.player.show.transaction.TransactionHistoryMessage;
 import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class AShowTransactionCommand extends BaseSubCommand {
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
-    }
-
+public class AShowTransactionCommand extends BaseStaffSubCommand {
+    
     @Override
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("transactions", "[Staff] View a client's past Transactions");
@@ -26,7 +22,7 @@ public class AShowTransactionCommand extends BaseSubCommand {
     }
 
     @Override
-    public void onCommand(SlashCommandInteractionEvent event) {
+    protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         DClient client = CommandOption.CLIENT.getRequired(event);
         if (client == null) return;
         ClientGui gui = new ClientGui(client, dcf, event::reply);

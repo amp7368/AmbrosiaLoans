@@ -22,7 +22,7 @@ public interface CommandCheckPermission extends SendMessage {
             return false;
         }
         if (!isEmployee && isOnlyEmployee()) {
-            ErrorMessages.badRole("Employee", event).replyError(event);
+            ErrorMessages.badRole("Staff", event).replyError(event);
             return false;
         }
         return true;
@@ -39,4 +39,6 @@ public interface CommandCheckPermission extends SendMessage {
     default boolean isOnlyManager() {
         return false;
     }
+
+    DiscordRestrictions getRestrictions();
 }
