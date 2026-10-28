@@ -54,7 +54,7 @@ public class SendDiscordLog {
     public static void load() {
         channel = DiscordConfig.get().getLogChannel();
         if (channel == null) {
-            String msg = "Log dest{%d} is not a valid dest".formatted(DiscordConfig.get().logChannel);
+            String msg = "Log dest{%d} in DiscordConfig is not a valid dest".formatted(DiscordConfig.get().logChannel);
             throw new IllegalArgumentException(msg);
         }
     }

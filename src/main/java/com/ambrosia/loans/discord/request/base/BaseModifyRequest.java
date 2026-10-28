@@ -76,11 +76,6 @@ public interface BaseModifyRequest extends SendMessage {
             ErrorMessages.cannotModifyRequestAtStage(stage).replyError(event);
             return null;
         }
-        boolean convertToStaff = requestId != null;
-        if (convertToStaff) {
-            activeRequest.getData().setEndorser(event.getUser());
-            activeRequest.save();
-        }
         return activeRequest;
     }
 

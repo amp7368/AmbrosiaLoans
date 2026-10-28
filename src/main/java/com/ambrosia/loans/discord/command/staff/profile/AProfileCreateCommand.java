@@ -12,12 +12,17 @@ import java.util.List;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.jetbrains.annotations.Nullable;
 
 public class AProfileCreateCommand extends BaseCommand {
+
+    public AProfileCreateCommand() {
+        setOnlyEmployee();
+    }
 
     @Override
     public void onCommand(SlashCommandInteractionEvent event) {
@@ -37,17 +42,11 @@ public class AProfileCreateCommand extends BaseCommand {
         DiscordLog.createAccount(client, UserActor.of(actor));
     }
 
-
     public SlashCommandData getData() {
         SlashCommandData command = Commands.slash("aprofile_create", "[Staff] Create a profile for a client");
         CommandOptionList options = CommandOptionList.of(List.of(CommandOption.CLIENT, CommandOption.DISCORD));
         return options.addToCommand(command)
             .setDefaultPermissions(DefaultMemberPermissions.DISABLED)
-            .setGuildOnly(true);
-    }
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
+            .setContexts(InteractionContextType.GUILD);
     }
 }

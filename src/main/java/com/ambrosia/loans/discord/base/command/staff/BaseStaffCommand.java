@@ -9,6 +9,10 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 public abstract class BaseStaffCommand extends BaseCommand {
 
+    public BaseStaffCommand() {
+        setOnlyEmployee();
+    }
+
     @Override
     public final SlashCommandData getData() {
         SlashCommandData data = getStaffData();
@@ -17,18 +21,13 @@ public abstract class BaseStaffCommand extends BaseCommand {
         return data;
     }
 
+    public abstract SlashCommandData getStaffData();
+
     @Override
     public final void onCommand(SlashCommandInteractionEvent event) {
         DStaffConductor staff = StaffCommandUtil.getOrMakeStaff(event);
         if (staff == null) return;
         this.onStaffCommand(event, staff);
-    }
-
-    public abstract SlashCommandData getStaffData();
-
-    @Override
-    public boolean isOnlyEmployee() {
-        return true;
     }
 
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {

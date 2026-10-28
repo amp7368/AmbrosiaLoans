@@ -2,6 +2,7 @@ package com.ambrosia.loans.discord;
 
 import apple.lib.modules.AppleModule;
 import com.ambrosia.loans.Ambrosia;
+import com.ambrosia.loans.discord.base.command.BaseCommand;
 import com.ambrosia.loans.discord.base.command.BaseSubCommand;
 import com.ambrosia.loans.discord.base.command.CommandCheckPermission;
 import com.ambrosia.loans.discord.command.manager.bank.BankCommand;
@@ -154,9 +155,9 @@ public class DiscordModule extends AppleModule {
     public void onEnablePost() {
         DiscordConfig.get().load();
         SendDiscordLog.load();
+        temp();
         DiscordBot.dcf.commands().updateCommands().thenAccept(this::updateCommandsCallback);
     }
-
 
     @Override
     public void onEnable() {
@@ -210,5 +211,23 @@ public class DiscordModule extends AppleModule {
 
         dcf.modals().add(new RequestLoanModalType(true));
         dcf.modals().add(new RequestLoanModalType(false));
+    }
+
+    public void temp() {
+        List<DCFAbstractCommand<?>> dcfCommands = DiscordBot.dcf.commands().getDCFCommands();
+        for (DCFAbstractCommand<?> dcfCommand : dcfCommands) {
+            if (!(dcfCommand instanceof BaseCommand baseCommand)) continue;
+            boolean isStaffCommand = isStaffCommand(baseCommand);
+            boolean isManagerCommand = isMangerCommand(baseCommand);
+            for (DCFAbstractCommand<?> dcfSub : baseCommand.directSubCommands) {
+                if (!(dcfSub instanceof BaseSubCommand subCommand)) continue;
+
+                if (isStaffCommand)
+                    subCommand.setOnlyEmployee();
+                if (isManagerCommand)
+                    subCommand.setOnlyManager();
+            }
+        }
+        dcfCommands.forEach(new DiscordPermissionsMiddleware<>()::temp);
     }
 }
