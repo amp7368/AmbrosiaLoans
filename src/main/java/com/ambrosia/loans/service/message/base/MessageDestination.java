@@ -41,7 +41,7 @@ public record MessageDestination<T extends SentClientMessage>(Function<T, Comple
             return dest.apply(msg);
         } catch (Exception e) {
             String msg1 = e.getMessage();
-            DiscordLog.errorSystem(msg1, null);
+            DiscordLog.errorSystem(msg1, e, true);
             return CompletableFuture.completedFuture(null);
         }
     }

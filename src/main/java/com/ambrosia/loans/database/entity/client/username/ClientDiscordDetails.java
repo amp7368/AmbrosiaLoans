@@ -104,7 +104,7 @@ public class ClientDiscordDetails {
         if (getDiscordId() == null) {
             String msg = "Cannot open DMs with @%s. No discord id registered.".formatted(getUsername());
             IllegalStateException err = new IllegalStateException(msg);
-            DiscordLog.errorSystem(null, err);
+            DiscordLog.errorSystem(null, err, false);
             future.completeExceptionally(err);
             return future;
         }
@@ -139,7 +139,7 @@ public class ClientDiscordDetails {
             if (checkIfBlocked(err)) {
                 client.getMeta().startMarkBlocked();
             } else {
-                DiscordLog.error("Failed to send message to client!", UserActor.of(client), err);
+                DiscordLog.error("Failed to send message to client!", UserActor.of(client), err, true);
             }
         }, Ambrosia.get().executor());
         return futureMsg;

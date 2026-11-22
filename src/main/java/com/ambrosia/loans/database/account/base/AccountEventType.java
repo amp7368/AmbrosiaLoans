@@ -2,12 +2,13 @@ package com.ambrosia.loans.database.account.base;
 
 import apple.utilities.util.Pretty;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
+import com.ambrosia.loans.database.system.AppDBEnum;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.annotation.DbEnumValue;
 import java.util.Comparator;
 import java.util.Set;
 
-public enum AccountEventType {
+public enum AccountEventType implements AppDBEnum {
     // in order of transaction
     LOAN(0, AlterCreateType.LOAN, AmbrosiaEmoji.LOAN_BALANCE),
     INTEREST(4, AmbrosiaEmoji.LOAN_INTEREST),
@@ -40,6 +41,7 @@ public enum AccountEventType {
     }
 
     @DbEnumValue(withConstraint = false)
+    @Override
     public String getDBValue() {
         return name();
     }

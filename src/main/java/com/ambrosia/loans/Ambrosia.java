@@ -11,6 +11,7 @@ import com.ambrosia.loans.service.ServiceModule;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -18,6 +19,7 @@ import java.util.function.Consumer;
 public class Ambrosia extends ApplePlugin {
 
     private static Ambrosia instance;
+    private final Executor virtualExecutor = Executors.newCachedThreadPool();
 
     public Ambrosia() {
         instance = this;
@@ -72,4 +74,12 @@ public class Ambrosia extends ApplePlugin {
         return obj -> futureException(sent, obj);
     }
 
+    // we don't have virtual threads in Java 18, use cachedThreadPool for now
+    public Executor executorVirtual() {
+        return virtualExecutor;
+    }
+
+    public void runVirtualAsync(Runnable task) {
+        virtualExecutor.execute(task);
+    }
 }

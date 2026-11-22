@@ -24,10 +24,12 @@ public class BaseGui extends DCFGui {
 
     public BaseGui(DCF dcf, DCFEditMessage editMessage) {
         super(dcf, editMessage);
+        setTimeToOld(Duration.ofMinutes(60));
     }
 
     public BaseGui(DCF dcf, GuiReplyFirstMessage createFirstMessage) {
         super(dcf, createFirstMessage);
+        setTimeToOld(Duration.ofMinutes(60));
     }
 
     public BaseGui setOnlyStaff() {

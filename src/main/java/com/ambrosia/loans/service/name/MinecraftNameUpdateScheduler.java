@@ -29,7 +29,7 @@ public class MinecraftNameUpdateScheduler {
             if (toUpdate == null) return;
             UpdateClientMetaHook.hookUpdate(toUpdate).get();
         } catch (Exception e) {
-            DiscordLog.errorSystem(null, e);
+            DiscordLog.errorSystem(null, e, false);
         } finally {
             schedule(start);
         }

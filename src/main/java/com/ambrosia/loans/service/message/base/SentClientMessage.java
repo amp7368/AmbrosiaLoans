@@ -167,7 +167,7 @@ public abstract class SentClientMessage {
             if (send == null) {
                 String error = "[%s] Could not find channel{%d} for %s message{%d}"
                     .formatted(getReason().display(), staffMessageId.getChannelId(), "staff", staffMessageId.getMessageId());
-                DiscordLog.errorSystem(error, null);
+                DiscordLog.errorSystem(error, null, false);
             } else
                 send.queue();
         }
@@ -224,7 +224,7 @@ public abstract class SentClientMessage {
                 staffMessageIds.add(new DMessageId(destMsg));
             } catch (ExecutionException | InterruptedException e) {
                 String error = "Cannot send %s's staff message".formatted(getClient().getEffectiveName());
-                DiscordLog.errorSystem(error, e);
+                DiscordLog.errorSystem(error, e, false);
             }
         }
         DClientMessage db = getDB();
@@ -240,7 +240,7 @@ public abstract class SentClientMessage {
             transaction.commit();
         } catch (Exception e) {
             String error = "Cannot save %s's message".formatted(getClient().getEffectiveName());
-            DiscordLog.errorSystem(error, e);
+            DiscordLog.errorSystem(error, e, false);
             db.setExceptionMessage(error)
                 .setStatus(MessageAcknowledged.ERROR)
                 .save();

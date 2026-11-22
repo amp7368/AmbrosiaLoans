@@ -6,7 +6,6 @@ import com.ambrosia.loans.database.entity.client.ClientApi.ClientQueryApi;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails;
 import com.ambrosia.loans.database.system.exception.CreateEntityException;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.base.request.ActiveClientRequest;
 import com.ambrosia.loans.discord.request.ActiveRequestType;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
@@ -61,7 +60,7 @@ public class ActiveRequestAccount extends ActiveClientRequest<ActiveRequestAccou
             newVersion.save();
             DiscordLog.updateAccount(newVersion, UserActor.of(getEndorserUser()));
         } catch (Exception e) {
-            DiscordModule.get().logger().error("", e);
+            DiscordLog.errorSystem(null, e, false);
             throw new UpdateAccountException("Client is not unique");
         }
         return null;

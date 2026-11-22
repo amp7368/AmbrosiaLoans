@@ -4,6 +4,7 @@ import static com.ambrosia.loans.discord.request.ActiveRequestType.gson;
 
 import apple.utilities.database.concurrent.ConcurrentAJD;
 import apple.utilities.database.concurrent.inst.ConcurrentAJDInst;
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.DatabaseModule;
 import com.ambrosia.loans.database.account.loan.DLoan;
 import com.ambrosia.loans.database.entity.client.DClient;
@@ -53,14 +54,18 @@ public class ActiveRequestDatabase {
         }
         get().requests.add(request);
         get().requestIdToMessageId.put(request.getRequestId(), request.getMessageId());
-        manager.save();
+        save();
+    }
+
+    private static void save() {
+        Ambrosia.get().runVirtualAsync(manager::save);
     }
 
 
     public static void remove(ActiveRequest<?> request) {
         get().requests.remove(request);
         get().requestIdToMessageId.remove(request.getRequestId());
-        manager.save();
+        save();
     }
 
     public static MessageCreateAction sendRequest(MessageCreateData message) {
@@ -69,7 +74,7 @@ public class ActiveRequestDatabase {
 
     public static long getId() {
         long id = get().incrementalId++;
-        manager.save();
+        save();
         return id;
     }
 

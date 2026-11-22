@@ -36,8 +36,8 @@ public class DMCommand extends BaseStaffSubCommand {
                 ManualClientMessage toSend = new ManualClientMessage(staff.getClient(), client, title, send);
                 toSend.sendFirst(toSend, MessageDestination.ofMessagesChannel()).whenComplete((s, err) -> {
                     if (err != null) {
-                        DiscordLog.errorSystem(null, new Exception(err));
-                        defer.editOriginalEmbeds(error("Failed to send!")).queue();
+                        DiscordLog.errorSystem(null, new Exception(err), false);
+                        defer.editOriginalEmbeds(error("Failed to send!\n" + err.getMessage())).queue();
                         return;
                     }
                     EmbedBuilder success = success().appendDescription("Successfully sent message:\n\n%s".formatted(message));

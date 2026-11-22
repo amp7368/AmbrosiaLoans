@@ -20,29 +20,50 @@ public class DiscordBot {
     }
 
     public static Guild getMainServer() {
-        if (mainServer != null) return mainServer;
-        return mainServer = jda().getGuildById(DiscordConfig.get().mainServer);
+        if (mainServer == null)
+            awaitReady();
+        return mainServer;
     }
 
     public static void awaitReady() {
         synchronized (sync) {
-            if (completed) return;
-            try {
-                sync.wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            while (!completed) {
+                try {
+                    sync.wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
 
     public static void ready(DCF dcf) {
         DiscordBot.dcf = dcf;
-        getMainServer();
-        SELF_USER = dcf.jda().getSelfUser();
-        SELF_AVATAR = SELF_USER.getAvatarUrl();
+        loadDiscord(dcf);
         synchronized (sync) {
             completed = true;
             sync.notifyAll();
+        }
+    }
+
+    private static void loadDiscord(DCF dcf) {
+        mainServer = jda().getGuildById(DiscordConfig.get().mainServer);
+        SELF_USER = dcf.jda().getSelfUser();
+        SELF_AVATAR = SELF_USER.getAvatarUrl();
+
+        String errorPrefix = "Could not load ready DiscordBot.";
+        if (mainServer == null) {
+            String msg = errorPrefix + " DiscordConfig.mainServer{%d} is not valid".formatted(DiscordConfig.get().mainServer);
+            throw new IllegalStateException(msg);
+        }
+        if (SELF_USER == null) {
+            String msg = errorPrefix + " Could not retrieve JDA.getSelfUser()";
+            throw new IllegalStateException(msg);
+        }
+        if (SELF_AVATAR == null) {
+            String msg = errorPrefix + " Could not retrieve JDA.getAvatarUrl()";
+            throw new IllegalStateException(msg);
         }
     }
 

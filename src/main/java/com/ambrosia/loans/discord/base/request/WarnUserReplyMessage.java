@@ -5,9 +5,11 @@ import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.DClientMeta;
 import com.ambrosia.loans.discord.base.gui.ClientGui;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
+import com.ambrosia.loans.discord.system.log.DiscordLog;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
+import java.util.concurrent.CompletionException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -60,7 +62,12 @@ public class WarnUserReplyMessage extends DCFGuiPage<ClientGui> {
         if (this.error == null) this.doubleChecks++;
         else this.doubleChecks = 0;
 
-        if (defer == null) return;
+        if (defer == null) {
+            String msg = "Failed to defer message when trying to warn the user of having the bot blocked!";
+            if (error != null) msg += "\n" + unwrapCompletionException(error).getMessage();
+            DiscordLog.failedTTL(getClient(), msg, error);
+            return;
+        }
 
         String msg;
         int delay;
@@ -79,6 +86,13 @@ public class WarnUserReplyMessage extends DCFGuiPage<ClientGui> {
             this.editMessage();
         }, delay);
 
+    }
+
+    private Throwable unwrapCompletionException(Throwable error) {
+        if (error instanceof CompletionException root) {
+            return unwrapCompletionException(root.getCause());
+        }
+        return error;
     }
 
     @Override

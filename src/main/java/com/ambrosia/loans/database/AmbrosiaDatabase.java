@@ -19,6 +19,9 @@ import com.ambrosia.loans.database.alter.change.DAlterChangeUndoHistory;
 import com.ambrosia.loans.database.alter.create.DAlterCreate;
 import com.ambrosia.loans.database.alter.create.DAlterCreateUndoHistory;
 import com.ambrosia.loans.database.bank.DBankSnapshot;
+import com.ambrosia.loans.database.config.model.ConfigUpdateType;
+import com.ambrosia.loans.database.config.model.DConfig;
+import com.ambrosia.loans.database.config.model.DConfigType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.settings.DClientMessagingSettings;
 import com.ambrosia.loans.database.entity.client.settings.DClientSettings;
@@ -29,6 +32,7 @@ import com.ambrosia.loans.database.message.DClientMessage;
 import com.ambrosia.loans.database.message.comment.DComment;
 import com.ambrosia.loans.database.message.log.DCommandLog;
 import com.ambrosia.loans.database.message.log.DLog;
+import com.ambrosia.loans.database.system.AppDBEnum;
 import com.ambrosia.loans.database.version.DApiVersion;
 import com.ambrosia.loans.database.version.investor.DVersionInvestorCap;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -43,6 +47,7 @@ import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
 import io.ebean.dbmigration.DbMigration;
 import io.ebean.migration.MigrationConfig;
+import java.sql.SQLSyntaxErrorException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -50,21 +55,15 @@ import java.util.stream.Collectors;
 
 public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
-    private static final String ACCOUNT_EVENT_ENUM;
+    private static AmbrosiaDatabase instance;
+    private ObjectMapper objectMapper;
 
-    static {
-        String enumValues = Arrays.stream(AccountEventType.values())
-            .map(AccountEventType::getDBValue)
-            .map("'%s'"::formatted)
-            .collect(Collectors.joining(", "));
-        ACCOUNT_EVENT_ENUM = """
-            DO $$ BEGIN
-                CREATE TYPE %s AS ENUM (%s);
-                CREATE CAST (VARCHAR AS EVENT_TYPE) WITH INOUT AS IMPLICIT;
-            EXCEPTION
-                WHEN duplicate_object THEN null;
-            END $$;
-            """.formatted(AccountEventType.DEFINITION, enumValues);
+    public AmbrosiaDatabase() {
+        instance = this;
+    }
+
+    public static AmbrosiaDatabase get() {
+        return instance;
     }
 
     @Override
@@ -79,7 +78,27 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
 
     @Override
     protected void configureMigration(DbMigration migration, MigrationConfig config) {
-        DB.sqlUpdate(ACCOUNT_EVENT_ENUM).executeNow();
+        List<AppDBEnum[]> enums = List.of(AccountEventType.values(), ConfigUpdateType.values());
+        List<String> enumDefinitions = List.of(AccountEventType.DEFINITION, ConfigUpdateType.DEFINITION);
+        for (int i = 0; i < enums.size(); i++) {
+            AppDBEnum[] enumValues = enums.get(i);
+            String enumDefinition = enumDefinitions.get(i);
+
+            checkEnumValuesInMigration(enumValues);
+            String enumValuesStr = Arrays.stream(enumValues)
+                .map(AppDBEnum::getDBValue)
+                .map("'%s'"::formatted)
+                .collect(Collectors.joining(", "));
+            String updateStatement = """
+                DO $$ BEGIN
+                    CREATE TYPE %s AS ENUM (%s);
+                    CREATE CAST (VARCHAR AS %s) WITH INOUT AS IMPLICIT;
+                EXCEPTION
+                    WHEN duplicate_object THEN null;
+                END $$;
+                """.formatted(enumDefinition, enumValuesStr, enumDefinition);
+            DB.sqlUpdate(updateStatement).executeNow();
+        }
     }
 
     @Override
@@ -88,13 +107,15 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     }
 
     @Override
-    protected Object getObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper()
+    public ObjectMapper getObjectMapper() {
+        if (this.objectMapper != null) return objectMapper;
+
+        objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        return mapper;
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        return objectMapper;
     }
 
     @Override
@@ -129,6 +150,7 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
         entities.add(DApiVersion.class);
         entities.add(DVersionInvestorCap.class);
         entities.add(DBankSnapshot.class);
+        entities.addAll(List.of(DConfigType.class, DConfig.class));
     }
 
     @Override
@@ -144,6 +166,16 @@ public class AmbrosiaDatabase extends AppleEbeanDatabase {
     @Override
     protected String getName() {
         return "Ambrosia";
+    }
+
+    private void checkEnumValuesInMigration(AppDBEnum[] enumValues) throws RuntimeException {
+        for (AppDBEnum value : enumValues) {
+            String dbValue = value.getDBValue();
+            if (dbValue.contains("'")) {
+                String msg = dbValue + " contains an \"'\", and that's not allowed trying to create SQL enums.";
+                throw new RuntimeException(new SQLSyntaxErrorException(msg));
+            }
+        }
     }
 
     public static class AmbrosiaDatabaseConfig extends AppleEbeanPostgresConfig {

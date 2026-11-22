@@ -13,7 +13,6 @@ import com.ambrosia.loans.database.entity.client.username.ClientMinecraftDetails
 import com.ambrosia.loans.database.entity.client.username.DNameHistory;
 import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.modifier.DiscordLogModifier;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
@@ -21,37 +20,38 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.local.LocalBucket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
 import net.dv8tion.jda.api.entities.User;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface DiscordLog {
+public abstract class DiscordLog {
 
-    LocalBucket ERROR_RATE_LIMIT = Bucket.builder()
+    public static final LocalBucket ERROR_RATE_LIMIT = Bucket.builder()
         .addLimit(limit -> limit.capacity(20)
             .refillIntervally(10, Duration.ofHours(3))
             .initialTokens(20))
         .build();
 
-    private static SendDiscordLog loan(DLoan loan, UserActor actor, String type, String message) {
+    public static SendDiscordLog loan(DLoan loan, UserActor actor, String type, String message) {
         return new SendDiscordLog(loan.getClient(), actor, "Loan", type, message);
     }
 
-    static UserActor actor(User actor) {
+    public static UserActor actor(User actor) {
         return UserActor.of(actor);
     }
 
-    private static SendDiscordLog account(DClient client, UserActor actor, String type, String message) {
+    public static SendDiscordLog account(DClient client, UserActor actor, String type, String message) {
         return new SendDiscordLog(client, actor, "Account", type, message);
     }
 
-    static void modifyDiscord(DClient client, UserActor actor) {
+    public static void modifyDiscord(DClient client, UserActor actor) {
         futureLog(() -> modifyDiscord_(client, actor));
     }
 
-    private static SendDiscordLog modifyDiscord_(DClient client, UserActor actor) {
+    public static SendDiscordLog modifyDiscord_(DClient client, UserActor actor) {
         String type = "Modify Discord";
         String message = "Set Discord to @${discord}";
         String discord = client.getDiscord(ClientDiscordDetails::getUsername);
@@ -60,11 +60,11 @@ public interface DiscordLog {
     }
 
 
-    static void modifyMinecraft(DClient client, UserActor actor) {
+    public static void modifyMinecraft(DClient client, UserActor actor) {
         futureLog(() -> modifyMinecraft_(client, actor));
     }
 
-    private static SendDiscordLog modifyMinecraft_(DClient client, UserActor actor) {
+    public static SendDiscordLog modifyMinecraft_(DClient client, UserActor actor) {
         String type = "Modify Discord";
         String message = "Set Minecraft to @${minecraft}";
         String minecraft = client.getMinecraft(ClientMinecraftDetails::getUsername);
@@ -72,42 +72,42 @@ public interface DiscordLog {
             .addJson("minecraft", minecraft);
     }
 
-    static void createAccount(DClient client, UserActor actor) {
+    public static void createAccount(DClient client, UserActor actor) {
         futureLog(() -> createAccount_(client, actor));
     }
 
-    private static SendDiscordLog createAccount_(DClient client, UserActor actor) {
+    public static SendDiscordLog createAccount_(DClient client, UserActor actor) {
         String type = "Create Account";
         String message = "Account was created";
         return account(client, actor, type, message);
     }
 
-    static void updateAccount(DClient client, UserActor actor) {
+    public static void updateAccount(DClient client, UserActor actor) {
         futureLog(() -> updateAccount_(client, actor));
     }
 
-    private static SendDiscordLog updateAccount_(DClient client, UserActor actor) {
+    public static SendDiscordLog updateAccount_(DClient client, UserActor actor) {
         String type = "Update Account";
         String message = "Account was updated";
         return account(client, actor, type, message);
     }
 
-    static void createLoan(DLoan loan, UserActor actor) {
+    public static void createLoan(DLoan loan, UserActor actor) {
         futureLog(() -> createLoan_(loan, actor));
     }
 
-    private static SendDiscordLog createLoan_(DLoan loan, UserActor actor) {
+    public static SendDiscordLog createLoan_(DLoan loan, UserActor actor) {
         String type = "Create Loan";
         String message = "Loan was created";
         return loan(loan, actor, type, message)
             .modify(DiscordLogModifier.addEntity("Loan", loan));
     }
 
-    static void unfreezeLoan(DLoan loan, UserActor actor) {
+    public static void unfreezeLoan(DLoan loan, UserActor actor) {
         futureLog(() -> unfreezeLoan_(loan, actor));
     }
 
-    private static SendDiscordLog unfreezeLoan_(DLoan loan, UserActor actor) {
+    public static SendDiscordLog unfreezeLoan_(DLoan loan, UserActor actor) {
         String type = "Unfreeze Loan";
         String message = "Loan was unfrozen";
         return loan(loan, actor, type, message)
@@ -115,11 +115,11 @@ public interface DiscordLog {
     }
 
 
-    static void createInvestLike(AccountEvent event, UserActor actor) {
+    public static void createInvestLike(AccountEvent event, UserActor actor) {
         futureLog(() -> createInvestLike_(event, actor));
     }
 
-    private static SendDiscordLog createInvestLike_(AccountEvent event, UserActor actor) {
+    public static SendDiscordLog createInvestLike_(AccountEvent event, UserActor actor) {
         String category = event.getEventType().toString();
         String type = "Create " + category;
         String message = category + " was created";
@@ -127,11 +127,11 @@ public interface DiscordLog {
             .modify(DiscordLogModifier.addEntity(category, event));
     }
 
-    static void createPayment(DLoanPayment payment, UserActor actor) {
+    public static void createPayment(DLoanPayment payment, UserActor actor) {
         futureLog(() -> createPayment_(payment, actor));
     }
 
-    private static SendDiscordLog createPayment_(DLoanPayment payment, UserActor actor) {
+    public static SendDiscordLog createPayment_(DLoanPayment payment, UserActor actor) {
         String category = "Payment";
         String type = "Create " + category;
         String message = category + " was created";
@@ -140,11 +140,11 @@ public interface DiscordLog {
             .modify(DiscordLogModifier.addEntity("payment", payment));
     }
 
-    static void updateName(DNameHistory lastName, DNameHistory newName) {
+    public static void updateName(DNameHistory lastName, DNameHistory newName) {
         futureLog(() -> updateName_(lastName, newName));
     }
 
-    private static SendDiscordLog updateName_(DNameHistory lastName, DNameHistory newName) {
+    public static SendDiscordLog updateName_(DNameHistory lastName, DNameHistory newName) {
         DClient client = lastName.getClient();
         UserActor actor = UserActor.of(DStaffConductor.SYSTEM);
         String category = "Name History";
@@ -158,31 +158,33 @@ public interface DiscordLog {
         return new SendDiscordLog(client, actor, category, logType, msg);
     }
 
-    private static CompletableFuture<SendDiscordLog> futureLog(Supplier<SendDiscordLog> createLog) {
-        return Ambrosia.get().submit(createLog)
-            .thenCompose(SendDiscordLog::submit)
-            .whenComplete((log, err) -> {
-                if (err != null) {
-                    DiscordModule.get().logger().error("Failed to create or send DiscordLog", err);
-                    throw new CompletionException(err);
-                }
-            });
+    public static void configFile(UserActor actor, String configName, String msg) {
+        futureLog(() -> configFile_(actor, configName, msg));
     }
 
-    static void infoSystem(String msg) {
+    private static SendDiscordLog configFile_(UserActor actor, String title, String msg) {
+        @Nullable DClient client = actor.getClient();
+        return new SendDiscordLog(client, actor, "Config", title, msg);
+    }
+
+    public static CompletableFuture<SendDiscordLog> futureLog(Supplier<SendDiscordLog> createLog) {
+        return SendDiscordLog.submit(createLog);
+    }
+
+    public static void infoSystem(String msg) {
         futureLog(() -> infoSystem_(msg));
     }
 
-    private static SendDiscordLog infoSystem_(String msg) {
+    public static SendDiscordLog infoSystem_(String msg) {
         return new SendDiscordLog(null, UserActor.system(), "System", "Info", msg);
     }
 
 
-    static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked) {
+    public static CompletableFuture<SendDiscordLog> botBlocked(DClient client, boolean isBlocked) {
         return futureLog(() -> _botBlocked(client, isBlocked));
     }
 
-    private static SendDiscordLog _botBlocked(DClient client, boolean blocked) {
+    public static SendDiscordLog _botBlocked(DClient client, boolean blocked) {
         String title = blocked ? "Blocked by User" : "Unblocked by User";
         String msg;
         if (blocked) msg = "Failed to send message to @%s.".formatted(client.getEffectiveName());
@@ -192,54 +194,140 @@ public interface DiscordLog {
             .modify(DiscordLogModifier.setColor(color));
     }
 
-    static void errorSystem(String msg) {
-        Exception exception = popStacktraceElement(new RuntimeException(msg));
-        errorSystem(msg, exception);
+    public static void failedTTL(DClient client, String msg, Throwable ex) {
+        UserActor actor = UserActor.of(client);
+        ErrorContext ctx = new ErrorContext(msg, actor, "Failed TTL", null, ex, false);
+        error(ctx);
+    }
+
+    public static void errorSystem(String msg) {
+        error(new ErrorContext(msg, null, null, true));
+    }
+
+    public static void errorSystem(@Nullable String msg, @Nullable Throwable exception, boolean suppressConsoleStacktrace) {
+        error(new ErrorContext(msg, null, exception, suppressConsoleStacktrace));
     }
 
     /**
-     * @param msg       Optional The error message will default to the msg of exception
-     * @param exception Optional exception to display.
+     * @param msg                       Optional The error message will default to the msg of exception
+     * @param actor                     Optional A client, or Service causing or associated with the error. Will default to the msg of
+     *                                  exception
+     * @param exception                 Optional exception to display.
+     * @param suppressConsoleStacktrace True to avoid printing a stacktrace to console.
      * @apiNote If exception is null, a default exception is generated with the calling stacktrace
      */
-    static void errorSystem(@Nullable String msg, @Nullable Throwable exception) {
-        if (msg == null) {
-            if (exception == null) msg = "No message provided";
-            else msg = exception.getMessage();
-        }
-        error(msg, UserActor.system(), exception);
-
-        if (exception == null)
-            exception = popStacktraceElement(new RuntimeException(msg));
-
-        Ambrosia.get().logger().error(msg, exception);
-
+    public static void error(@Nullable String msg, @Nullable UserActor actor, @Nullable Throwable exception,
+        boolean suppressConsoleStacktrace) {
+        error(new ErrorContext(msg, actor, exception, suppressConsoleStacktrace));
     }
 
-    private static Exception popStacktraceElement(RuntimeException exception) {
-        StackTraceElement[] stackTrace = exception.getStackTrace();
-        StackTraceElement[] newStackTrace = Arrays.copyOfRange(stackTrace, 1, stackTrace.length);
-        exception.setStackTrace(newStackTrace);
-        return exception;
+    private static void error(@NotNull ErrorContext context) {
+        if (passRateLimitErrorLog(context))
+            futureLog(() -> errorNoRateLimit_(context));
     }
 
-    static void error(String msg, UserActor actor) {
-        error(msg, actor, null);
-    }
-
-    static void error(String msg, UserActor actor, Throwable exception) {
-        boolean test = ERROR_RATE_LIMIT.tryConsume(1);
-        if (!test) {
-            Ambrosia.get().logger().fatal("Hit error rate limit!!!");
-            Ambrosia.get().logger().error(msg);
-            return;
-        }
-        futureLog(() -> error_(msg, actor, exception));
-    }
-
-    private static SendDiscordLog error_(String msg, UserActor of, Throwable exception) {
-        return new SendDiscordLog(null, of, "System", "Error", msg)
-            .modify(DiscordLogModifier.setException(exception))
+    @NotNull
+    private static SendDiscordLog errorNoRateLimit_(ErrorContext context) {
+        return new SendDiscordLog(context.client(), context.actor(), context.category(), context.logType(), context.msg())
+            .modify(DiscordLogModifier.setException(context.exception(), context.isSuppressConsoleStacktrace()))
             .modify(DiscordLogModifier.setColor(AmbrosiaColor.RED));
+    }
+
+    private static boolean passRateLimitErrorLog(@NotNull ErrorContext context) {
+        if (ERROR_RATE_LIMIT.tryConsume(1))
+            return true;
+
+        Ambrosia.get().logger().fatal("Hit error rate limit!!!");
+        context.tryConsoleLog();
+        return false;
+    }
+
+    private static class ErrorContext {
+
+        @NotNull
+        private final String msg;
+        @NotNull
+        private final UserActor actor;
+        @NotNull
+        private final Throwable exception;
+        private String category;
+        private String logType;
+        private boolean suppressConsoleStacktrace;
+
+        public ErrorContext(String msg, UserActor actor, String category, String logType, Throwable exception,
+            boolean suppressConsoleStacktrace) {
+            this(msg, actor, exception, suppressConsoleStacktrace);
+            this.category = category;
+            this.logType = logType;
+        }
+
+        public ErrorContext(String msg, UserActor actor, Throwable exception, boolean suppressConsoleStacktrace) {
+            this.msg = initMsg(msg, exception);
+            this.actor = initActor(actor);
+            this.exception = initException(exception, msg);
+            this.suppressConsoleStacktrace = suppressConsoleStacktrace;
+        }
+
+        private boolean isSuppressConsoleStacktrace() {
+            return suppressConsoleStacktrace;
+        }
+
+        @NotNull
+        private String initMsg(String msg, Throwable exception) {
+            if (msg != null) return msg;
+            if (exception == null) return "No message provided";
+            return exception.getMessage();
+        }
+
+        @NotNull
+        private UserActor initActor(UserActor actor) {
+            if (actor != null) return actor;
+            return UserActor.system();
+        }
+
+        @NotNull
+        private Throwable initException(@Nullable Throwable exception, String msg) {
+            if (exception != null)
+                return exception;
+            exception = new RuntimeException(msg);
+            StackTraceElement[] stackTrace = exception.getStackTrace();
+            StackTraceElement[] newStackTrace = Arrays.copyOfRange(stackTrace, 2, stackTrace.length);
+            exception.setStackTrace(newStackTrace);
+            return exception;
+        }
+
+        @NotNull
+        public String msg() {
+            return msg;
+        }
+
+        @NotNull
+        public UserActor actor() {
+            return actor;
+        }
+
+        @Nullable
+        public DClient client() {
+            return actor.getClient();
+        }
+
+        @NotNull
+        public Throwable exception() {
+            return exception;
+        }
+
+        public void tryConsoleLog() {
+            if (!suppressConsoleStacktrace)
+                Ambrosia.get().logger().error(msg, exception);
+            this.suppressConsoleStacktrace = true;
+        }
+
+        public String category() {
+            return Objects.requireNonNullElse(category, "System");
+        }
+
+        public String logType() {
+            return Objects.requireNonNullElse(logType, "Error");
+        }
     }
 }

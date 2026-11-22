@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
@@ -44,15 +45,14 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         return false;
     }
 
-    public void onAccept(ButtonInteractionEvent event, ActiveRequestInvestment request) {
+    public void onAccept(InteractionHook defer, ActiveRequestInvestment request) {
         ActiveRequestInvestmentGui finishedGui = request.create();
 
         WarnBotBlockedObj warning = new WarnBotBlockedObj(request.getClient(), finishedGui::updateSender);
 
-        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null)
+        finishedGui.guiClient(DCFEditMessage.ofHook(defer), null)
             .send(warning.initialSuccess(), warning.initialFailed());
-        finishedGui.send(ActiveRequestDatabase::sendRequest);
-        warning.tryFirstDirectMessage();
+        warning.addOnComplete((res, err) -> finishedGui.send(ActiveRequestDatabase::sendRequest));
     }
 
     private void onReject(ButtonInteractionEvent event, ActiveRequestInvestment request) {
@@ -69,8 +69,9 @@ public class RequestInvestmentCommand extends BaseClientSubCommand {
         ActiveRequestInvestment request = new ActiveRequestInvestment(client, amount);
 
         AcceptTOSGui gui = new AcceptTOSGui(DiscordBot.dcf, event::reply);
+        long discordId = event.getUser().getIdLong();
         new AcceptTOSRequest(gui, client,
-            e -> onAccept(e, request),
+            discordId, e -> onAccept(e, request),
             e -> onReject(e, request)
         ).addPageToGui().send();
     }

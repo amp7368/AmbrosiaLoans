@@ -37,8 +37,7 @@ public class RequestWithdrawalCommand extends BaseClientSubCommand implements Ba
 
         finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null)
             .send(warning.initialSuccess(), warning.initialFailed());
-        finishedGui.send(ActiveRequestDatabase::sendRequest);
-        warning.tryFirstDirectMessage();
+        warning.addOnComplete((res, err) -> finishedGui.send(ActiveRequestDatabase::sendRequest));
     }
 
     @Override

@@ -143,7 +143,7 @@ public class DClient extends Model implements ClientAccess, Commentable {
             DNameHistory now = history.get(0);
             if (!now.isCurrent()) {
                 String msg = "First entry in name history is not currently in use!";
-                DiscordLog.error(msg, UserActor.of(this));
+                DiscordLog.error(msg, UserActor.of(this), null, false);
             }
             return now;
         }

@@ -1,45 +1,57 @@
 package com.ambrosia.loans.discord.message.tos;
 
+import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.DClient;
-import com.ambrosia.loans.database.entity.client.username.ClientDiscordDetails;
 import com.ambrosia.loans.discord.base.command.SendMessage;
 import com.ambrosia.loans.discord.message.client.ClientMessage;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import com.ambrosia.loans.discord.system.theme.AmbrosiaColor;
 import discord.util.dcf.gui.base.page.DCFGuiPage;
+import java.time.Duration;
 import java.util.function.Consumer;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class AcceptTOSRequest extends DCFGuiPage<AcceptTOSGui> {
 
     private final DClient client;
+    private final long clientDiscordId;
+    private final Consumer<InteractionHook> onSuccess;
+    private final Consumer<ButtonInteractionEvent> onReject;
     private Boolean accepted = null;
 
-    public AcceptTOSRequest(AcceptTOSGui parent, DClient client, Consumer<ButtonInteractionEvent> onSuccess,
-        Consumer<ButtonInteractionEvent> onReject) {
+    public AcceptTOSRequest(AcceptTOSGui parent, DClient client, long clientDiscordId,
+        Consumer<InteractionHook> onSuccess, Consumer<ButtonInteractionEvent> onReject) {
         super(parent);
         this.client = client;
-        registerButton(TOSMessage.btnAccept().getId(), e -> {
-            if (this.isDenied(e)) return;
-            this.accepted = true;
-            onSuccess.accept(e);
+        this.clientDiscordId = clientDiscordId;
+        this.onSuccess = onSuccess;
+        this.onReject = onReject;
+        registerButton(TOSMessage.btnAccept().getId(),
+            event -> buttonPress(event, true));
+        registerButton(TOSMessage.btnReject().getId(),
+            event -> buttonPress(event, false));
+    }
+
+    private void buttonPress(ButtonInteractionEvent event, boolean accepted) {
+        if (this.isDenied(event)) return;
+        this.accepted = accepted;
+        if (accepted) {
+            event.deferReply().queue(defer -> {
+                onSuccess.accept(defer);
+            });
+        } else onReject.accept(event);
+        Ambrosia.get().schedule(() -> {
             editMessage();
             getParent().remove();
-        });
-        registerButton(TOSMessage.btnReject().getId(), e -> {
-            if (this.isDenied(e)) return;
-            this.accepted = false;
-            onReject.accept(e);
-            editMessage();
-            getParent().remove();
-        });
+        }, Duration.ofSeconds(3));
     }
 
     private boolean isDenied(ButtonInteractionEvent e) {
-        if (e.getUser().getIdLong() == client.getDiscord(ClientDiscordDetails::getDiscordId)) return false;
+        if (e.getUser().getIdLong() == clientDiscordId) return false;
         MessageEmbed msg = SendMessage.get().error("Only the user who initiated the request is allowed to accept/reject");
         e.replyEmbeds(msg).setEphemeral(true).queue();
         return true;
@@ -73,7 +85,7 @@ public class AcceptTOSRequest extends DCFGuiPage<AcceptTOSGui> {
                 """
                     Do you agree to the TOS?
                     Agreeing is required to use Ambrosia Loan's Services.
-
+                    
                     %s TOS Accepted"""
                     .formatted(AmbrosiaEmoji.CHECK_SUCCESS));
         } else {

@@ -152,7 +152,7 @@ public abstract class BaseMessageService<M extends ScheduledClientMessage<?>> {
                 // use a different thread to verify nothing messes with messages while this thread uses it.
                 Ambrosia.get().submit(() -> runDispatch(dispatch)).get();
             } catch (InterruptedException | ExecutionException e) {
-                DiscordLog.errorSystem("[%s] Failed to dispatch messages".formatted(getName()), e);
+                DiscordLog.errorSystem("[%s] Failed to dispatch messages".formatted(getName()), e, false);
                 stop();
             }
         }
@@ -165,11 +165,14 @@ public abstract class BaseMessageService<M extends ScheduledClientMessage<?>> {
                 // todo get rid of exceptions inside
                 future.send();
             } catch (Exception e) {
-                DiscordLog.errorSystem("Failed to dispatch message" + e.getMessage());
-                String messagesStr = messages.stream()
-                    .map(Object::toString)
-                    .collect(Collectors.joining(", "));
-                ServiceModule.get().logger().error("Failed to dispatch message. Queue is {}", messagesStr, e);
+                try {
+                    String messagesStr = messages.stream()
+                        .map(Object::toString)
+                        .collect(Collectors.joining(", "));
+                    ServiceModule.get().logger().error("Failed to dispatch message. Queue is {}", messagesStr, e);
+                } finally {
+                    DiscordLog.errorSystem("Failed to dispatch message\n" + e.getMessage(), e, false);
+                }
                 try {
                     Thread.sleep(TimeMillis.DAY);
                 } catch (InterruptedException e1) {

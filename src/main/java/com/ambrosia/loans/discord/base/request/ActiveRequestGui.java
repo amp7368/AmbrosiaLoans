@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -321,7 +320,7 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
         ClientDiscordDetails discord = client.getDiscord();
         if (discord == null) {
             String msg = "%s's discord is null!".formatted(client.getEffectiveName());
-            DiscordLog.errorSystem(msg, null);
+            DiscordLog.errorSystem(msg, null, true);
             return CompletableFuture.failedFuture(new IllegalStateException(msg));
         }
 
@@ -330,27 +329,14 @@ public abstract class ActiveRequestGui<Data extends ActiveRequest<?>> extends DC
                 DCFEditMessage editMessage = DCFEditMessage.ofCreate(channel::sendMessage);
                 return guiClient(editMessage, msgOverride).submitSend();
             })
-            .handle((message, err) -> err != null ? null : message)
+            .handle((message, err) -> err == null ? message : null)
             .thenCompose(message -> {
-                    CompletableFuture<Void> action;
-                    if (message == null) action = meta.startMarkBlocked();
-                    else action = meta.startMarkNotBlocked();
+                CompletableFuture<Void> action;
+                if (message == null) action = meta.startMarkBlocked();
+                else action = meta.startMarkNotBlocked();
 
-                    return action.thenApply(ignored -> message);
-                }
-            );
-    }
-
-    public <T> CompletableFuture<T> exceptionallyCompose(
-        CompletableFuture<T> future,
-        Function<Throwable, CompletableFuture<T>> exceptionHandler) {
-        return future.handle((result, ex) -> {
-            if (ex == null) {
-                return CompletableFuture.completedFuture(result);
-            } else {
-                return exceptionHandler.apply(ex);
-            }
-        }).thenCompose(Function.identity());
+                return action.thenApply(ignored -> message);
+            });
     }
 
     public ClientGui guiClient(DCFEditMessage editMessage, @Nullable String msgOverride) {

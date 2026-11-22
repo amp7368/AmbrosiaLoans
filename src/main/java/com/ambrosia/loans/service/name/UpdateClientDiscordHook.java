@@ -9,6 +9,7 @@ import com.ambrosia.loans.database.entity.client.username.NameHistoryType;
 import com.ambrosia.loans.discord.DiscordBot;
 import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
+import com.ambrosia.loans.discord.system.theme.AmbrosiaAssets.AmbrosiaEmoji;
 import io.ebean.DB;
 import io.ebean.Transaction;
 import java.time.Duration;
@@ -61,13 +62,16 @@ public class UpdateClientDiscordHook {
 
     private static void retrieveUserFailed(DClient client, long discordId, CompletableFuture<Void> task) {
         try {
-            DiscordModule.get().logger().error("Could not update discord for: client {} discord{{}}",
+            DiscordModule.get().logger().warn("Could not update discord for: client {} discord{{}}",
                 client.getEffectiveName(), discordId);
+
             ClientDiscordDetails discord = client.getDiscord(false);
             client.setDiscord(discord.updated());
             client.save();
         } catch (Exception e) {
-            DiscordLog.errorSystem("Cannot save Discord", e);
+            String id = AmbrosiaEmoji.KEY_ID.spaced(client.getId());
+            String msg = "Cannot save Discord for Client %s".formatted(id);
+            DiscordLog.errorSystem(msg, e, false);
         } finally {
             task.complete(null);
         }
@@ -95,7 +99,7 @@ public class UpdateClientDiscordHook {
             transaction.commit();
             client.refresh();
         } catch (Exception e) {
-            DiscordLog.errorSystem("Cannot save Discord", e);
+            DiscordLog.errorSystem("Cannot save Discord", e, false);
         } finally {
             task.complete(null);
         }

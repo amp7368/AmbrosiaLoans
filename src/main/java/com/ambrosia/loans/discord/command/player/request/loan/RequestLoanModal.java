@@ -27,6 +27,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.modals.ModalMapping;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
@@ -52,16 +53,15 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
     private ActiveRequestLoan request;
     private RequestCollateral collateral;
 
-    public void onAccept(ButtonInteractionEvent event) {
+    public void onAccept(InteractionHook defer) {
         request.acceptTOS();
         ActiveRequestLoanGui finishedGui = request.create();
 
         WarnBotBlockedObj warning = new WarnBotBlockedObj(request.getClient(), finishedGui::updateSender);
 
-        finishedGui.guiClient(DCFEditMessage.ofReply(event::reply), null)
+        finishedGui.guiClient(DCFEditMessage.ofHook(defer), null)
             .send(warning.initialSuccess(), warning.initialFailed());
-        finishedGui.send(ActiveRequestDatabase::sendRequest);
-        warning.tryFirstDirectMessage();
+        warning.addOnComplete((res, err) -> finishedGui.send(ActiveRequestDatabase::sendRequest));
     }
 
     private void onReject(ButtonInteractionEvent event) {
@@ -137,9 +137,9 @@ public class RequestLoanModal extends DCFModal implements SendMessage {
             this.repayment,
             this.collateral
         );
-
         AcceptTOSGui gui = new AcceptTOSGui(DiscordBot.dcf, event::reply);
-        new AcceptTOSRequest(gui, client, this::onAccept, this::onReject)
+        long discordId = event.getUser().getIdLong();
+        new AcceptTOSRequest(gui, client, discordId, this::onAccept, this::onReject)
             .addPageToGui()
             .send();
     }

@@ -7,6 +7,7 @@ import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.AmbrosiaDatabase.AmbrosiaDatabaseConfig;
 import com.ambrosia.loans.database.system.collateral.CollateralManager;
+import com.ambrosia.loans.database.system.init.InitConfigs;
 import com.ambrosia.loans.database.system.init.InitDatabase;
 import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import java.time.Instant;
@@ -45,6 +46,7 @@ public class DatabaseModule extends AppleModule {
 
         new AmbrosiaDatabase();
         InitDatabase.init();
+        InitConfigs.init();
 
         CollateralManager.load();
 

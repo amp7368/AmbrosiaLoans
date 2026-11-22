@@ -3,7 +3,6 @@ package com.ambrosia.loans.database.entity.client.meta;
 import com.ambrosia.loans.Ambrosia;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.client.meta.query.QDIsBotBlockedTimespan;
-import com.ambrosia.loans.discord.DiscordModule;
 import com.ambrosia.loans.discord.system.log.DiscordLog;
 import io.ebean.DB;
 import io.ebean.Model;
@@ -57,9 +56,9 @@ public class DClientMeta extends Model {
         if (threw instanceof ErrorResponseException) {
             startMarkBlocked();
         } else if (threw instanceof Exception e) {
-            DiscordLog.errorSystem(null, e);
+            DiscordLog.errorSystem(e.getMessage(), e, true);
         } else {
-            DiscordModule.get().logger().error("", threw);
+            DiscordLog.errorSystem(threw.getMessage(), threw, false);
         }
     }
 
@@ -82,7 +81,7 @@ public class DClientMeta extends Model {
             nextTimespan = saveFirstIsBotBlocked(isBotBlocked);
         } else if (pastTimespan == null) {
             // there's an error
-            DiscordLog.errorSystem("getLatestTimespan is null, when there should be at least one...", null);
+            DiscordLog.errorSystem("getLatestTimespan is null, when there should be at least one...", null, false);
             return;
         } else if (this.isBotBlocked == isBotBlocked) {
             // past == next
