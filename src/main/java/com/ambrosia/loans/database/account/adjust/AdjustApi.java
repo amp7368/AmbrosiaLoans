@@ -6,6 +6,7 @@ import com.ambrosia.loans.database.alter.AlterRecordApi.AlterCreateApi;
 import com.ambrosia.loans.database.alter.type.AlterCreateType;
 import com.ambrosia.loans.database.entity.client.DClient;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
+import com.ambrosia.loans.database.system.service.RunBankSimulation;
 import com.ambrosia.loans.util.emerald.Emeralds;
 import io.ebean.DB;
 import io.ebean.Transaction;
@@ -48,7 +49,8 @@ public interface AdjustApi {
         }
         AlterCreateApi.create(staff, AlterCreateType.ADJUST_LOAN, adjustment.getId());
 
-        adjustment.getClient().updateBalance(loan, amount.amount(), date, adjustment.getEventType());
+        RunBankSimulation.simulateAsync(adjustment.getDate());
+
         return adjustment;
     }
 }
