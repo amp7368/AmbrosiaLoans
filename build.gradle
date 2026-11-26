@@ -36,7 +36,7 @@ dependencies {
     implementation "io.ebean:ebean-querybean:${ebean_version}"
     implementation "io.ebean:ebean-postgres:${ebean_version}"
     // sql driver
-    implementation 'org.postgresql:postgresql:42.7.2'
+    implementation 'org.postgresql:postgresql:42.7.14'
 
     // migration
     implementation "io.ebean:ebean-ddl-generator:${ebean_version}"
@@ -50,7 +50,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
 
     // logging
-    implementation 'org.apache.logging.log4j:log4j-core:2.24.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.25.4'
     implementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.24.1'
 
     // rate limiting client
