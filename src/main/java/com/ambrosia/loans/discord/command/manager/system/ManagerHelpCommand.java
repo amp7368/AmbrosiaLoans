@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.manager.config;
+package com.ambrosia.loans.discord.command.manager.system;
 
 import com.ambrosia.loans.config.AmbrosiaStaffConfig;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -10,7 +10,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 
-public class StaffConfigHelpCommand extends BaseManagerSubCommand {
+public class ManagerHelpCommand extends BaseManagerSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {

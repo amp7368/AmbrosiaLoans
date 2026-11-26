@@ -1,4 +1,4 @@
-package com.ambrosia.loans.discord.command.manager.config;
+package com.ambrosia.loans.discord.command.manager.config.tos;
 
 import com.ambrosia.loans.config.AmbrosiaConfig;
 import com.ambrosia.loans.database.entity.staff.DStaffConductor;
@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
-public class StaffConfigTOSCommand extends BaseManagerSubCommand {
+public class StaffConfigTOSShowCommand extends BaseManagerSubCommand {
 
     @Override
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
@@ -27,9 +27,9 @@ public class StaffConfigTOSCommand extends BaseManagerSubCommand {
             .setTitle("Terms of Service " + version)
             .setDescription("""
                 Updated TOS!
-
+                
                 This is an example message (buttons will be enabled for user).
-
+                
                 Accept TOS?
                 """)
             .build();

@@ -216,6 +216,9 @@ public class DiscordModule extends AppleModule {
     public void temp() {
         List<DCFAbstractCommand<?>> dcfCommands = DiscordBot.dcf.commands().getDCFCommands();
         for (DCFAbstractCommand<?> dcfCommand : dcfCommands) {
+            if (!(dcfCommand instanceof CommandCheckPermission)) {
+                throw new IllegalStateException(dcfCommand + " does not implement CommandCheckPermission");
+            }
             if (!(dcfCommand instanceof BaseCommand baseCommand)) continue;
             boolean isStaffCommand = isStaffCommand(baseCommand);
             boolean isManagerCommand = isMangerCommand(baseCommand);

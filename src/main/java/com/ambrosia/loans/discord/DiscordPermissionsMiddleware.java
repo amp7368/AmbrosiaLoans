@@ -11,6 +11,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 public class DiscordPermissionsMiddleware<Cmd extends DCFAbstractCommand<?> & CommandCheckPermission> {
 
     public void temp(DCFAbstractCommand<?> cmd) {
+        if (!(cmd instanceof CommandCheckPermission)) {
+            throw new IllegalStateException(cmd + " does not implement CommandCheckPermission");
+        }
         preInit((Cmd) cmd);
     }
 
