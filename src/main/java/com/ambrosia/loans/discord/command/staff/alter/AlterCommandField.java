@@ -13,6 +13,7 @@ public final class AlterCommandField<T> {
     private final List<CheckError<T>> checks;
     private T value;
     private boolean isRequired = false;
+    private boolean attemptedValue = false;
 
     public AlterCommandField(CommandOption<T> commandOption) {
         this(commandOption, List.of());
@@ -28,12 +29,13 @@ public final class AlterCommandField<T> {
     }
 
     public void fromEvent(CommandInteraction event) {
+        this.attemptedValue = event.getOption(commandOption.getOptionName()) != null;
         this.value = this.commandOption.getOptional(event);
     }
 
     public CheckErrorList checkError(CommandInteraction event) {
         CheckErrorList error = CheckErrorList.of();
-        if (this.isRequired && value == null) {
+        if ((this.isRequired || this.attemptedValue) && value == null) {
             String errorMsg = commandOption.getErrorMessage(event).toString();
             error.addError(errorMsg);
             return error;

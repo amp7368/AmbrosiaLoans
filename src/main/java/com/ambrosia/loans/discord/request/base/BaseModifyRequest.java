@@ -59,7 +59,7 @@ public interface BaseModifyRequest extends SendMessage {
                 request = clientsRequests.get(0);
             }
         } else {
-            request = CommandOption.REQUEST.getRequired(event, ErrorMessages.noRequestWithId(requestId));
+            request = CommandOption.REQUEST.getOptional(event);
         }
         if (request == null) {
             ErrorMessages.noRequestWithId(requestId).replyError(event);

@@ -71,7 +71,8 @@ public interface CommandOption<R> {
     CommandOptionMulti<String, Emeralds> COLLATERAL_SOLD_AMOUNT = emeraldsAmount("sold_for", "sell the collateral for");
     CommandOptionMulti<String, Emeralds> INVESTMENT_AMOUNT = emeraldsAmount(null, "invest");
     CommandOptionMulti<String, Emeralds> WITHDRAWAL_AMOUNT = emeraldsAmount(null, "withdrawal");
-    CommandOptionMulti<String, Emeralds> LOAN_INTEREST_CAP = emeraldsAmount("interest_cap", "cap interest to");
+    CommandOptionMulti<String, Emeralds> LOAN_OWED_CAP = emeraldsAmount("total_owed_cap",
+        "The limit on the total amount owed", false, true);
     CommandOption<Boolean> PAYMENT_FULL = full("paying");
     CommandOption<Boolean> WITHDRAWAL_FULL = full("withdrawing");
     // loan request
@@ -164,8 +165,15 @@ public interface CommandOption<R> {
     }
 
     @NotNull
-    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String name, String type) {
-        String desc = "The amount to %s. %s".formatted(type, ErrorMessages.emeraldsFormat());
+    static CommandOptionMulti<String, Emeralds> emeraldsAmount(String name, String desc) {
+        return CommandOption.emeraldsAmount(name, desc, true, true);
+    }
+
+    private static @NotNull CommandOptionEmeralds emeraldsAmount(String name, String desc, boolean withPrefix, boolean withFormat) {
+        if (withPrefix)
+            desc = "The amount to %s.".formatted(desc);
+        if (withFormat)
+            desc = "%s %s".formatted(desc, ErrorMessages.emeraldsFormat());
         name = Objects.requireNonNullElse(name, "amount");
         return new CommandOptionEmeralds(name, desc, OptionType.STRING);
     }

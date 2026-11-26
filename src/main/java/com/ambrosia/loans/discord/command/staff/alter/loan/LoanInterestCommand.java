@@ -20,8 +20,8 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
     protected void onStaffCommand(SlashCommandInteractionEvent event, DStaffConductor staff) {
         DLoan loan = CommandOption.LOAN_ID.getRequired(event);
         if (loan == null) return;
-        Emeralds interestCap = CommandOption.LOAN_INTEREST_CAP.getRequired(event);
-        if (interestCap == null) return;
+        Emeralds newTotalOwedLimit = CommandOption.LOAN_OWED_CAP.getRequired(event);
+        if (newTotalOwedLimit == null) return;
         boolean force = CommandOption.FORCE.getOptional(event, false);
 
         if (!force && loan.isPaid()) {
@@ -31,13 +31,51 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
         }
         Instant date = Instant.now();
         Emeralds totalOwed = loan.getTotalOwed(date);
-        Emeralds adjustmentAmount = loan.getAccumulatedInterest(date).minus(interestCap);
-        if (!force && adjustmentAmount.gt(totalOwed.amount())) {
-            String msg = "Only %s is owed on loan!".formatted(totalOwed);
+        // positive value decreases total owed. negative value increases total owed.
+        Emeralds decreaseOwedAdjustment = totalOwed.minus(newTotalOwedLimit);
+
+        Emeralds initialAmount = loan.getInitialAmount();
+        Emeralds totalPaid = loan.getTotalPaid(loan.getStartDate(), date);
+
+        if (!force && decreaseOwedAdjustment.isNegative()) {
+            // User is trying to increase the total amount owed on a loan.
+            String msg = """
+                Only %s is owed on loan!
+                
+                A limit of %s on the total owed means the client owes %s more than they otherwise would.
+                Initial Amount: %s
+                Current Total Owed: %s
+                Provided Total Owed: %s
+                Total Paid: %s
+                """.formatted(
+                totalOwed, newTotalOwedLimit, decreaseOwedAdjustment,
+                initialAmount,
+                totalOwed,
+                newTotalOwedLimit,
+                totalPaid
+            );
             replyError(event, msg);
             return;
         }
-        DAdjustLoan adjustment = AdjustApi.createAdjustment(staff, loan, adjustmentAmount, date);
+        Emeralds paymentsToNetZero = initialAmount.minus(totalPaid);
+        Emeralds residualOwed = newTotalOwedLimit.minus(totalPaid);
+
+        if (decreaseOwedAdjustment.lt(paymentsToNetZero.amount())) {
+            // User is trying to reduce the loan
+            String msg = """
+                A reduction of the TotalOwed of %s means the loan will be a net loss."
+                **Explanation:**
+                InitialLoanAmount (%s)
+                TotalPayments (%s) + NewResidualAmountOwed (%s) = PotentialRevenue(%s)
+                PotentialRevenue (%s) < InitialLoanAmount (%s)
+                """.formatted(decreaseOwedAdjustment,
+                initialAmount,
+                totalPaid, residualOwed, newTotalOwedLimit,
+                newTotalOwedLimit, initialAmount);
+            replyError(event, msg);
+            return;
+        }
+        DAdjustLoan adjustment = AdjustApi.createAdjustment(staff, loan, decreaseOwedAdjustment, date);
         long adjustmentId = adjustment.getId();
         long loanId = loan.getId();
         String msg = "Created adjustment %s %s for loan %s %s"
@@ -49,7 +87,7 @@ public class LoanInterestCommand extends BaseStaffSubCommand {
     public SubcommandData getData() {
         SubcommandData command = new SubcommandData("interest", "[Staff] Cap/decrease the interest on a loan");
         return CommandOptionList.of(
-            List.of(CommandOption.LOAN_ID, CommandOption.LOAN_INTEREST_CAP),
+            List.of(CommandOption.LOAN_ID, CommandOption.LOAN_OWED_CAP),
             List.of(CommandOption.FORCE)
         ).addToCommand(command);
     }
